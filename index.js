@@ -28,9 +28,9 @@ $( document ).ready( function() {
 
 			// At this point the MIDI system is ready to be used
 			MIDI.setVolume(0, 127); // Set the general volume level			
-			MIDI.programChange(0, 56); // Use the General MIDI 'French horn' number
+			MIDI.programChange(1, 56); // Use the General MIDI 'French horn' number
 			MIDI.setVolume(1, 127);
-			MIDI.programChange(1, 0);
+			MIDI.programChange(0, 0);
 
 			// Set up the event handlers for all the buttons
 
