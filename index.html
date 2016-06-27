@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- jQuery -->
+	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<!-- Bootstrap -->
+	<!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
+
+    <!-- shims -->
+	<script src="./inc/shim/Base64.js" type="text/javascript"></script>
+	<script src="./inc/shim/Base64binary.js" type="text/javascript"></script>
+	<script src="./inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+	<!-- midi.js -->
+	<script src="./js/plugin/audioDetect.js" type="text/javascript"></script>
+	<script src="./js/plugin/gm.js" type="text/javascript"></script>
+	<script src="./js/plugin/loader.js" type="text/javascript"></script>
+	<script src="./js/plugin/plugin.audiotag.js" type="text/javascript"></script>
+	<script src="./js/plugin/plugin.webaudio.js" type="text/javascript"></script>
+	<script src="./js/plugin/plugin.webmidi.js" type="text/javascript"></script>
+	<!-- utils -->
+	<script src="./js/util/dom_request_xhr.js" type="text/javascript"></script>
+	<script src="./js/util/dom_request_script.js" type="text/javascript"></script>
+
+	<!-- ace editor -->
+	<script src="./js/editor/ace-noconflict/ace.js" type="text/javascript"></script>
+	<!-- my js file-->
+	<script src="./gen.js" type="text/javascript"></script>
+
+</head>
+
+<style type="text/css" media="screen">
+.black_key { height:80px; width:28px; background:black; position:absolute; top:20px }
+.white_key { height:150px; width:40px; background:white; position:absolute; top:20px }
+form {position:relative;}
+
+</style>
+
+<body>
+
+<nav id="top-menu" class="navbar navbar-default navbar-static-top">
+<div class="container-fluid">
+	<div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#"><img class="img-circle img-responsive" src="img/logo.png" style="width:50px;height:50px"></a>
+    </div>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Music Generator<span class="sr-only">(current)</span></a></li>
+            <li><a href="#">Demo</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li><a href="#">Action</a></li>
+                    <li><a href="#">Another action</a></li>
+                    <li><a href="#">Something else here</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#">Separated link</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#">One more separated link</a></li>
+                </ul>
+            </li>
+        </ul>
+            <!--
+            <form class="navbar-form navbar-left" role="search">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            -->
+        <ul class="nav navbar-nav navbar-right navbar-inverse">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help<span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li><a href="#">Action</a></li>
+                    <li><a href="#">Another action</a></li>
+                    <li><a href="#">Something else here</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#">Separated link</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#">One more separated link</a></li>
+                </ul>
+            </li>
+            <li><a href="about.pdf" target="_blank">About</a></li>
+
+        </ul>
+    </div><!-- /.navbar-collapse -->
+
+</div>
+</nav>
+<div class="container-fluid">
+
+<div class="panel" id="score_display">
+  <img class='img-responsive' src='./summertime.png'>
+</div>
+
+<div class="row">
+
+<div class="col-md-5" id='score_input'>
+  <button id='parse_score' class='btn btn-default'>Parse and Play</button>
+  <button id='stop' class='btn btn-default'>Stop</button>
+  <br>
+  <div id='score' style="width:400px; height:200px"></div>
+  <br>
+  <button id='gen' class='btn btn-default'> Generate</button>
+  <br>
+  <div id="schema" style="width:400px; height:200px"></div>
+</div>
+<div class="col-md-7" id="score_editor" style="width:500px; height:400px"></div>
+
+
+
+
+</div>
+<div id="footer">
+<br><br>
+</div>
+<nav id="bottom-menu" class="navbar navbar-default navbar-fixed-bottom">
+    <div class="container-fluid">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
+            <ul class="nav navbar-nav">
+                <li><a href="#">Source Code</a></li>
+                <li class="dropdown">
+                	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Chords<span class="caret"></span></a>
+                	<ul class="dropdown-menu" style="width:240px">
+                		<li id="mode_panel"></li>
+                		<li id="keyboard_controls">
+                    	<label for="amplitude">MIDI amplitude (0-127):</label>
+                        <input type="range" id="amplitude" min="0" max="127" value="100">
+                        <label for="lowest_pitch">MIDI lowest pitch (21-73):</label>
+                        <input type="range" id="lowest_pitch" min="21" max="73" value="60">
+                        </li>
+                	
+                	</ul>
+
+
+                </li>
+                <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Keyboard<span class="caret"></span></a>
+                <ul class="dropdown-menu" style="width:800px">
+                    <li><form id="keyboard_panel" style="height:200px"></form></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#">Separated link</a></li>
+                </ul>
+            </li>
+
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">Tutorial</a></li>
+            </ul>
+        </div> <!-- /.navbar-collapse -->
+
+    </div>
+</nav>
+
+<script src="./index.js" type="text/javascript"></script>
+<script>
+console.log('All JS loaded!')
+</script>
+
+</body>
+</html>
+
+
