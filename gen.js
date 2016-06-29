@@ -1,6 +1,6 @@
 var debugFlag = true;
 function log(){
-	if(debugFlag) console.log('debug:',...arguments);
+	if(debugFlag) console.log(...arguments);
 	return debugFlag;
 }
 var instrs = {
