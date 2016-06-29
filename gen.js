@@ -1,4 +1,8 @@
-
+var debugFlag = true;
+function log(){
+	if(debugFlag) console.log('debug:',...arguments);
+	return debugFlag;
+}
 instrs = {
 		'Piano': ['1 Acoustic Grand Piano', '2 Bright Acoustic Piano', '3 Electric Grand Piano', '4 Honky-tonk Piano', '5 Electric Piano 1', '6 Electric Piano 2', '7 Harpsichord', '8 Clavinet'],
 		'Chromatic Percussion': ['9 Celesta', '10 Glockenspiel', '11 Music Box', '12 Vibraphone', '13 Marimba', '14 Xylophone', '15 Tubular Bells', '16 Dulcimer'],
@@ -153,15 +157,18 @@ function handlePianoKeyRelease(evt) {
 
 
 var seqPlayer = {
-	channel:1,
+	channel:0,
 	enabled:false,
 	q:[],
+	midi: null,
+	raw_midi: "",
 	sample_q:[[490,60,127],[10,0],[490,62,127],[10,0],[490,64,127],[10,0]],
+
 	play:function(){
 		if(this.q.length <= 0){
 			return;
 		}
-		enabled = true;
+		this.enabled = true;
 		var q = this.q;
 		var cur = q.shift();
 		var next = q.length? q[0]: null;
@@ -176,11 +183,11 @@ var seqPlayer = {
 
         		}
         		if(next == null){
-        			enabled = false;
+        			seqPlayer.enabled = false;
         		}else{
         		    cur = next;
         		    q.shift();
-        		    next = (enabled && q.length>0)? q[0]:null;
+        		    next = (seqPlayer.enabled && q.length>0)? q[0]:null;
         		    console.log('next',next);
 
         		    loop();
@@ -195,17 +202,52 @@ var seqPlayer = {
 
 	},
 	pause:function(){
-		enabled = false;
+		this.enabled = false;
 
 	},
 	stop:function(){
-		enabled = false;
+		this.enabled = false;
 		this.q = [];
 
 	},
 	setQ:function(arr){
 		arr = arr==undefined? this.sample_q: arr;
 		this.q = arr.slice(0);
+	},
+	toMidi:function(src){
+		var q = src == undefined? this.q : this.parseQ(src);
+		if(q.length<=0) return false;
+
+		this.q = q;
+		var m = new simpMidi();
+		var delta = 0;
+		log('toMidi')
+		// one melody line
+		for(var i=0;i<q.length;++i){
+			if(q[i][1]<21){ // valid lower bound
+                delta += q[i][0];
+			}else{
+				m.addEvent(delta,'noteOn',0,[q[i][1],q[i][2]]);
+				m.addEvent(q[i][0], 'noteOff', 0, [q[i][1],0]);
+				delta = 0;
+			}
+		}
+		if(src != undefined){
+			m.setTimeSignature(...src.time_sig);
+			m.setKeySignature(src.key_sig, 'maj');
+			m.setTempo(src.tempo);
+		}
+		m.finish();
+
+		this.midi = m;
+		this.raw_midi = MidiWriter(m);
+
+	},
+	saveMidi:function(){
+		if(this.raw_midi.length<1) return;
+		var bf = new Uint8Array(this.raw_midi.split("").map(function(e){return e.charCodeAt(0);}));
+		saveAs(new File([bf], 'sample.mid', {type:"audio/mid"}));
+		log('midi saved');
 	},
 	parseQ:function(score){
 		var ctrlTicks = Math.floor(60*1000.0/score.tempo/score.ctrl_per_beat);
@@ -223,7 +265,7 @@ var seqPlayer = {
 						case '+':
 						    ref += 12;
 						    break;
-						case　'-':
+						case '-':
 						    ref -= 12;
 						    break;
 						default:
@@ -236,12 +278,12 @@ var seqPlayer = {
 					var num = parseInt(terms[0]);
 					var pitch = num<=0 ? 0: ref+white_key_num[num-1];
 					var dur = ctrlTicks * (terms.length>=2? parseInt(terms[1]):1);
-					console.log(pitch,'dur',dur);
+					//console.log(pitch,'dur',dur);
 					if(tied){
 						// TODO: check pitch
-						console.log('before tie', res[res.length-1]);
+						log('before tie', res[res.length-1]);
 						res[res.length-1][0] += dur;
-						console.log('after tie', res[res.length-1]);
+						log('after tie', res[res.length-1]);
 						tied = false;
 						dur = 0;
 					}
@@ -285,8 +327,8 @@ var seqPlayer = {
 	}
 }
 
-var score_summer = {
-	tempo: 128,
+const score_summer = {
+	tempo: 120,
 	time_sig: [4,4],
 	key_sig: 0, // C key
 	key_ref:60, // middle C
@@ -297,6 +339,8 @@ var score_summer = {
 		harmony:""
 	}
 }
+
+var cur_score = score_summer;
 
 var schema_summer = {
 	structure:"c,4;A,32;B,32;A,32;C,28;c,4",
@@ -333,6 +377,34 @@ function testScale(){
 	seqPlayer.setQ(arr);
 	seqPlayer.play();
 }
+
+function setMidi(m, autostart){
+	MIDI.Player.loadFile('base64,'+btoa(MidiWriter(m)));
+	MIDI.Player.loadMidiFile();
+	if(autostart) MIDI.Player.start();
+}
+
+function testMidi(){
+	MIDI.Player.loadFile('./mid/rachmaninov3.mid', function(){
+		//MIDI.Player.start();
+	});
+	var m = new simpMidi();
+	for(var i=0;i<5;++i){
+		m.addEvent(0,'noteOn', 0, [60+i*2, 100]);
+	    m.addEvent(1000,'noteOff', 0, [60+i*2, 0]);
+
+	}
+	
+	m.finish();
+	setMidi(m,true);
+
+	return m;
+}
+
+
+    
+
+
 
 
 

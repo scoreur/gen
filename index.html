@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
 	<!-- jQuery -->
-	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="http://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
 	<!-- Bootstrap -->
 	<!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-
     <!-- Optional theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
-
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
 
 
     <!-- shims -->
-	<script src="./inc/shim/Base64.js" type="text/javascript"></script>
-	<script src="./inc/shim/Base64binary.js" type="text/javascript"></script>
-	<script src="./inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+	<script src="./js/inc/shim/Base64.js" type="text/javascript"></script>
+	<script src="./js/inc/shim/Base64binary.js" type="text/javascript"></script>
+	<script src="./js/inc/shim/WebAudioAPI.js" type="text/javascript"></script>
     <!-- jasmid -->
-    <script src="./inc/jasmid/stream.js" type="text/javascript"></script>
-    <script src="./inc/jasmid/midifile.js" type="text/javascript"></script>
-    <script src="./inc/jasmid/replayer.js" type="text/javascript"></script>
+    <script src="./js/inc/jasmid/stream.js" type="text/javascript"></script>
+    <script src="./js/inc/jasmid/midifile.js" type="text/javascript"></script>
+    <script src="./js/inc/jasmid/replayer.js" type="text/javascript"></script>
 
 	<!-- midi.js -->
 	<script src="./js/plugin/audioDetect.js" type="text/javascript"></script>
@@ -35,12 +35,10 @@
 	<!-- utils -->
 	<script src="./js/util/dom_request_xhr.js" type="text/javascript"></script>
 	<script src="./js/util/dom_request_script.js" type="text/javascript"></script>
+    <script src="./js/util/FileSaver.js" type="text/javascript"></script>
 
 	<!-- ace editor -->
 	<script src="./js/editor/ace-noconflict/ace.js" type="text/javascript"></script>
-	<!-- my js file-->
-	<script src="./gen.js" type="text/javascript"></script>
-
 </head>
 
 <style type="text/css" media="screen">
@@ -117,8 +115,10 @@ form {position:relative;}
 <div class="row">
 
 <div class="col-md-5" id='score_input'>
-  <button id='parse_score' class='btn btn-default'>Parse and Play</button>
+  <button id='parse_score' class='btn btn-default'>Parse</button>
+  <button id='play' class='btn btn-default'>Play</button>
   <button id='stop' class='btn btn-default'>Stop</button>
+  <button id='save_midi' class='btn btn-default'> Save </button>
   <br>
   <div id='score' style="width:400px; height:200px"></div>
   <br>
@@ -175,14 +175,17 @@ form {position:relative;}
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="#">Tutorial</a></li>
+                <li><button class='btn btn-default' id='win_btn'>New Window</li>
             </ul>
         </div> <!-- /.navbar-collapse -->
 
     </div>
 </nav>
-
+<!-- my js file-->
+<script src="./gen.js" type="text/javascript"></script>
 <script src="./index.js" type="text/javascript"></script>
 <script>
+if(window.module) module = window.module;
 console.log('All JS loaded!')
 </script>
 

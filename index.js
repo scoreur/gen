@@ -22,46 +22,45 @@ $( document ).ready( function() {
 		soundfontUrl: "./soundfont/",
 		instrument: ["trumpet","acoustic_grand_piano"],
 		onprogress: function(state, progress) {
-			console.log(state, progress);
+			log(state, progress);
 		},
 		onsuccess: function() {
-
 			// At this point the MIDI system is ready to be used
 			MIDI.setVolume(0, 127); // Set the general volume level			
-			MIDI.programChange(1, 56); // Use the General MIDI 'French horn' number
-			MIDI.setVolume(1, 127);
 			MIDI.programChange(0, 0);
-
-			// Set up the event handlers for all the buttons
-
-			$("button.kb").on("mousedown", handlePianoKeyPress);
-			$("button.kb").on("mouseout", handlePianoKeyRelease);
-			$("button.kb").on("mouseup", handlePianoKeyRelease);
 		}
 	});
+	// Set up the event handlers for all the buttons
+	$("button.kb").on("mousedown", handlePianoKeyPress);
+	$("button.kb").on("mouseout", handlePianoKeyRelease);
+	$("button.kb").on("mouseup", handlePianoKeyRelease);
 
 	ed1.setValue(JSON.stringify(score_summer));
 	ed2.setValue(JSON.stringify(schema_summer));
 	$('button#parse_score').on('click',function(){
-
-
-		
-		var q = JSON.parse(ed1.getValue())
-		q.measures.mel = editor.getValue();
-		ed1.setValue(JSON.stringify(q));
-		seqPlayer.setQ(seqPlayer.parseQ(q));
+		cur_score = JSON.parse(ed1.getValue())
+		cur_score.measures.mel = editor.getValue();
+		ed1.setValue(JSON.stringify(cur_score));
+		seqPlayer.setQ(seqPlayer.parseQ(cur_score));
+	});
+	$('button#play').on('click',function(){
 		seqPlayer.play();
 	});
-
 	$('button#stop').on('click',function(){
-		seqPlayer.stop();
+		seqPlayer.pause();
 	});
+	$('button#save_midi').on('click', function(){
+		seqPlayer.toMidi(cur_score);
+		seqPlayer.saveMidi();
+	})
 	$('button#gen').on('click',function(){
 
 	});
 
 	editor.setValue(score_summer.measures.mel);
 
-	
-
 });
+
+
+    // You can also require other files to run in this process
+ if(typeof require != 'undefined') require('./renderer.js');

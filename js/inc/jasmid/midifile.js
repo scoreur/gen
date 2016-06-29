@@ -325,17 +325,46 @@ function simpMidi(){
 		'trackCount': 2,
 		'ticksPerBeat': 500
 	};
+	this.tsig = simpEvent(0, 'timeSignature', 4,4);
+    this.ksig = simpEvent(0, 'keySignature', 0, 'maj');
+    this.tempo = simpEvent(0, 'setTempo', 120);
+    this.instr = simpEvent(0, 'programChange', 0, 0);
 	var tracks = [[
-	    simpEvent(0, 'timeSignature', 4,4),
-	    simpEvent(0, 'keySignature', 0, 'maj'),
-	    simpEvent(0, 'setTempo', 120)
+	    this.tsig,
+	    this.ksig,
+	    this.tempo
 	],[
-	    simpEvent(0, 'programChange', 0, 0)]];
+	    this.instr]];
 	this.tracks = tracks;
 
 }
-simpMidi.prototype.addEvent = function(e){
-	this.tracks[1].push(e);
+
+simpMidi.prototype.setTimeSignature = function(n,d){
+	this.tsig.numerator = n;
+	this.tsig.denominator = d;
+}
+simpMidi.prototype.setKeySignature = function(k,m){
+	this.ksig.key = k;
+	this.ksig.scale = {"maj":0, "min":1}[m];
+}
+simpMidi.prototype.setTempo = function(t){
+	this.tempo.microsecondsPerBeat = Math.floor(60*1000000/t);
+}
+simpMidi.prototype.addEvent = function(){
+	if(this.tracks.length == 2){
+		this.tracks[1].push(simpEvent(...arguments));
+	}else{
+		this.tracks[e.shift()].push(simpEvent(...arguments));
+	}
+}
+simpMidi.prototype.finish = function(){
+	for(var i=0;i<this.tracks.length;++i){
+		this.tracks[i].push(simpEvent(0,'endOfTrack'));
+	}
+}
+simpMidi.prototype.addTrack = function(){
+	this.tracks.push([]);
+	return this.tracks.length;
 }
 
 function MidiWriter(data){
