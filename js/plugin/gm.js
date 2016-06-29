@@ -178,17 +178,30 @@
 	--------------------------------------------------- */
 	MIDI.keyToNote = {}; // C8  == 108
 	MIDI.noteToKey = {}; // 108 ==  C8
+	MIDI.key_sig = {}; // key signature
+	MIDI.key_sig_rev = {};
 
 	(function() {
 		var A0 = 0x15; // first note
 		var C8 = 0x6C; // last note
 		var number2key = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+		var number2key2 = ['B#', 'C#', 'D', 'D#', 'Fb', 'E#', 'F#', 'G', 'G#', 'A', 'A#', 'Cb'];
 		for (var n = A0; n <= C8; n++) {
 			var octave = (n - 12) / 12 >> 0;
 			var name = number2key[n % 12] + octave;
+			var name2 = number2key2[n % 12 ] + octave;
 			MIDI.keyToNote[name] = n;
+			MIDI.keyToNote[name2] = n;
 			MIDI.noteToKey[n] = name;
 		}
+		for (var i=0;i<12;++i){
+			var j = (i*7)%12;
+			var l = (i+6)%12 - 6;
+			MIDI.key_sig[number2key[j]] = l;
+			MIDI.key_sig_rev[l] = number2key[j];
+		}
+		MIDI.key_sig['F#'] = 6;
+		MIDI.key_sig_rev[6] = 'F#';
 	})();
 	
 

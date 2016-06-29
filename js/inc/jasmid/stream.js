@@ -2,10 +2,10 @@
 // TODO: use typed array
 function Stream(str) {
 	var position = 0;
-	var instr = "";
+	var instr = str==undefined? "": str;
 	
 	function read(length) {
-		var result = str.substr(position, length);
+		var result = instr.substr(position, length);
 		position += length;
 		return result;
 	}
@@ -17,10 +17,10 @@ function Stream(str) {
 	/* read a big-endian 32-bit integer */
 	function readInt32() {
 		var result = (
-			(str.charCodeAt(position) << 24)
-			+ (str.charCodeAt(position + 1) << 16)
-			+ (str.charCodeAt(position + 2) << 8)
-			+ str.charCodeAt(position + 3));
+			(instr.charCodeAt(position) << 24)
+			+ (instr.charCodeAt(position + 1) << 16)
+			+ (instr.charCodeAt(position + 2) << 8)
+			+ instr.charCodeAt(position + 3));
 		position += 4;
 		return result;
 	}
@@ -32,8 +32,8 @@ function Stream(str) {
 	/* read a big-endian 16-bit integer */
 	function readInt16() {
 		var result = (
-			(str.charCodeAt(position) << 8)
-			+ str.charCodeAt(position + 1));
+			(instr.charCodeAt(position) << 8)
+			+ instr.charCodeAt(position + 1));
 		position += 2;
 		return result;
 	}
@@ -44,7 +44,7 @@ function Stream(str) {
 	
 	/* read an 8-bit integer */
 	function readInt8(signed) {
-		var result = str.charCodeAt(position);
+		var result = instr.charCodeAt(position);
 		if (signed && result > 127) result -= 256;
 		position += 1;
 		return result;
@@ -55,7 +55,7 @@ function Stream(str) {
 	}
 	
 	function eof() {
-		return position >= str.length;
+		return position >= instr.length;
 	}
 	
 	/* read a MIDI-style variable-length integer
@@ -88,11 +88,11 @@ function Stream(str) {
     	position = 0;
     	instr = "";
     }
-	function return_str(){
-		return str;
-	}
-	function return_instr(){
+	function readAll(){
 		return instr;
+	}
+	function pos(){
+		return position;
 	}
 
 	if(typeof str == "string"){
@@ -103,8 +103,9 @@ function Stream(str) {
 			'readInt16': readInt16,
 			'readInt8': readInt8,
 			'readVarInt': readVarInt,
-			'readAll': return_str,
-			'reset': reset
+			'readAll': readAll,
+			'reset': reset,
+			'pos': pos
 	    }
 
 	}else{
@@ -114,8 +115,9 @@ function Stream(str) {
 			'writeInt16': writeInt16,
 			'writeInt8': writeInt8,
 			'writeVarInt': writeVarInt,
-			'readAll': return_instr,
-			'reset': reset
+			'readAll': readAll,
+			'reset': reset,
+			'pos': pos
 		}
 
 	}

@@ -389,3 +389,33 @@ var stopAudio = function() {
 };
 
 })();
+
+
+var TEST = TEST || {};
+function setMidi(m, autostart){
+	var f = typeof m=='object'? MidiWriter(m): m;
+	MIDI.Player.loadFile('base64,'+btoa(f),function(){
+		if(autostart) MIDI.Player.start();
+		if(f==MIDI.Player.currentData){
+			console.log('PASS: loadFile');
+		}
+	});
+	
+}
+
+
+TEST.testMidiPlayer = function (){
+	var m = new simpMidi();
+	for(var i=0;i<10;++i){
+		m.addEvent(0,'noteOn', 0, [60+i*2, 100]);
+	    m.addEvent(500,'noteOff', 0, [60+i*2, 0]);
+
+	}
+	m.finish();
+	MIDI.Player.loadFile('./mid/rachmaninov3.mid', function(){
+		TEST.testMidi(MIDI.Player.currentData);
+		//MIDI.Player.start();
+		setMidi(m,true);
+	});
+	return m;
+}

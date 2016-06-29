@@ -5,6 +5,36 @@ class to parse the .mid file format
 
 var MIDI = MIDI || {};
 
+MIDI.eventCode = {
+	'sequenceNumber': 0x00,
+	'text': 0x01,
+	'copyrightNotice': 0x02,
+	'trackName': 0x03,
+	'instrumentName': 0x04,
+	'lyrics': 0x05,
+	'marker': 0x06,
+	'cuePoint': 0x07,
+	'midiChannelPrefix': 0x20,
+	'endOfTrack': 0x2f,
+	'setTempo': 0x51,
+	'smpteOffset': 0x54,
+	'timeSignature': 0x58,
+	'keySignature': 0x59,
+	'sequencerSpecific': 0x7f,
+	'unknown': 0xff,
+	'meta': 0xff,
+	'sysEx': 0xf0,
+	'dividedSysEx': 0xf7,
+
+	'noteOff': 0x08,
+	'noteOn': 0x09,
+	'noteAftertouch': 0x0a,
+	'controller': 0x0b,
+	'programChange': 0x0c,
+	'channelAftertouch': 0x0d,
+	'pitchBend': 0x0e,
+}
+
 function MidiFile(data) {
 	function readChunk(stream) {
 		var id = stream.read(4);
@@ -248,124 +278,7 @@ function MidiFile(data) {
 	}
 }
 
-MIDI.eventCode = {
-	'sequenceNumber': 0x00,
-	'text': 0x01,
-	'copyrightNotice': 0x02,
-	'trackName': 0x03,
-	'instrumentName': 0x04,
-	'lyrics': 0x05,
-	'marker': 0x06,
-	'cuePoint': 0x07,
-	'midiChannelPrefix': 0x20,
-	'endOfTrack': 0x2f,
-	'setTempo': 0x51,
-	'smpteOffset': 0x54,
-	'timeSignature': 0x58,
-	'keySignature': 0x59,
-	'sequencerSpecific': 0x7f,
-	'unknown': 0xff,
-	'meta': 0xff,
-	'sysEx': 0xf0,
-	'dividedSysEx': 0xf7,
 
-	'noteOff': 0x08,
-	'noteOn': 0x09,
-	'noteAftertouch': 0x0a,
-	'controller': 0x0b,
-	'programChange': 0x0c,
-	'channelAftertouch': 0x0d,
-	'pitchBend': 0x0e,
-
-}
-function simpEvent(deltaTime, subtype, param0, param1){
-	var event = {};
-	event.deltaTime = deltaTime;
-	event.subtype = subtype;
-	switch(subtype){
-		case 'timeSignature':
-		    event.type = 'meta';
-		    event.numerator = param0;
-	        event.denominator = param1;
-	        event.metronome = 24;
-	        event.thirtyseconds = 8;
-	        break;
-	    case 'keySignature':
-	        event.type = 'meta';
-	        event.key = param0;
-	        event.scale = {"maj":0, "min":1}[param1]
-            break;
-    	case 'setTempo':
-    	    event.type = 'meta';
-    	    event.microsecondsPerBeat = Math.floor(60*1000000/param0);
-    	    break;
-    	case 'endOfTrack':
-    	    event.type = 'meta';
-    	    break;
-
-    	case 'noteOff': case 'noteOn':
-            event.type = 'channel';
-            event.channel = param0;
-    		event.noteNumber = param1[0];
-    	    event.velocity = param1[1];
-    	    break;
-    	case 'programChange':
-    	    event.type = 'channel';
-    	    event.channel = param0;
-    	    event.programNumber = param1;
-    	    break;
-
-	}
-	return event;
-}
-
-function simpMidi(){
-	this.header = {
-		'formatType': 1,
-		'trackCount': 2,
-		'ticksPerBeat': 500
-	};
-	this.tsig = simpEvent(0, 'timeSignature', 4,4);
-    this.ksig = simpEvent(0, 'keySignature', 0, 'maj');
-    this.tempo = simpEvent(0, 'setTempo', 120);
-    this.instr = simpEvent(0, 'programChange', 0, 0);
-	var tracks = [[
-	    this.tsig,
-	    this.ksig,
-	    this.tempo
-	],[
-	    this.instr]];
-	this.tracks = tracks;
-
-}
-
-simpMidi.prototype.setTimeSignature = function(n,d){
-	this.tsig.numerator = n;
-	this.tsig.denominator = d;
-}
-simpMidi.prototype.setKeySignature = function(k,m){
-	this.ksig.key = k;
-	this.ksig.scale = {"maj":0, "min":1}[m];
-}
-simpMidi.prototype.setTempo = function(t){
-	this.tempo.microsecondsPerBeat = Math.floor(60*1000000/t);
-}
-simpMidi.prototype.addEvent = function(){
-	if(this.tracks.length == 2){
-		this.tracks[1].push(simpEvent(...arguments));
-	}else{
-		this.tracks[e.shift()].push(simpEvent(...arguments));
-	}
-}
-simpMidi.prototype.finish = function(){
-	for(var i=0;i<this.tracks.length;++i){
-		this.tracks[i].push(simpEvent(0,'endOfTrack'));
-	}
-}
-simpMidi.prototype.addTrack = function(){
-	this.tracks.push([]);
-	return this.tracks.length;
-}
 
 function MidiWriter(data){
 
@@ -416,7 +329,7 @@ function MidiWriter(data){
 	                break;
 	            case 'timeSignature':
 	                content.writeInt8(event.numerator);
-	                content.writeInt8(Math.floor(Math.log2(event.denominator)));
+	                content.writeInt8(Math.log2(event.denominator) >> 0);
 	                content.writeInt8(event.metronome);
 	                content.writeInt8(event.thirtyseconds);
 	                break;
@@ -501,4 +414,117 @@ function MidiWriter(data){
 	}
 
 	return write(data);
+}
+
+
+
+function simpEvent(deltaTime, subtype, param0, param1){
+	var event = {};
+	event.deltaTime = deltaTime;
+	event.subtype = subtype;
+	switch(subtype){
+		case 'timeSignature':
+		    event.type = 'meta';
+		    event.numerator = param0;
+	        event.denominator = param1;
+	        event.metronome = 24;
+	        event.thirtyseconds = 8;
+	        break;
+	    case 'keySignature':
+	        event.type = 'meta';
+	        event.key = param0;
+	        event.scale = {"maj":0, "min":1}[param1]
+            break;
+    	case 'setTempo':
+    	    event.type = 'meta';
+    	    event.microsecondsPerBeat = 60000000/param0 >> 0;
+    	    break;
+    	case 'endOfTrack':
+    	    event.type = 'meta';
+    	    break;
+
+    	case 'noteOff': case 'noteOn':
+            event.type = 'channel';
+            event.channel = param0;
+    		event.noteNumber = param1[0];
+    	    event.velocity = param1[1];
+    	    break;
+    	case 'programChange':
+    	    event.type = 'channel';
+    	    event.channel = param0;
+    	    event.programNumber = param1;
+    	    break;
+
+	}
+	return event;
+}
+
+function simpMidi(){
+	this.header = {
+		'formatType': 1,
+		'trackCount': 2,
+		'ticksPerBeat': 500
+	};
+	this.tsig = simpEvent(0, 'timeSignature', 4,4);
+    this.ksig = simpEvent(0, 'keySignature', 0, 'maj');
+    this.tempo = simpEvent(0, 'setTempo', 120);
+    this.instr = simpEvent(0, 'programChange', 0, 0);
+	var tracks = [[
+	    this.tsig,
+	    this.ksig,
+	    this.tempo
+	],[
+	    this.instr]];
+	this.tracks = tracks;
+
+}
+
+simpMidi.prototype.setTimeSignature = function(n,d){
+	this.tsig.numerator = n;
+	this.tsig.denominator = d;
+}
+simpMidi.prototype.setKeySignature = function(k,m){
+	this.ksig.key = k;
+	this.ksig.scale = {"maj":0, "min":1}[m];
+}
+simpMidi.prototype.setTempo = function(t){
+	this.tempo.microsecondsPerBeat = 60000000/t >> 0;
+}
+simpMidi.prototype.addEvent = function(){
+	if(this.tracks.length == 2){
+		this.tracks[1].push(simpEvent(...arguments));
+	}else{
+		this.tracks[e.shift()].push(simpEvent(...arguments));
+	}
+}
+simpMidi.prototype.finish = function(){
+	for(var i=0;i<this.tracks.length;++i){
+		this.tracks[i].push(simpEvent(0,'endOfTrack'));
+	}
+}
+simpMidi.prototype.addTrack = function(){
+	this.tracks.push([]);
+	return this.tracks.length;
+}
+
+var TEST = TEST || {};
+
+TEST.testMidi = function(m){
+	if(m==undefined) return false;
+	var m1 = typeof m == 'string'? MidiFile(m): m;
+	var f1 = MidiWriter(m1);
+	var m2 = MidiFile(f1);
+	var f2 = MidiWriter(m2);
+	var m3 = MidiFile(f2);
+	if(f1 == f2){
+		console.log('PASS: MidiWriter',JSON.stringify(m2)==JSON.stringify(m3));
+	}else{
+		var diff = 0;
+		while(true){
+			if(f1.charCodeAt(diff) != f2.charCodeAt(diff)) break;
+			diff++;
+		}
+		console.log('FAIL: MidiWriter', diff);
+	}
+
 }

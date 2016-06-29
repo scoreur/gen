@@ -3,7 +3,7 @@ function log(){
 	if(debugFlag) console.log('debug:',...arguments);
 	return debugFlag;
 }
-instrs = {
+var instrs = {
 		'Piano': ['1 Acoustic Grand Piano', '2 Bright Acoustic Piano', '3 Electric Grand Piano', '4 Honky-tonk Piano', '5 Electric Piano 1', '6 Electric Piano 2', '7 Harpsichord', '8 Clavinet'],
 		'Chromatic Percussion': ['9 Celesta', '10 Glockenspiel', '11 Music Box', '12 Vibraphone', '13 Marimba', '14 Xylophone', '15 Tubular Bells', '16 Dulcimer'],
 		'Organ': ['17 Drawbar Organ', '18 Percussive Organ', '19 Rock Organ', '20 Church Organ', '21 Reed Organ', '22 Accordion', '23 Harmonica', '24 Tango Accordion'],
@@ -25,20 +25,53 @@ instrs = {
 
 var white_key_num = [0,2,4,5,7,9,11];
 var black_key_num = [1,3,6,8,10];
-var black_key_offset = [0,1,3,4,5];
 var chord_num = {
 	"maj":[0,4,7],
 	"min":[0,3,7],
 	"dim":[0,3,6],
 	"aug":[0,4,8],
-	"maj6":[0,4,7,9],
-	"min6":[0,3,7,9],
 	"dom7":[0,4,7,10],
 	"maj7":[0,4,7,11],
 	"min7":[0,3,7,10],
 	"aug7":[0,4,8,10],
 	"dim7":[0,3,6,9],
 }
+
+var chords_inv = (function(){
+	function inverted(arr,n){
+		var n = typeof n=='undefined'? 1: n%arr.length;
+		if(n<0){
+			n += arr.length;
+		}
+		var ret = new Array(arr.length);
+		for(var i=0;i<arr.length;++i){
+			ret[i] = (arr[(n+i)%arr.length]-arr[n]+12) % 12;
+		}
+	    return ret;
+    }
+    var res = {};
+    for(var c in chord_num){
+    	var ci = c+'';
+    	for(var i=0;i<chord_num[c].length;++i){
+    		res[ci] = inverted(chord_num[c],i);
+    		ci += 'i';
+    	}
+    }
+    return res;
+})();
+
+
+var scales = (function(){
+	var kn = 'CDEFGAB'.split('');
+	var res = {0:{},1:{},'maj':{},'min':{}};
+	for(var i=0;i<white_key_num.length;++i){
+		res[0][kn[i]] = res['maj'][white_key_num[i]] = i+1;
+		res[1][kn[i]] = res['min'][white_key_num[i]] = (i+2)%7 + 1;
+	}
+	return res;
+})();
+
+
 
 var keyrange = 23;
 var pressed = [];
@@ -57,7 +90,8 @@ var chord_name = {
 }
 
 function make_keyboard(n_octaves, x0, ww, bw){
-    res = '';
+	var black_key_offset = [0,1,3,4,5];
+    var res = '';
 	for(var i=0;i<n_octaves;++i){
 		for(j=0;j<7;++j){
 			res += '<button type="button" class="white_key kb" data-piano-key-number="'+(12*i+white_key_num[j])+'" style="left:';
@@ -78,7 +112,7 @@ function make_keyboard(n_octaves, x0, ww, bw){
 }
 
 function make_modeboard(keys){
-	res = '<input type="radio" name="musicMode" value="single" checked>Single note<br>\n';
+	var res = '<input type="radio" name="musicMode" value="single" checked>Single note<br>\n';
 	for(var i in keys){
 		var j = chord_name[keys[i]]; 
 		if(j != undefined){
@@ -107,8 +141,6 @@ function pressing(){
 }
 
 function handlePianoKeyPress(evt) {
-	// Show a simple message in the console
-    console.log("Key press event!");
 
 	lowest_pitch = parseInt($("input#lowest_pitch").val());
 	if(lowest_pitch< 21){
@@ -184,6 +216,7 @@ var seqPlayer = {
         		}
         		if(next == null){
         			seqPlayer.enabled = false;
+        			seqPlayer.onend();
         		}else{
         		    cur = next;
         		    q.shift();
@@ -210,6 +243,7 @@ var seqPlayer = {
 		this.q = [];
 
 	},
+	onend:function(){},
 	setQ:function(arr){
 		arr = arr==undefined? this.sample_q: arr;
 		this.q = arr.slice(0);
@@ -251,14 +285,13 @@ var seqPlayer = {
 	},
 	parseQ:function(score){
 		var ctrlTicks = Math.floor(60*1000.0/score.tempo/score.ctrl_per_beat);
-		var measures = score.measures.mel.split(/\s*\/\s*/);
+		var measures = score.melody;
 
 		var res = [];
 		var tied = false;
 		var ref = score.key_ref;
-		while(measures.length>0){
-			var notes = measures[0].split(/\s+/);
-			measures.shift();
+		for(var k=0;k<measures.length;++k){
+			var notes = measures[k].trim().split(/\s+/);
 			for(var i=0;i<notes.length;++i){
 				if(notes[i][0]==':'){
 					switch(notes[i][1]){
@@ -269,6 +302,7 @@ var seqPlayer = {
 						    ref -= 12;
 						    break;
 						default:
+
 						    ref = score.key_ref;
 						    ctrlTicks = Math.floor(60*1000.0/score.tempo/score.ctrl_per_beat);
 						    break;
@@ -276,6 +310,7 @@ var seqPlayer = {
 				}else{
 					var terms = notes[i].split(',');
 					var num = parseInt(terms[0]);
+					if(num == NaN) continue;
 					var pitch = num<=0 ? 0: ref+white_key_num[num-1];
 					var dur = ctrlTicks * (terms.length>=2? parseInt(terms[1]):1);
 					//console.log(pitch,'dur',dur);
@@ -334,10 +369,9 @@ const score_summer = {
 	key_ref:60, // middle C
 	ctrl_per_beat: 2,
 	incomplete_measure: true,
-	measures:{
-		mel:":+ 3,2 1,2/3,8,^/\n3,2 2 1 2 3 1,2/\n:- 6,4 3,4,^/3,4 :+ 3,2 1,2/2 2,7,^/\n2,2 1 6,1,- 1 6,1,- 1,2/:- 7,8,^/\n7,4 0 :+ 3,2 1/3 3,2 3,5,^/\n3,2 2 1 2 3 1,2/\n:- 6,4 3,4,^/3,6 3,2/5,2 3 5 6,2 :+ 1,2/\n3 2,3 1,4/:- 6,8,^/\n6,4 :+ 3,2 1,2",
-		harmony:""
-	}
+	melody: ':+ 3,2 1,2/3,8,^/3,2 2 1 2 3 1,2/:- 6,4 3,4,^/3,4 :+ 3,2 1,2/2 2,7,^/2,2 1 6,1,- 1 6,1,- 1,2/:- 7,8,^/7,4 0 :+ 3,2 1/3 3,2 3,5,^/3,2 2 1 2 3 1,2/:- 6,4 3,4,^/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6,8,^/6,4 :+ 3,2 1,2'.split('/'),
+	harmony:"",
+	
 }
 
 var cur_score = score_summer;
@@ -346,9 +380,9 @@ var schema_summer = {
 	structure:"c,4;A,32;B,32;A,32;C,28;c,4",
 	mode:'min',
 	funcs:{
-		'A':"1,8/4,8/1,4 2,4/1,8",
-		'B':"4,8/6,8/2,4 5,4/5,8",
-		'C':"3,4 1,4/2,4 5,4/1,4 2,4/2,4",
+		'A':"1,8/4,8/1,4 2,4/1,8".split('/'),
+		'B':"4,8/6,8/2,4 5,4/5,8".split('/'),
+		'C':"3,4 1,4/2,4 5,4/1,4 2,4/2,4".split('/'),
 		'c':"5,4"
 	},
 
@@ -360,6 +394,12 @@ var schema_summer = {
 	}
 }
 
+function rndChoice(choices, weights){
+	var s = weights.reduce(function(a,b){return a+b;});
+	var p = weights.map(function(e){return e/s;});
+	
+}
+
 function score_gen(schema){
 
 	var res = {};
@@ -368,7 +408,10 @@ function score_gen(schema){
 
 }
 
-function testScale(){
+
+var TEST = TEST || {};
+
+TEST.testSeqPlayer = function (){
 	//var q = seqPlayer.parseQ(score_summer);
 	//console.log(q);
 	var arr = white_key_num.map(function(v){
@@ -378,28 +421,16 @@ function testScale(){
 	seqPlayer.play();
 }
 
-function setMidi(m, autostart){
-	MIDI.Player.loadFile('base64,'+btoa(MidiWriter(m)));
-	MIDI.Player.loadMidiFile();
-	if(autostart) MIDI.Player.start();
+
+var Generator = function(schema){
+	this.schema = schema;
+
+}
+Generator.prototype.generate = function(n){
+
 }
 
-function testMidi(){
-	MIDI.Player.loadFile('./mid/rachmaninov3.mid', function(){
-		//MIDI.Player.start();
-	});
-	var m = new simpMidi();
-	for(var i=0;i<5;++i){
-		m.addEvent(0,'noteOn', 0, [60+i*2, 100]);
-	    m.addEvent(1000,'noteOff', 0, [60+i*2, 0]);
 
-	}
-	
-	m.finish();
-	setMidi(m,true);
-
-	return m;
-}
 
 
     
