@@ -35,6 +35,10 @@
     <script src="./js/util/FileSaver.js" type="text/javascript"></script>
 	<!-- ace editor -->
 	<script src="./js/editor/ace-noconflict/ace.js" type="text/javascript"></script>
+    <!-- fabric canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.6.2/fabric.min.js" type="text/javascript"></script>
+    <!-- pdf js -->
+    <script src="./js/editor/pdf.js" type="text/javascript"></script>
 
 
     <style type="text/css" media="screen">
@@ -64,11 +68,24 @@
             <li class="active"><a href="#">Music Generator<span class="sr-only">(current)</span></a></li>
             <li><a href="#">Demo</a></li>
             <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File<span class="caret"></span></a>
                 <ul class="dropdown-menu">
-                    <li><a href="#">Action</a></li>
+                    <li>
+                        <a id="open_midi">Open MIDI</a>
+                        <div class="hidden"><input id="midi_file_input" type="file" multiple></input></div>
+                    </li>
+                    <li><a id="save_midi">Save MIDI</a></li>
+                    <li>
+                        <a id="import">Import</a>
+                        <div class="hidden"><input id="json_file_input" type="file" multiple></input></div>
+                    </li>
+                    <li><a id="export">Export</a></li>
                     <li role="separator" class="divider"></li>
-                    <li><a href="#">Separated link</a></li>
+                    <li>
+                        <a id="open_img">Open Score Image</a>
+                        <div class="hidden"><input id="img_file_input" type="file" multiple></input></div>
+                    </li>
+                    <li><a data-toggle="collapse" data-target="#viewer">PDF Viewer</a></li>
                 </ul>
             </li>
         </ul>
@@ -98,32 +115,66 @@
 </nav>
 <div class="container-fluid">
 
-<div class="panel" id="score_display">
-  <img class='img-responsive' src='img/summertime.png'>
+<div class="row" id="score_display">
+    <div class="col-md-6">
+        <canvas id="midi_score"></canvas>
+    </div>
+    <div class="col-md-6">
+        <img id="score_img" class='img-responsive' src='img/summertime.png'>
+        <div id="viewer" class="collapse">
+        <canvas id="the-canvas" style="border:1px solid black" height="633" width="489"></canvas>
+        <br>
+        <div id="btn_gp3">
+            <button class="btn btn-default" id="prev">Previous</button>
+            <button class="btn btn-default" id="next">Next</button>
+            &nbsp; &nbsp;
+            <span>Page: <span id="page_num">1</span> / <span id="page_count">14</span></span>
+        </div>
+    </div>
+
+    </div>
+  
 </div>
 
 <div class="row">
-
-<div class="col-md-5" id='score_input'>
-    <div id="btn_gp1">
-        <button id='parse' class='btn btn-default'>Parse</button>
-        <button id='play' class='btn btn-default'>Play</button>
-        <button id='stop' class='btn btn-default'>Stop</button>
-        <button id='save_midi' class='btn btn-default'>Save</button>
+    <div class="col-md-6">
+        <label for="melody">Melody</label><br>
+        <div id="melody" style="width:500px; height:300px"></div>
     </div>
-  <br>
-  <div id='score' style="width:400px; height:200px"></div>
-  <br>
-  <button id='gen' class='btn btn-default'>Generate</button>
-  <br>
-  <div id="schema" style="width:400px; height:200px"></div>
+    <div class="col-md-6">
+        <label for="harmony" style="">Harmony</label><br>
+        <div id="harmony" style="width:500px; height:300px"></div>
+
+    </div>
 </div>
-<div class="col-md-7" id="score_editor" style="width:500px; height:400px"></div>
-
-
-
+<div class="row"><br></div>
+<div class="row">
+    <div class="col-md-6" id='score_input'>
+        <div id="btn_gp1">
+            <button id='parse' class='btn btn-default'>Parse</button>
+            <button id='play' class='btn btn-default'>Play</button>
+            <button id='stop' class='btn btn-default'>Stop</button>
+            <button id='start' class='btn btn-default'>Play (with harnony)</button>
+        </div>
+      <br>
+      <label for="score" style="">Score Object</label><br>
+      <div id="score" style="width:400px; height:200px"></div>
+</div>
+<div class="col-md-6" id='schema_input'>
+      <div id="btn_gp2">
+        <button id="gen" class="btn btn-default">Generate</button>
+        <button id="render" class="btn btn-default">Render</button>
+      </div>
+      <br>
+      <label for="schema" style="">Schema Object</label><br>
+      <div id="schema" style="width:400px; height:200px"></div>
+    </div>
+    
+</div>
 
 </div>
+
+
 <div id="footer">
 <br><br>
 </div>
@@ -139,16 +190,17 @@
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
             <ul class="nav navbar-nav">
-                <li><a href="#">Source Code</a></li>
+                <li><a href="https://github.com/apwan06/gen">Source Code</a></li>
                 <li class="dropdown">
                 	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Chords<span class="caret"></span></a>
                 	<ul class="dropdown-menu" style="width:240px">
-                		<li id="mode_panel"></li>
-                		<li id="keyboard_controls">
-                    	<label for="amplitude">MIDI amplitude (0-127):</label>
-                        <input type="range" id="amplitude" min="0" max="127" value="100">
-                        <label for="lowest_pitch">MIDI lowest pitch (21-73):</label>
-                        <input type="range" id="lowest_pitch" min="21" max="73" value="60">
+                		<li><a id="mode_panel"></a></li>
+                		<li><a id="keyboard_controls">
+                        	<label for="amplitude">amplitude(0-127):</label>
+                            <input class="form-control" type="range" id="amplitude" min="0" max="127" value="100">
+                            <label for="lowest_pitch">lowest pitch(21-73):</label>
+                            <input class="form-control" type="range" id="lowest_pitch" min="21" max="73" value="60">
+                            </a>
                         </li>
                 	
                 	</ul>
@@ -166,9 +218,9 @@
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Console<span class="caret"></span></a>
                     <ul class="dropdown-menu" style="width:320px">
-                        <li><label id="console_result"></label></li>
-                        <li><input id="console_panel" style="width:300px; height:100px"></li>
-                        <li><button id="console_eval" class="btn btn-default">Run</button></li>
+                        <li><label>Result:</label><a id="console_result"></a></li>
+                        <li><a><input type="text" class="form-control" id="console_panel" style="width:280px; height:50px"></a></li>
+                        <li><a id="console_eval">Run</a></li>
                         
                     </ul>
                 </li>
@@ -176,17 +228,31 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="#">Tutorial</a></li>
-                <li><button class='btn btn-default' id='win_btn'>New Window</li>
+                <li><a id='win_btn'>New Window</a></li>
             </ul>
         </div> <!-- /.navbar-collapse -->
 
     </div>
 </nav>
-<!-- my js file-->
-<script src="./gen.js" type="text/javascript"></script>
+<!-- my js file-->>
+<script src="./js/viewer.js" type="text/javascript"></script>
+<script src="./js/gen.js" type="text/javascript"></script>
 <script src="./index.js" type="text/javascript"></script>
 <script>
 if(window.module) module = window.module;
+if(typeof TEST != 'undefined'){
+    Object.defineProperty(TEST, 'result', {
+        get: function(){
+            for(var t in this){
+                if(typeof this[t] == 'function' && !this[t]()){
+                    return false;
+                }
+            }
+            //console.log('All PASS');
+            return true;
+        }
+    });
+}
 console.log('All JS loaded!')
 </script>
 

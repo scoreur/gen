@@ -3,6 +3,8 @@ class to parse the .mid file format
 (depends on stream.js)
 */
 
+var Stream = Stream || (module && require && require('./stream')());
+
 var MIDI = MIDI || {};
 
 MIDI.eventCode = {
@@ -494,7 +496,8 @@ simpMidi.prototype.addEvent = function(){
 	if(this.tracks.length == 2){
 		this.tracks[1].push(simpEvent(...arguments));
 	}else{
-		this.tracks[e.shift()].push(simpEvent(...arguments));
+		var arg = Array.prototype.slice.call(arguments);
+		this.tracks[arg.shift()].push(simpEvent(...arg));
 	}
 }
 simpMidi.prototype.finish = function(){
@@ -504,13 +507,13 @@ simpMidi.prototype.finish = function(){
 }
 simpMidi.prototype.addTrack = function(){
 	this.tracks.push([]);
-	return this.tracks.length;
+	return this.header.trackCount = this.tracks.length;
 }
 
 var TEST = TEST || {};
 
 TEST.testMidi = function(m){
-	if(m==undefined) return false;
+	if(m==undefined) return true;
 	var m1 = typeof m == 'string'? MidiFile(m): m;
 	var f1 = MidiWriter(m1);
 	var m2 = MidiFile(f1);
@@ -525,6 +528,20 @@ TEST.testMidi = function(m){
 			diff++;
 		}
 		console.log('FAIL: MidiWriter', diff);
+		return false;
 	}
-
+	return true;
 }
+
+;module && (module.exports = function(t){
+	if(t){
+		t.testMidi = TEST.testMidi;
+	}
+	return {
+		MidiFile: MidiFile,
+		MidiWriter: MidiWriter,
+		simpEvent: simpEvent,
+		simpMidi: simpMidi
+
+	}
+})

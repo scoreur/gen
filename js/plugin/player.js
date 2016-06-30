@@ -403,7 +403,6 @@ function setMidi(m, autostart){
 	
 }
 
-
 TEST.testMidiPlayer = function (){
 	var m = new simpMidi();
 	for(var i=0;i<10;++i){
@@ -417,5 +416,5 @@ TEST.testMidiPlayer = function (){
 		//MIDI.Player.start();
 		setMidi(m,true);
 	});
-	return m;
+	return TEST.testMidi(m);
 }

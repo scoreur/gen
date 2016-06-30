@@ -57,6 +57,8 @@ var chords_inv = (function(){
     		ci += 'i';
     	}
     }
+    // alias
+
     return res;
 })();
 
@@ -192,6 +194,7 @@ var seqPlayer = {
 	channel:0,
 	enabled:false,
 	q:[],
+	c:[],
 	midi: null,
 	raw_midi: "",
 	sample_q:[[490,60,127],[10,0],[490,62,127],[10,0],[490,64,127],[10,0]],
@@ -221,7 +224,7 @@ var seqPlayer = {
         		    cur = next;
         		    q.shift();
         		    next = (seqPlayer.enabled && q.length>0)? q[0]:null;
-        		    console.log('next',next);
+        		    log('next',next);
 
         		    loop();
         	    }
@@ -271,6 +274,27 @@ var seqPlayer = {
 			m.setKeySignature(src.key_sig, 'maj');
 			m.setTempo(src.tempo);
 		}
+		var 
+		    c = src == undefined? []: this.c,
+		    l = src == undefined? 0: m.addTrack() - 1;
+		m.addEvent(l,0,'programChange',l-1,0);
+		var rollTime = 10;
+		delta = 0;
+		for(var i=0;i<c.length;++i){
+			m.addEvent(l,0,'noteOn', l-1, [c[i][1],c[i][3]]);
+			delta = c[i][0];
+			for(var j=1;j<c[i][2].length;++j){
+				var pitch = c[i][1]+c[i][2][j]; 
+				m.addEvent(l,rollTime,'noteOn', l-1, [pitch,c[i][3]]);
+				delta -= rollTime;
+			}
+			m.addEvent(l,delta,'noteOff', l-1, [c[i][1],0]);
+			for(var j=1;j<c[i][2].length;++j){
+				var pitch = c[i][1]+c[i][2][j]; 
+				m.addEvent(l,0,'noteOff', l-1, [pitch,0]);
+			}
+
+		}
 		m.finish();
 
 		this.midi = m;
@@ -280,11 +304,11 @@ var seqPlayer = {
 	saveMidi:function(){
 		if(this.raw_midi.length<1) return;
 		var bf = new Uint8Array(this.raw_midi.split("").map(function(e){return e.charCodeAt(0);}));
-		saveAs(new File([bf], 'sample.mid', {type:"audio/mid"}));
+		saveAs(new File([bf], 'sample.mid', {type:"audio/midi"}));
 		log('midi saved');
 	},
 	parseQ:function(score){
-		var ctrlTicks = Math.floor(60*1000.0/score.tempo/score.ctrl_per_beat);
+		var ctrlTicks = (60000.0/score.tempo/score.ctrl_per_beat) >>>0;
 		var measures = score.melody;
 
 		var res = [];
@@ -292,6 +316,7 @@ var seqPlayer = {
 		var ref = score.key_ref;
 		for(var k=0;k<measures.length;++k){
 			var notes = measures[k].trim().split(/\s+/);
+			var vol = 110;
 			for(var i=0;i<notes.length;++i){
 				if(notes[i][0]==':'){
 					switch(notes[i][1]){
@@ -304,7 +329,7 @@ var seqPlayer = {
 						default:
 
 						    ref = score.key_ref;
-						    ctrlTicks = Math.floor(60*1000.0/score.tempo/score.ctrl_per_beat);
+						    ctrlTicks = (60000.0/score.tempo/score.ctrl_per_beat) >>>0;
 						    break;
 					}
 				}else{
@@ -316,9 +341,9 @@ var seqPlayer = {
 					//console.log(pitch,'dur',dur);
 					if(tied){
 						// TODO: check pitch
-						log('before tie', res[res.length-1]);
+						//log('before tie', res[res.length-1]);
 						res[res.length-1][0] += dur;
-						log('after tie', res[res.length-1]);
+						//log('after tie', res[res.length-1]);
 						tied = false;
 						dur = 0;
 					}
@@ -348,16 +373,45 @@ var seqPlayer = {
 					}
 					if(dur>0){
 						// TODO: add amplitude control
-						res.push([dur,pitch,127]);
+						res.push([dur,pitch,vol]);
 
 					} 
 
 				}
 			}
 
-
-
 		}
+		measures = score.harmony;
+		this.c = [];
+		
+		for(var k=0;k<measures.length;++k){
+			var chords = measures[k].trim().split(/\s+/);
+			var ex = /[ABCDEFG][b#]?/;
+			var octave = 3;
+			var vol = 80;
+			for(var i=0;i<chords.length;++i){
+				var terms = chords[i].split(',');
+				var root = ex.exec(terms[0])[0];
+				var root_pitch = MIDI.keyToNote[root+octave];
+				var name = terms[0].substr(ex.lastIndex+root.length);
+				// alias
+				switch(name){
+					case '7':
+					    name = 'dom7'; break;
+					case '': case 'M':
+						name = 'maj'; break;
+					case 'm': case 'mi':
+						name = 'min'; break;
+					case 'm7':
+					    name = 'min7'; break;
+					default:
+			    }
+				var chord_pitches = chords_inv[name];
+				var dur = ctrlTicks * (terms.length>=2? parseInt(terms[1]):1);
+				this.c.push([dur,root_pitch,chord_pitches,vol]);
+			}
+		}
+		
 		return res;
 	}
 }
@@ -370,7 +424,7 @@ const score_summer = {
 	ctrl_per_beat: 2,
 	incomplete_measure: true,
 	melody: ':+ 3,2 1,2/3,8,^/3,2 2 1 2 3 1,2/:- 6,4 3,4,^/3,4 :+ 3,2 1,2/2 2,7,^/2,2 1 6,1,- 1 6,1,- 1,2/:- 7,8,^/7,4 0 :+ 3,2 1/3 3,2 3,5,^/3,2 2 1 2 3 1,2/:- 6,4 3,4,^/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6,8,^/6,4 :+ 3,2 1,2'.split('/'),
-	harmony:"",
+	harmony: "E7,4/Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4/Dmin,8/F7,8/F#min7,4 B7,4/E7,8/Am,8/Bb7,8/Am,8/D7,8/C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4 E7,4".split('/'),
 	
 }
 
@@ -394,6 +448,8 @@ var schema_summer = {
 	}
 }
 
+var cur_schema = schema_summer;
+
 function rndChoice(choices, weights){
 	var s = weights.reduce(function(a,b){return a+b;});
 	var p = weights.map(function(e){return e/s;});
@@ -408,6 +464,30 @@ function score_gen(schema){
 
 }
 
+function load_local_midi(file){
+	if(file.type != 'audio/midi'){
+		console.log('file type cannot be ' + file.type);
+		return false;
+	}
+	var reader = new FileReader();
+	reader.onload = function(e){
+		MIDI.Player.loadFile(e.target.result);
+	}	
+	reader.readAsDataURL(file)
+	return true;
+
+}
+function load_json(file, onsuccess){
+	var reader = new FileReader();
+	reader.onload = function(e){
+		var res = JSON.parse(e.target.result);
+		cur_score = res.score;
+		cur_schema = res.schema;
+		onsuccess && onsuccess();
+	}	
+	reader.readAsText(file)
+	return true;
+}
 
 var TEST = TEST || {};
 
@@ -419,6 +499,44 @@ TEST.testSeqPlayer = function (){
 	});
 	seqPlayer.setQ(arr);
 	seqPlayer.play();
+	return true;
+}
+
+var ScoreRenderer = function(c){
+	this.c = new fabric.StaticCanvas(c, {
+		width: 500,
+		height: 400,
+		backgroundColor: 'rgb(250,250,250)'
+	});
+	this.sys = [];
+	this.s = {}
+
+}
+ScoreRenderer.prototype.render = function(score){
+	this.s = score;
+	var nSystems = Math.ceil(score.melody.length/4);
+	this.sys = [];
+	for(var i=0;i<nSystems;++i){
+		this.sys.push(new fabric.Rect({
+			width:460,
+			height:50,
+			left:0,
+			top:0,
+			fill:'rgb(240,240,240)',
+		}))
+	}
+	var top_padding = 30;
+	var left_padding = 20;
+	var system_dis = 20;
+	this.c.clear();
+	for(var i=0;i<nSystems;++i){
+		this.sys[i].set({top:top_padding+(50+system_dis)*i, left:left_padding});
+		this.c.add(mds.sys[i]);
+		
+	}
+	this.c.renderAll();
+	console.log('rendered');
+
 }
 
 

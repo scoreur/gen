@@ -126,19 +126,9 @@ function Stream(str) {
 // test case
 var TEST = TEST || {};
 TEST.testStream = function (){
+	
+	var r = Stream('abcdefghijklmn12');
 	var w = Stream();
-	w.writeVarInt(0x8FFF);
-	w.writeInt8(0x1F);
-	w.writeVarInt(0x76FF32);
-	var r = Stream(w.readAll());
-	if(r.readVarInt() == 0x8FFF  && r.readInt8(true) == 0x1F && r.readVarInt() == 0x76FF32){
-		console.log('PASS: writeVarInt');
-	}else{
-		console.log('Fail: writeVarInt', w.readAll(), r.readAll());
-	}
-
-	r = Stream('abcdefghijklmn12');
-	w = Stream();
 	while(!r.eof()){
 		w.writeInt32(r.readInt32());
 	}
@@ -146,6 +136,7 @@ TEST.testStream = function (){
 		console.log('PASS: writeInt32');
 	}else{
 		console.log('Fail: writeInt32', w.readAll());
+		return false;
 	}
 
 	r.reset();
@@ -157,5 +148,27 @@ TEST.testStream = function (){
 		console.log('PASS: writeInt16');
 	}else{
 		console.log('Fail: writeInt16', w.readAll());
+		return false;
 	}
+
+	w = Stream();
+	w.writeVarInt(0x8FFF);
+	w.writeInt8(0x1F);
+	w.writeVarInt(0x76FF32);
+	r = Stream(w.readAll());
+	if(r.readVarInt() == 0x8FFF  && r.readInt8(true) == 0x1F && r.readVarInt() == 0x76FF32){
+		console.log('PASS: writeVarInt');
+	}else{
+		console.log('Fail: writeVarInt', w.readAll(), r.readAll());
+		return false;
+	}
+
+	return true;
 }
+
+;module && (module.exports = function(t){
+	if(t){
+        t.testStream = TEST.testStream;
+	}
+    return Stream;
+})
