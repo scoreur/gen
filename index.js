@@ -63,6 +63,11 @@ var btn_event_list = {
 		$('input#img_file_input')[0].click();
 	},
 	'gen': function(){
+		cur_schema = JSON.parse(eds.schema.getValue());
+		var res = score_gen(cur_schema);
+	    console.log(res.melody);
+	    cur_score.melody = res.melody;
+	    updateEditor();
 
 	},
 	'render':function(){
@@ -153,12 +158,8 @@ function initUI(){
 			r.forEach(function(e3){
 				eds[e3].gotoLine(line);
 			});
-
 		});
-
 	});
-
-
 }
 
 $( document ).ready( function() {

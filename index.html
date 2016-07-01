@@ -175,9 +175,18 @@
     <div class="modal-header"><h4 class="modal-title">Syntax</h4></div>
     <div class="modal-body">
         <h5>Melody</h5>
+        <p> One line per measure, each line contains several notes separated by space. </p>
+        <p>Each note has the format "pitch,duration[,flag]". The pitch is represented by 1-7 with reference to the key of the score. The duration is in unit of the shortest note in the score. The optional flag can be: (1)#, one half step up; (2)b, one half step down; (3)+, one octave up; (4)-, one octave down; (5)^, tied to the next note.
+        </p>
+        <p>Use ":flag" format to shift the reference pitch for all the following notes. Use ":" to reset the reference pitch. 
+        </p>
         <h5>Harmony</h5>
+        <p> One line per measure. Use "chord_name,duration" format.</p>
         <h5>Texture</h5>
+        <p>Support inversion, doubling of the chords, both vertical and horizontal arrangements. Detailed information to be added. </p>
         <h5>Schema</h5>
+        <p>JSON format, specify the structures and how the melody/harmony/texture for each block is generated.
+        </p>
     </div>
     <div class="modal-footer"></div>
 </div></div></div>
@@ -207,55 +216,55 @@
 
 <div class="row">
     <div class="col-md-4">
-        <label for="melody">Melody</label><br>
+        <h4><span class="label label-primary" for="melody">Melody</span></h4>
         <div id="melody" style="height:300px"></div>
     </div>
-    <div class="col-md-4">
-        <label for="harmony" style="">Harmony</label><br>
+    <div class="col-md-3">
+        <h4><span class="label label-primary" for="harmony">Harmony</span></h4>
         <div id="harmony" style="height:300px"></div>
     </div>
-    <div class="col-md-4">
-        <label for="texture">Texture</label><br>
+    <div class="col-md-5">
+        <h4><span class="label label-primary" for="texture">Texture</span></h4>
         <div id="texture" style="height:300px"></div>
     </div>
 </div>
 <div class="row">
-    <div class="col-md-12">
+    <div class='col-md-1'></div>
+    <div class="col-md-10">
     <br>
     <progress id="midi_progress" class="progress hidden progress-info" max="100" value="0" style="width:400px"></progress>
     <input id="play_slider" type="range" class="progress" min="0" max="100" value="0">
     </div>
+    <div class='col-md-1'><br><a class="pager"><span id='currentTime'></span> / <span id='endTime'></span></a></div>
 </div>
 <div class="row">
     <div class="col-md-6" id='score_input'>
-        <div id="btn_gp1">
-            <button id='parse' class='btn btn-default'>Parse</button>
+        <ul id="btn_gp1">
+            <button id='parse' class='btn btn-info'>Parse</button>
             <button id='play' class='btn btn-default'>Play Melody</button>
             <button id='stop' class='btn btn-default'>Stop</button>
-            <button id='start' class='btn btn-default'>Play MIDI</button>
-        </div>
-      <br>
+            <button id='start' class='btn btn-info'>Play MIDI</button>
+        </ul>
       <label for="score" style="">Score Object</label><br>
       <div id="score" style="width:400px; height:200px"></div>
-</div>
-<div class="col-md-6" id='schema_input'>
-      <div id="btn_gp2">
-        <button id="gen" class="btn btn-default">Generate</button>
+    </div>
+    <div class="col-md-6" id='schema_input'>
+      <ul id="btn_gp2">
+        <button id="gen" class="btn btn-info">Generate</button>
         <button id="render" class="btn btn-default">Render</button>
-      </div>
-      <br>
+      </ul>
       <label for="schema" style="">Schema Object</label><br>
       <div id="schema" style="width:400px; height:200px"></div>
     </div>
     
 </div>
+<div class="row">
+    <br><br><br>
+</div>
 
 </div>
 
 
-<div id="footer">
-<br><br>
-</div>
 
 <!-- my js file-->>
 <script src="./js/viewer.js" type="text/javascript"></script>

@@ -92,22 +92,66 @@ var score_summer = {
 	texture: ":-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:iii-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4".split('/')
 }
 
+var gen_modes = ['random', 'transpose', 'chord'];
+
+var sample_mode = {
+	mode:'random',
+	options:{
+		rhythm:[4,
+		    '1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map(function(e){return e.split(/\s+/).map(function(e2){return parseInt(e2);});}),
+		    [2,3,3,2,1,1,2,1]
+		],
+		interval:{
+			chromatic:false,
+			weights: [1,1,2,2,1,0,1,  1,2,3,2,2,1,0,1],
+			choices: (function(){
+				return Array(15).fill().map(function(e,i){return i-7;});
+			})()
+
+		}
+	}
+}
+
+
 
 
 var schema_summer = {
-	structure:"c,4;A,32;B,32;A,32;C,28;c,4",
-	mode:'min',
+	ctrl_per_beat: 2,
+	time_sig: [4,4],
+	key_sig: 'C',
+	blocks: (function(a,b){
+		var res = {};
+		a.split('').forEach(function(e,i){res[e] = b[i];});
+		return res;
+	})('cABC',[4,32,32,28]),
+	structure:"c/A/B/A/C/c".split('/'),
+	scale:'min',
 	funcs:{
 		'A':"1,8/4,8/1,4 2,4/1,8".split('/'),
 		'B':"4,8/6,8/2,4 5,4/5,8".split('/'),
 		'C':"3,4 1,4/2,4 5,4/1,4 2,4/2,4".split('/'),
 		'c':"5,4"
 	},
-
-	chords:{
+	melody:{
+		'c': sample_mode,
+		'A':{
+			mode:'random',
+			options:{}
+		},
+		'B':{
+			mode:'transpose',
+			options:{}
+		},
+		'C':{
+			mode:'chord',
+			options:{}
+		}
+	},
+	harmony:{
 		'A':"",
 		'B':"",
 		'C':"",
 		'c':""
 	}
 }
+schema_summer.melody.A = schema_summer.melody.B = schema_summer.melody.C = sample_mode;
