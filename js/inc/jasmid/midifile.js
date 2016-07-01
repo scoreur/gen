@@ -533,15 +533,17 @@ TEST.testMidi = function(m){
 	return true;
 }
 
-;module && (module.exports = function(t){
-	if(t){
-		t.testMidi = TEST.testMidi;
-	}
-	return {
-		MidiFile: MidiFile,
-		MidiWriter: MidiWriter,
-		simpEvent: simpEvent,
-		simpMidi: simpMidi
+if(typeof module!='undefined'){
+	module.exports = function(t){
+		if(t){
+			t.testMidi = TEST.testMidi;
+		}
+		return {
+			MidiFile: MidiFile,
+			MidiWriter: MidiWriter,
+			simpEvent: simpEvent,
+			simpMidi: simpMidi
 
+		}
 	}
-})
+}

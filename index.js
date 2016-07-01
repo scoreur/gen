@@ -9,7 +9,7 @@ function setupEditor(id){
 
 }
 var eds = {};
-['melody','score','schema','harmony'].forEach(function(e){
+['melody','score','schema','harmony','texture'].forEach(function(e){
 	eds[e] = setupEditor(e);
 });
 
@@ -18,34 +18,36 @@ var mds = new ScoreRenderer('midi_score');
 
 var btn_event_list = {
 	'parse': function(){
-		cur_score = JSON.parse(eds.score.getValue())
-		cur_score.melody = eds.melody.getValue().split(/[/\n]+/);
-		cur_score.harmony = eds.harmony.getValue().split(/[/\n]+/);
+		cur_score = JSON.parse(eds.score.getValue());
+		['melody','harmony','texture'].forEach(function(e){
+			console.log(e);
+			cur_score[e] = eds[e].getValue().split(/[/\n]+/);
+
+		});
 		eds.score.setValue(JSON.stringify(cur_score));
-		seqPlayer.setQ(seqPlayer.parseQ(cur_score));
 		mds.render(cur_score);
 		seqPlayer.toMidi(cur_score);
 		setMidi(seqPlayer.midi,false);
 	},
 	'start':function(){
-		if($('button#start').html()=='Play (with harnony)'){
+		if(!MIDI.Player.playing){
             MIDI.Player.start();
-			$('button#start').html('Pause (with harnony)');
+			$('button#start').html('Pause MIDI');
 
 		}else{
 			MIDI.Player.pause();
-			$('button#start').html('Play (with harnony)');
+			$('button#start').html('Play MIDI');
 		}
 
 	},
 	'play': function(){
-		if($('button#play').html()=='Play'){
+		if(!seqPlayer.enabled){
             seqPlayer.play();
-			$('button#play').html('Pause');
+			$('button#play').html('Pause Melody');
 
 		}else{
 			seqPlayer.pause();
-			$('button#play').html('Play');
+			$('button#play').html('Play Melody');
 		}
 	},
 	'stop': function(){
@@ -84,15 +86,21 @@ function registerEvents(){
 		$('#'+i).on('click', btn_event_list[i]);
 	}
 	seqPlayer.onend = function(){
-		$('button#play').html('Play');
+		$('button#play').html('Play Melody');
 	}
 
 	$('input#midi_file_input').on('change', function(evt){
-		load_local_midi(evt.target.files[0]);
+		load_local_midi(evt.target.files[0], function(res){
+			MIDI.Player.loadFile(res);
+		});
 		
 	})
 	$('input#json_file_input').on('change', function(evt){
-		load_json(evt.target.files[0], updateEditor);
+		load_json(evt.target.files[0], function(res){
+			cur_score = res.score;
+		    cur_schema = res.schema;
+			updateEditor();
+		});
 	})
 	$('input#img_file_input').on('change', function(evt){
 		var reader = new FileReader();
@@ -100,6 +108,21 @@ function registerEvents(){
 	    	$('#score_img').attr('src', e.target.result);
 	    }	
 	    reader.readAsDataURL(evt.target.files[0]);
+	})
+
+	MIDI.Player.setAnimation(function(res){
+		//console.log(res.percent)
+		$('#midi_progress').val(''+(100*res.percent)>>>0);
+		if(MIDI.Player.playing){
+			$('#play_slider').val(''+(100*res.percent)>>>0);
+		}else{
+			$('button#start').html('Play MIDI');
+		}
+		
+	})
+
+	$('#play_slider').on('change', function(){
+		MIDI.Player.currentTime = parseInt($('#play_slider').val())/100*MIDI.Player.endTime;
 	})
 
 
@@ -111,8 +134,9 @@ function registerEvents(){
 function updateEditor(){
 	eds.score.setValue(JSON.stringify(cur_score));
 	eds.schema.setValue(JSON.stringify(cur_schema));
-	eds.melody.setValue(cur_score.melody.join('\n'));
-	eds.harmony.setValue(cur_score.harmony.join('\n'));
+	['melody','harmony','texture'].forEach(function(e){
+		eds[e].setValue(cur_score[e].join('\n'));
+	})
 }
 function initUI(){
 	var n_oct = 3;
@@ -121,6 +145,19 @@ function initUI(){
 	$('label[for=lowest_pitch]').html("MIDI lowest pitch (21-"+(109-n_oct*12)+"):");
 	$('#mode_panel').html(make_modeboard(["maj","min","aug", "dim", "dom7", "maj7"]));
 	updateEditor();
+	['melody','harmony','texture'].forEach(function(e){
+		var r = ['melody','harmony','texture'];
+		r.splice(r.indexOf(e),1);
+		eds[e].getSession().selection.on('changeCursor', function(e2){
+			var line = eds[e].selection.getCursor().row+1;
+			r.forEach(function(e3){
+				eds[e3].gotoLine(line);
+			});
+
+		});
+
+	});
+
 
 }
 

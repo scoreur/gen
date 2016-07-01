@@ -85,8 +85,8 @@ midi.setAnimation = function(callback) {
 		var endTime = midi.endTime;
 		var percent = currentTime / endTime;
 		var total = currentTime / 1000;
-		var minutes = total / 60;
-		var seconds = total - (minutes * 60);
+		var minutes = (total / 60) >>>0;
+		var seconds = (total - (minutes * 60)) >>>0;
 		var t1 = minutes * 60 + seconds;
 		var t2 = (endTime / 1000);
 		///
@@ -96,6 +96,7 @@ midi.setAnimation = function(callback) {
 			callback({
 				now: t1,
 				end: t2,
+				percent: percent,
 				events: noteRegistrar
 			});
 		}
@@ -113,7 +114,7 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 		midi.endTime = getLength();
 		///
 		MIDI.loadPlugin({
- 			//instruments: midi.getFileInstruments(),
+ 			instruments: midi.getFileInstruments(),
 			onsuccess: onsuccess,
 			onprogress: onprogress,
 			onerror: onerror
@@ -411,7 +412,7 @@ TEST.testMidiPlayer = function (){
 
 	}
 	m.finish();
-	MIDI.Player.loadFile('./mid/rachmaninov3.mid', function(){
+	MIDI.Player.loadFile('./mid/rachmaninov/rachmaninov3.mid', function(){
 		TEST.testMidi(MIDI.Player.currentData);
 		//MIDI.Player.start();
 		setMidi(m,true);

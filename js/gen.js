@@ -3,93 +3,13 @@ function log(){
 	if(debugFlag) console.log(...arguments);
 	return debugFlag;
 }
-var instrs = {
-		'Piano': ['1 Acoustic Grand Piano', '2 Bright Acoustic Piano', '3 Electric Grand Piano', '4 Honky-tonk Piano', '5 Electric Piano 1', '6 Electric Piano 2', '7 Harpsichord', '8 Clavinet'],
-		'Chromatic Percussion': ['9 Celesta', '10 Glockenspiel', '11 Music Box', '12 Vibraphone', '13 Marimba', '14 Xylophone', '15 Tubular Bells', '16 Dulcimer'],
-		'Organ': ['17 Drawbar Organ', '18 Percussive Organ', '19 Rock Organ', '20 Church Organ', '21 Reed Organ', '22 Accordion', '23 Harmonica', '24 Tango Accordion'],
-		'Guitar': ['25 Acoustic Guitar (nylon)', '26 Acoustic Guitar (steel)', '27 Electric Guitar (jazz)', '28 Electric Guitar (clean)', '29 Electric Guitar (muted)', '30 Overdriven Guitar', '31 Distortion Guitar', '32 Guitar Harmonics'],
-		'Bass': ['33 Acoustic Bass', '34 Electric Bass (finger)', '35 Electric Bass (pick)', '36 Fretless Bass', '37 Slap Bass 1', '38 Slap Bass 2', '39 Synth Bass 1', '40 Synth Bass 2'],
-		'Strings': ['41 Violin', '42 Viola', '43 Cello', '44 Contrabass', '45 Tremolo Strings', '46 Pizzicato Strings', '47 Orchestral Harp', '48 Timpani'],
-		'Ensemble': ['49 String Ensemble 1', '50 String Ensemble 2', '51 Synth Strings 1', '52 Synth Strings 2', '53 Choir Aahs', '54 Voice Oohs', '55 Synth Choir', '56 Orchestra Hit'],
-		'Brass': ['57 Trumpet', '58 Trombone', '59 Tuba', '60 Muted Trumpet', '61 French Horn', '62 Brass Section', '63 Synth Brass 1', '64 Synth Brass 2'],
-		'Reed': ['65 Soprano Sax', '66 Alto Sax', '67 Tenor Sax', '68 Baritone Sax', '69 Oboe', '70 English Horn', '71 Bassoon', '72 Clarinet'],
-		'Pipe': ['73 Piccolo', '74 Flute', '75 Recorder', '76 Pan Flute', '77 Blown Bottle', '78 Shakuhachi', '79 Whistle', '80 Ocarina'],
-		'Synth Lead': ['81 Lead 1 (square)', '82 Lead 2 (sawtooth)', '83 Lead 3 (calliope)', '84 Lead 4 (chiff)', '85 Lead 5 (charang)', '86 Lead 6 (voice)', '87 Lead 7 (fifths)', '88 Lead 8 (bass + lead)'],
-		'Synth Pad': ['89 Pad 1 (new age)', '90 Pad 2 (warm)', '91 Pad 3 (polysynth)', '92 Pad 4 (choir)', '93 Pad 5 (bowed)', '94 Pad 6 (metallic)', '95 Pad 7 (halo)', '96 Pad 8 (sweep)'],
-		'Synth Effects': ['97 FX 1 (rain)', '98 FX 2 (soundtrack)', '99 FX 3 (crystal)', '100 FX 4 (atmosphere)', '101 FX 5 (brightness)', '102 FX 6 (goblins)', '103 FX 7 (echoes)', '104 FX 8 (sci-fi)'],
-		'Ethnic': ['105 Sitar', '106 Banjo', '107 Shamisen', '108 Koto', '109 Kalimba', '110 Bagpipe', '111 Fiddle', '112 Shanai'],
-		'Percussive': ['113 Tinkle Bell', '114 Agogo', '115 Steel Drums', '116 Woodblock', '117 Taiko Drum', '118 Melodic Tom', '119 Synth Drum'],
-		'Sound effects': ['120 Reverse Cymbal', '121 Guitar Fret Noise', '122 Breath Noise', '123 Seashore', '124 Bird Tweet', '125 Telephone Ring', '126 Helicopter', '127 Applause', '128 Gunshot']
-	};
 
-
-var white_key_num = [0,2,4,5,7,9,11];
-var black_key_num = [1,3,6,8,10];
-var chord_num = {
-	"maj":[0,4,7],
-	"min":[0,3,7],
-	"dim":[0,3,6],
-	"aug":[0,4,8],
-	"dom7":[0,4,7,10],
-	"maj7":[0,4,7,11],
-	"min7":[0,3,7,10],
-	"aug7":[0,4,8,10],
-	"dim7":[0,3,6,9],
-}
-
-var chords_inv = (function(){
-	function inverted(arr,n){
-		var n = typeof n=='undefined'? 1: n%arr.length;
-		if(n<0){
-			n += arr.length;
-		}
-		var ret = new Array(arr.length);
-		for(var i=0;i<arr.length;++i){
-			ret[i] = (arr[(n+i)%arr.length]-arr[n]+12) % 12;
-		}
-	    return ret;
-    }
-    var res = {};
-    for(var c in chord_num){
-    	var ci = c+'';
-    	for(var i=0;i<chord_num[c].length;++i){
-    		res[ci] = inverted(chord_num[c],i);
-    		ci += 'i';
-    	}
-    }
-    // alias
-
-    return res;
-})();
-
-
-var scales = (function(){
-	var kn = 'CDEFGAB'.split('');
-	var res = {0:{},1:{},'maj':{},'min':{}};
-	for(var i=0;i<white_key_num.length;++i){
-		res[0][kn[i]] = res['maj'][white_key_num[i]] = i+1;
-		res[1][kn[i]] = res['min'][white_key_num[i]] = (i+2)%7 + 1;
-	}
-	return res;
-})();
 
 
 
 var keyrange = 23;
 var pressed = [];
-var chord_name = {
-	"maj":"Major triad",
-	"min":"Minor triad",
-	"aug":"Augmented triad",
-	"dim":"Diminished triad",
-	"maj6":"Major sixth chord",
-	"min6":"Minor sixth chord",
-	"dom7":"Dominant seventh chord",
-	"maj7":"Major seventh chord",
-	"min7":"Minor seventh chord",
-	"aug7":"Augmented seventh chord",
-	"dim7":"Diminished seventh chord",
-}
+
 
 function make_keyboard(n_octaves, x0, ww, bw){
 	var black_key_offset = [0,1,3,4,5];
@@ -189,131 +109,37 @@ function handlePianoKeyRelease(evt) {
 };
 
 
+var ScoreObj = function(options){
+	var options = options || {};
+	this.tempo = options.tempo || 120;
+	this.time_sig = options.time_sig || [4,4];
+	this.key_sig = options.key_sig || 'C';
+	var melody = [], harmony = [], texture = [];
+	var len = 0;
+	function parseMelody(m){
 
-var seqPlayer = {
-	channel:0,
-	enabled:false,
-	q:[],
-	c:[],
-	midi: null,
-	raw_midi: "",
-	sample_q:[[490,60,127],[10,0],[490,62,127],[10,0],[490,64,127],[10,0]],
+	}
+	function parseHarmony(h){
 
-	play:function(){
-		if(this.q.length <= 0){
-			return;
-		}
-		this.enabled = true;
-		var q = this.q;
-		var cur = q.shift();
-		var next = q.length? q[0]: null;
-		var channel = this.channel;
-		function loop(){
-			if(cur[1]>=21 && cur[1]<=108){
-				MIDI.noteOn(channel, cur[1], cur[2]);
-			}
-        	setTimeout(function(){
-        	    if(cur[1]>=21 && cur[1]<=108){
-        		    MIDI.noteOff(channel,cur[1]);
+	}
+	function parseTexture(t){
 
-        		}
-        		if(next == null){
-        			seqPlayer.enabled = false;
-        			seqPlayer.onend();
-        		}else{
-        		    cur = next;
-        		    q.shift();
-        		    next = (seqPlayer.enabled && q.length>0)? q[0]:null;
-        		    log('next',next);
+	}
+	function addMeasure(m, h, t){
 
-        		    loop();
-        	    }
-        	},cur[0]);
-				
+		return len = len+1;
 
-	    }
-	    setTimeout(loop, 0);
+	}
+}
 
-
-
-	},
-	pause:function(){
-		this.enabled = false;
-
-	},
-	stop:function(){
-		this.enabled = false;
-		this.q = [];
-
-	},
-	onend:function(){},
-	setQ:function(arr){
-		arr = arr==undefined? this.sample_q: arr;
-		this.q = arr.slice(0);
-	},
-	toMidi:function(src){
-		var q = src == undefined? this.q : this.parseQ(src);
-		if(q.length<=0) return false;
-
-		this.q = q;
-		var m = new simpMidi();
-		var delta = 0;
-		log('toMidi')
-		// one melody line
-		for(var i=0;i<q.length;++i){
-			if(q[i][1]<21){ // valid lower bound
-                delta += q[i][0];
-			}else{
-				m.addEvent(delta,'noteOn',0,[q[i][1],q[i][2]]);
-				m.addEvent(q[i][0], 'noteOff', 0, [q[i][1],0]);
-				delta = 0;
-			}
-		}
-		if(src != undefined){
-			m.setTimeSignature(...src.time_sig);
-			m.setKeySignature(src.key_sig, 'maj');
-			m.setTempo(src.tempo);
-		}
-		var 
-		    c = src == undefined? []: this.c,
-		    l = src == undefined? 0: m.addTrack() - 1;
-		m.addEvent(l,0,'programChange',l-1,0);
-		var rollTime = 10;
-		delta = 0;
-		for(var i=0;i<c.length;++i){
-			m.addEvent(l,0,'noteOn', l-1, [c[i][1],c[i][3]]);
-			delta = c[i][0];
-			for(var j=1;j<c[i][2].length;++j){
-				var pitch = c[i][1]+c[i][2][j]; 
-				m.addEvent(l,rollTime,'noteOn', l-1, [pitch,c[i][3]]);
-				delta -= rollTime;
-			}
-			m.addEvent(l,delta,'noteOff', l-1, [c[i][1],0]);
-			for(var j=1;j<c[i][2].length;++j){
-				var pitch = c[i][1]+c[i][2][j]; 
-				m.addEvent(l,0,'noteOff', l-1, [pitch,0]);
-			}
-
-		}
-		m.finish();
-
-		this.midi = m;
-		this.raw_midi = MidiWriter(m);
-
-	},
-	saveMidi:function(){
-		if(this.raw_midi.length<1) return;
-		var bf = new Uint8Array(this.raw_midi.split("").map(function(e){return e.charCodeAt(0);}));
-		saveAs(new File([bf], 'sample.mid', {type:"audio/midi"}));
-		log('midi saved');
-	},
-	parseQ:function(score){
-		var ctrlTicks = (60000.0/score.tempo/score.ctrl_per_beat) >>>0;
-		var measures = score.melody;
-
-		var res = [];
+ScoreObj.prototype.parse = function(options){
+	var init_ctrlTicks = (60000.0/options.tempo/options.ctrl_per_beat) >>>0;
+	var init_ref = MIDI.keyToNote[options.key_sig+'4'];
+	function parseMelody(measures){
+		var ctrlTicks = init_ctrlTicks;
+				var res = [];
 		var tied = false;
-		var ref = score.key_ref;
+		var ref = init_ref;
 		for(var k=0;k<measures.length;++k){
 			var notes = measures[k].trim().split(/\s+/);
 			var vol = 110;
@@ -326,15 +152,15 @@ var seqPlayer = {
 						case '-':
 						    ref -= 12;
 						    break;
-						default:
-
-						    ref = score.key_ref;
-						    ctrlTicks = (60000.0/score.tempo/score.ctrl_per_beat) >>>0;
+						default: // restore
+						    ref = init_ref;
+						    ctrlTicks = init_ctrlTicks;
 						    break;
 					}
 				}else{
 					var terms = notes[i].split(',');
 					var num = parseInt(terms[0]);
+					// TODO: support note name
 					if(num == NaN) continue;
 					var pitch = num<=0 ? 0: ref+white_key_num[num-1];
 					var dur = ctrlTicks * (terms.length>=2? parseInt(terms[1]):1);
@@ -381,9 +207,13 @@ var seqPlayer = {
 			}
 
 		}
-		measures = score.harmony;
-		this.c = [];
-		
+		return res;
+	}
+	var q = parseMelody(options.melody);
+
+	function parseHarmony(measures){
+		var res = [];
+		var ctrlTicks = init_ctrlTicks;
 		for(var k=0;k<measures.length;++k){
 			var chords = measures[k].trim().split(/\s+/);
 			var ex = /[ABCDEFG][b#]?/;
@@ -408,52 +238,219 @@ var seqPlayer = {
 			    }
 				var chord_pitches = chords_inv[name];
 				var dur = ctrlTicks * (terms.length>=2? parseInt(terms[1]):1);
-				this.c.push([dur,root_pitch,chord_pitches,vol]);
+				res.push([dur,root_pitch,chord_pitches,vol]);
 			}
 		}
-		
+		return res;
+
+	}
+	
+	var c = parseHarmony(options.harmony);
+
+	function parseTexture(measures){
+		var res = [];
+		var ctrlTicks = init_ctrlTicks;
+		var delta = 0, refc = [], refi = -1;
+		for(var k=0;k<measures.length;++k){
+			var arrange = measures[k].trim().split(/\s+/);
+			var vol = 80;
+			for(var i=0;i<arrange.length;++i){
+				if(arrange[i][0]==':'){
+					var refk = MIDI.keyToNote['C3']; // 48
+					while(refi<c.length && delta>=0){
+						delta -= c[++refi][0];
+					}
+					var inv = /:i*/.exec(arrange[i])[0].length - 1;
+					var bass = (c[refi][1]+c[refi][2][inv])%12;
+					var chord = chords_inv.inv(c[refi][2], inv);
+					inv += 1;
+					while(arrange[i][inv]=='+' || arrange[i][inv]=='-'){
+						refk += {'+':12, '-':-12}[arrange[i][inv]];
+						inv++;
+					}
+					bass += refk;
+					refc = [];
+					for(var j=inv;j<arrange[i].length;++j){
+						var s = arrange[i][j];
+						switch(s){
+							case '0': case '1': case '2': case '3':
+							    refc.push(bass+chord[parseInt(s)]);
+							    break;
+							case '+': 
+							    refc[refc.length-1] += 12; break;
+							case '-':
+							    refc[refc.length-1] -= 12; break;
+							default:
+							    log('skip unknown config '+s);
+						}
+					}
+				}else{
+					var terms = arrange[i].split(',');
+					var dur = ctrlTicks * (terms.length>=2? parseInt(terms[1]):1);
+					var tmp = [dur, Array.prototype.map.call(terms[0],function(e){
+						return refc[e]? refc[e]: (console.log('invalid syntac', refc, terms), 0);
+					}), vol];
+					res.push(tmp);
+					delta += dur;
+				}
+			}
+
+
+		}
 		return res;
 	}
+	var t = parseTexture(options.texture);
+	return {
+		melody: q,
+		harmony: c,
+		texture: t
+	}
+
 }
 
-const score_summer = {
-	tempo: 120,
-	time_sig: [4,4],
-	key_sig: 0, // C key
-	key_ref:60, // middle C
-	ctrl_per_beat: 2,
-	incomplete_measure: true,
-	melody: ':+ 3,2 1,2/3,8,^/3,2 2 1 2 3 1,2/:- 6,4 3,4,^/3,4 :+ 3,2 1,2/2 2,7,^/2,2 1 6,1,- 1 6,1,- 1,2/:- 7,8,^/7,4 0 :+ 3,2 1/3 3,2 3,5,^/3,2 2 1 2 3 1,2/:- 6,4 3,4,^/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6,8,^/6,4 :+ 3,2 1,2'.split('/'),
-	harmony: "E7,4/Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4/Dmin,8/F7,8/F#min7,4 B7,4/E7,8/Am,8/Bb7,8/Am,8/D7,8/C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4 E7,4".split('/'),
+ScoreObj.prototype.toMidiObj = function(options){
+	var src = ScoreObj.prototype.parse(options);
+	var q = src.melody, t = src.texture, c = src.harmony;
+    var m = new simpMidi();
+	var delta = 0;
+	log('toMidi')
+	// one melody line
+	for(var i=0;i<q.length;++i){
+		if(q[i][1]<21){ // valid lower bound
+            delta += q[i][0];
+		}else{
+			m.addEvent(delta,'noteOn',0,[q[i][1],q[i][2]]);
+			m.addEvent(q[i][0], 'noteOff', 0, [q[i][1],0]);
+			delta = 0;
+		}
+	}
+	m.setTimeSignature(...options.time_sig);
+	m.setKeySignature(MIDI.key_sig[options.key_sig], 'maj');
+	m.setTempo(options.tempo);
 	
-}
-
-var cur_score = score_summer;
-
-var schema_summer = {
-	structure:"c,4;A,32;B,32;A,32;C,28;c,4",
-	mode:'min',
-	funcs:{
-		'A':"1,8/4,8/1,4 2,4/1,8".split('/'),
-		'B':"4,8/6,8/2,4 5,4/5,8".split('/'),
-		'C':"3,4 1,4/2,4 5,4/1,4 2,4/2,4".split('/'),
-		'c':"5,4"
-	},
-
-	chords:{
-		'A':"",
-		'B':"",
-		'C':"",
-		'c':""
+	var l = m.addTrack() - 1;
+	m.addEvent(l,0,'programChange',l-1,0);
+	function addNotes(dur, notes, vol){
+		var rollTime = 10;
+		m.addEvent(l,0,'noteOn', l-1, [notes[0],vol]);
+		notes.slice(1).forEach(function(e){
+			m.addEvent(l,rollTime,'noteOn', l-1, [e,vol]);
+		});
+		m.addEvent(l,dur-(notes.length-1)*rollTime,'noteOff', l-1, [notes[0],0]);
+		notes.slice(1).forEach(function(e){
+			m.addEvent(l,0,'noteOff', l-1, [e,0]);
+		});
+	}
+	t.forEach(function(e){
+		addNotes(...e);
+	});
+	m.finish();
+	return {
+		src: src,
+		midi: m,
+		raw_midi: MidiWriter(m)
 	}
 }
 
+
+var seqPlayer = {
+	channel:0,
+	enabled:false,
+	src: {q:[],c:[],t:[]},
+	midi: null,
+	raw_midi: "",
+	play:function(){
+		if(this.src.q.length <= 0){
+			return;
+		}
+		this.enabled = true;
+		var q = this.src.q;
+		var cur = q.shift();
+		var next = q.length? q[0]: null;
+		var channel = this.channel;
+		function loop(){
+			if(cur[1]>=21 && cur[1]<=108){
+				MIDI.noteOn(channel, cur[1], cur[2]);
+			}
+        	setTimeout(function(){
+        	    if(cur[1]>=21 && cur[1]<=108){
+        		    MIDI.noteOff(channel,cur[1]);
+
+        		}
+        		if(next == null){
+        			seqPlayer.enabled = false;
+        			seqPlayer.onend();
+        		}else{
+        		    cur = next;
+        		    q.shift();
+        		    next = (seqPlayer.enabled && q.length>0)? q[0]:null;
+        		    log('next',next);
+
+        		    loop();
+        	    }
+        	},cur[0]);
+				
+
+	    }
+	    setTimeout(loop, 0);
+
+
+
+	},
+	pause:function(){
+		this.enabled = false;
+
+	},
+	stop:function(){
+		this.enabled = false;
+		this.src.q = [];
+
+	},
+	onend:function(){},
+	toMidi:function(src){
+		var res = ScoreObj.prototype.toMidiObj(src);
+		this.src.q = res.src.melody;
+		this.src.c = res.src.harmony;
+		this.src.t = res.src.texture;
+		this.midi = res.midi;
+		this.raw_midi = res.raw_midi;
+
+	},
+	saveMidi:function(){
+		if(this.raw_midi.length<1) return;
+		var bf = new Uint8Array(this.raw_midi.split("").map(function(e){return e.charCodeAt(0);}));
+		saveAs(new File([bf], 'sample.mid', {type:"audio/midi"}));
+		log('midi saved');
+	}
+}
+
+
+
+
 var cur_schema = schema_summer;
+var cur_score = score_summer;
 
 function rndChoice(choices, weights){
-	var s = weights.reduce(function(a,b){return a+b;});
+	var s = weights.reduce(function(a,b){return a+b;}, 0);
 	var p = weights.map(function(e){return e/s;});
-	
+	s = 0;
+	for(var i=0;i<p.length;++i){
+		s = (p[i] += s);
+	}
+	// TODO: add random seed
+	//var seed = Date.now();
+	function generate(){
+		var r = Math.random();
+		for(var i=0;i<p.length;++i){
+			if(r<p[i]){
+				return choices[i];
+			}
+		}
+		return choices[p.length-1];
+	}
+	return {
+		gen: generate
+	}
 }
 
 function score_gen(schema){
@@ -464,14 +461,14 @@ function score_gen(schema){
 
 }
 
-function load_local_midi(file){
+function load_local_midi(file, onsuccess){
 	if(file.type != 'audio/midi'){
 		console.log('file type cannot be ' + file.type);
 		return false;
 	}
 	var reader = new FileReader();
 	reader.onload = function(e){
-		MIDI.Player.loadFile(e.target.result);
+		onsuccess && onsuccess(e.target.result);
 	}	
 	reader.readAsDataURL(file)
 	return true;
@@ -481,9 +478,7 @@ function load_json(file, onsuccess){
 	var reader = new FileReader();
 	reader.onload = function(e){
 		var res = JSON.parse(e.target.result);
-		cur_score = res.score;
-		cur_schema = res.schema;
-		onsuccess && onsuccess();
+		onsuccess && onsuccess(res);
 	}	
 	reader.readAsText(file)
 	return true;

@@ -166,9 +166,11 @@ TEST.testStream = function (){
 	return true;
 }
 
-;module && (module.exports = function(t){
-	if(t){
-        t.testStream = TEST.testStream;
+if(typeof module!='undefined'){
+	module.exports = function(t){
+		if(t){
+	        t.testStream = TEST.testStream;
+		}
+	    return Stream;
 	}
-    return Stream;
-})
+}

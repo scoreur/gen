@@ -1,7 +1,7 @@
 {
-  "name": "electron-quick-start",
+  "name": "MusicGenerator",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "description": "A musical Electron application",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
@@ -12,12 +12,12 @@
   },
   "keywords": [
     "Electron",
-    "quick",
-    "start",
-    "tutorial"
+    "midi",
+    "score",
+    "generate"
   ],
-  "author": "GitHub",
-  "license": "CC0-1.0",
+  "author": "apwan06",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/apwan06/gen/issues"
   },
