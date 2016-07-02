@@ -3,7 +3,7 @@
 // If absolute URL from the remote server is provided, configure the CORS
 // header on that server.
 //
-var pdfurl = './invent.pdf';
+
 
 
 //
@@ -101,10 +101,12 @@ $('#next').on('click', onNextPage);
 /**
  * Asynchronously downloads PDF.
  */
-PDFJS.getDocument(pdfurl).then(function (pdfDoc_) {
-  pdfDoc = pdfDoc_;
-  $('#page_count').html(pdfDoc.numPages);
-
+function load_pdf(pdfurl){
+  PDFJS.getDocument(pdfurl).then(function (pdfDoc_) {
+    pdfDoc = pdfDoc_;
+    pageNum = 1;
+    $('#page_count').html(pdfDoc.numPages);
   // Initial/first page rendering
-  renderPage(pageNum);
-});
+    renderPage(pageNum);
+  });
+}

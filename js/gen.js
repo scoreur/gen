@@ -445,6 +445,7 @@ function load_local_midi(file, onsuccess){
 
 }
 function load_json(file, onsuccess){
+	log('load json')
 	var reader = new FileReader();
 	reader.onload = function(e){
 		var res = JSON.parse(e.target.result);
@@ -621,7 +622,6 @@ TEST.testGen = function(){
 	cur_score.melody = res.melody;
 	return true;
 }
-
 
 
 

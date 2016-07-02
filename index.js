@@ -1,8 +1,11 @@
 
+
+
+
 function setupEditor(id){
 	var editor = ace.edit(id);
 	editor.setTheme("ace/theme/clouds");
-	editor.getSession().setMode("ace/mode/text");
+	editor.getSession().setMode("ace/mode/score");
 	editor.getSession().setUseWrapMode(true);
 	editor.$blockScrolling = Infinity;
 	return editor;
@@ -15,6 +18,8 @@ var eds = {};
 
 
 var mds = new ScoreRenderer('midi_score');
+
+
 
 var btn_event_list = {
 	'parse': function(){
@@ -56,12 +61,6 @@ var btn_event_list = {
 	'save_midi': function(){
 		seqPlayer.saveMidi();
 	},
-	'open_midi': function(){
-		$('input#midi_file_input')[0].click();
-	},
-	'open_img': function(){
-		$('input#img_file_input')[0].click();
-	},
 	'gen': function(){
 		cur_schema = JSON.parse(eds.schema.getValue());
 		var res = score_gen(cur_schema);
@@ -76,9 +75,6 @@ var btn_event_list = {
 	'console_eval': function(){
 		$('#console_result').html(eval($('#console_panel').val()));
 	},
-	'import': function(){
-		$('input#json_file_input')[0].click();
-	},
 	'export': function(){
 		var ext = JSON.stringify({score:cur_score,schema:cur_schema});
 		var file = new File([ext],'sample.json',{type:"application/json"});
@@ -86,34 +82,46 @@ var btn_event_list = {
 
 	}
 }
-function registerEvents(){
-	for(var i in btn_event_list){
-		$('#'+i).on('click', btn_event_list[i]);
-	}
-	seqPlayer.onend = function(){
-		$('button#play').html('Play Melody');
-	}
 
-	$('input#midi_file_input').on('change', function(evt){
+var file_open_handlers = {
+	'open_midi': function(evt){
 		load_local_midi(evt.target.files[0], function(res){
 			MIDI.Player.loadFile(res);
 		});
-		
-	})
-	$('input#json_file_input').on('change', function(evt){
-		load_json(evt.target.files[0], function(res){
-			cur_score = res.score;
-		    cur_schema = res.schema;
-			updateEditor();
-		});
-	})
-	$('input#img_file_input').on('change', function(evt){
-		var reader = new FileReader();
+	},
+	'open_img': function(evt){
+	    var reader = new FileReader();
 	    reader.onload = function(e){
 	    	$('#score_img').attr('src', e.target.result);
 	    }	
 	    reader.readAsDataURL(evt.target.files[0]);
-	})
+    },
+    'open_json': function(evt){
+	    load_json(evt.target.files[0], function(res){
+		    cur_score = res.score;
+	        cur_schema = res.schema;
+			updateEditor();
+	    });
+	},
+	'open_pdf': function(evt){
+		var reader = new FileReader();
+        reader.onload = function(e){
+        	load_pdf(e.target.result);
+        }
+		reader.readAsArrayBuffer(evt.target.files[0]);
+	}
+}
+
+function registerEvents(){
+	for(var i in btn_event_list){
+		$('#'+i).on('click', btn_event_list[i]);
+	}
+	for(var id in file_open_handlers){
+		openFor(id, file_open_handlers[id]);
+	}
+	seqPlayer.onend = function(){
+		$('button#play').html('Play Melody');
+	}	
 
 	MIDI.Player.setAnimation(function(res){
 		//console.log(res.percent)
@@ -160,6 +168,7 @@ function initUI(){
 			});
 		});
 	});
+	load_pdf('./invent.pdf');
 }
 
 $( document ).ready( function() {
