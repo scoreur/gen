@@ -195,9 +195,11 @@
 
 <div class="row" id="score_display">
     <div class="col-md-6">
-        <img id="score_img" class='img-responsive score_viewer collapse in' src='img/summertime.png'>
+        <img id="score_img" class='img-responsive score_viewer collapse in' src=''>
         <div id="viewer" class="collapse score_viewer">
-        <canvas id="the-canvas" style="border:1px solid black" height="633" width="489"></canvas>
+            <div id="canvas-wrapper">
+                <canvas id="the-canvas" style="border:1px solid black"></canvas>
+            </div>
         <ul class="pager">
             <li><a id="prev">Previous</a></li>
             <li><a id="next">Next</a></li>

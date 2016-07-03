@@ -168,7 +168,8 @@ function initUI(){
 			});
 		});
 	});
-	load_pdf('./invent.pdf');
+	load_pdf('./score/invent.pdf');
+	$('#score_img').attr('src','./score/summertime.png');
 }
 
 $( document ).ready( function() {
