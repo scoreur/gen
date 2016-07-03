@@ -192,7 +192,7 @@
 
 
 <div class="container-fluid">
-
+<!-- Viewer -->
 <div class="row" id="score_display">
     <div class="col-md-6">
         <img id="score_img" class='img-responsive score_viewer collapse in' src=''>
@@ -210,11 +210,25 @@
 
     </div>
     <div class="col-md-6">
-        <canvas id="midi_score"></canvas>
+        <div class="canvas-wrapper">
+            <canvas id="midi_score" style="width: 100%; height; 100%"></canvas>
+        </div>
     </div>
   
 </div>
-
+<!-- Player -->
+<div class="row">
+    <div class="col-md-2">
+        <a><button id='start' class='btn btn-info'>Play MIDI</button></a>
+    </div>
+    <div class="col-md-7">
+    <progress id="midi_progress" class="progress hidden progress-info" max="100" value="0" style="width: 100%;"></progress>
+    <input id="play_slider" type="range" class="progress" min="0" max="100" value="0">
+    </div>
+    <div class='col-md-1'><a class="pager"><span id='currentTime'></span> / <span id='endTime'></span></a></div>
+    <div class='col-md-2'></div>
+</div>
+<!-- Editor 1 -->
 <div class="row">
     <div class="col-md-4">
         <h4><span class="label label-primary" for="melody">Melody</span></h4>
@@ -229,22 +243,14 @@
         <div id="texture" style="height:300px"></div>
     </div>
 </div>
-<div class="row">
-    <div class='col-md-1'></div>
-    <div class="col-md-10">
-    <br>
-    <progress id="midi_progress" class="progress hidden progress-info" max="100" value="0" style="width:400px"></progress>
-    <input id="play_slider" type="range" class="progress" min="0" max="100" value="0">
-    </div>
-    <div class='col-md-1'><br><a class="pager"><span id='currentTime'></span> / <span id='endTime'></span></a></div>
-</div>
+<br>
+<!-- Editor 2 -->
 <div class="row">
     <div class="col-md-6" id='score_input'>
         <ul id="btn_gp1">
             <button id='parse' class='btn btn-info'>Parse</button>
             <button id='play' class='btn btn-default'>Play Melody</button>
             <button id='stop' class='btn btn-default'>Stop</button>
-            <button id='start' class='btn btn-info'>Play MIDI</button>
         </ul>
       <label for="score" style="">Score Object</label><br>
       <div id="score" style="width:400px; height:200px"></div>
