@@ -114,15 +114,64 @@ var ScoreObj = function(options){
 	this.tempo = options.tempo || 120;
 	this.time_sig = options.time_sig || [4,4];
 	this.key_sig = options.key_sig || 'C';
-	var melody = [], harmony = [], texture = [];
+	this.ctrl_per_beat = options.ctrl_per_beat || 4;
+	
 	var len = 0;
+
+
+	var init_ref = MIDI.keyToNote[options.key_sig+'4'];
 	function parseMelody(m){
+	    var res = [];
+		var ref = init_ref;
+		var res = m.map(function(e){
+			var measure = [];
+			var notes = e.trim().split(/\s+/);
+			for(var i=0;i<notes.length;++i){
+				if(notes[i][0]==':'){
+					switch(notes[i][1]){
+						case '+':
+						    ref += 12;
+						    break;
+						case '-':
+						    ref -= 12;
+						    break;
+						default: // restore
+						    ref = init_ref;
+						    break;
+					}
+				}else{
+					var terms = notes[i].split(',');
+					var num = parseInt(terms[0]);
+					// TODO: support note name
+					if(num == NaN) continue;
+					var pitch = num<=0 ? 0: ref+white_key_num[num-1];
+					var dur = (terms.length>=2? parseInt(terms[1]):1);
+					var tied = false;
+					if(terms.length >= 3){
+						for(var j=0;j<terms[2].length;++j){
+							pitch += {'+':12,'-':-12,'#':1,'b':-1}[terms[2][j]] | 0;
+							if(terms[2][j]=='^'){
+								tied = true;
+							}
+						}
+					}
+					measure.push(tied? [dur, pitch, true]: [dur, pitch]);
+				}
+			}
+			return measure;
+		});
+		return res;
 
 	}
 	function parseHarmony(h){
 
+
+		return h;
+
 	}
 	function parseTexture(t){
+
+		return t;
 
 	}
 	function addMeasure(m, h, t){
@@ -130,7 +179,12 @@ var ScoreObj = function(options){
 		return len = len+1;
 
 	}
+	this.melody = parseMelody(options.melody);
+	this.harmony = parseHarmony(options.harmony);
+	this.texture = parseTexture(options.texture);
+
 }
+
 
 ScoreObj.prototype.parse = function(options){
 	var init_ctrlTicks = (60000.0/options.tempo/options.ctrl_per_beat) >>>0;
@@ -340,35 +394,42 @@ var seqPlayer = {
 		}
 		this.enabled = true;
 		var q = this.src.q;
-		var cur = q.shift();
-		var next = q.length? q[0]: null;
+		var nexti = 1;
+		var cur = q[0];
 		var channel = this.channel;
+
 		function loop(){
-			if(cur[1]>=21 && cur[1]<=108){
+			if(cur[1]>=21 && cur[1]<=108 &&cur[0]>0){
 				MIDI.noteOn(channel, cur[1], cur[2]);
 			}
         	setTimeout(function(){
-        	    if(cur[1]>=21 && cur[1]<=108){
-        		    MIDI.noteOff(channel,cur[1]);
-
-        		}
-        		if(next == null){
+        	    
+        		if(nexti < 0){
+        			if(cur[1]>=21 && cur[1]<=108){
+        		        MIDI.noteOff(channel,cur[1]);
+        		    }
         			seqPlayer.enabled = false;
         			seqPlayer.onend();
         		}else{
-        		    cur = next;
-        		    q.shift();
-        		    next = (seqPlayer.enabled && q.length>0)? q[0]:null;
-        		    log('next',next);
+        			if(cur[1]>=21 && cur[1]<=108 && q[nexti][0]>0){
+        		        MIDI.noteOff(channel,cur[1]);
+        		    }
+        		    cur = q[nexti];
+        		    nexti = (seqPlayer.enabled && nexti+1<q.length)? nexti+1 :-1;
+        		    //log('next',q[nexti]);
 
         		    loop();
         	    }
-        	},cur[0]);
+        	},cur[0]>=0? cur[0]: -cur[0]);
 				
 
 	    }
 	    setTimeout(loop, 0);
 
+
+
+	},
+	toQ(score){
 
 
 	},
@@ -469,6 +530,21 @@ TEST.testSeqPlayer = function (){
 }
 
 var ScoreRenderer = function(c){
+	// migrate to vexflow
+	this.c = document.getElementById(c);
+	this.r = new Vex.Flow.Renderer(this.c, Vex.Flow.Renderer.Backends.CANVAS);
+	this.ctx = this.r.getContext();
+	this.geo = {system_width:800,system_height:80,system_interval:20,left_padding:10,top_padding:10}
+	this.layout = {measure_per_system:4}
+	this.r.resize(1000,800);
+
+
+
+
+
+
+
+	return;
 	this.c = new fabric.StaticCanvas(c, {
 		width: 500,
 		height: 400,
@@ -478,9 +554,9 @@ var ScoreRenderer = function(c){
 	this.s = {}
 
 }
-ScoreRenderer.prototype.render = function(score){
-	this.s = score;
-	var nSystems = Math.ceil(score.melody.length/4);
+ScoreRenderer.prototype.old_render = function(score){
+	var s = this.s = new ScoreObj(score);
+	var nSystems = Math.ceil(s.melody.length/this.layout.measure_per_system);
 	this.sys = [];
 	for(var i=0;i<nSystems;++i){
 		this.sys.push(new fabric.Rect({
@@ -504,6 +580,84 @@ ScoreRenderer.prototype.render = function(score){
 	console.log('rendered');
 
 }
+
+var dur_mapper = ["16","8","8d","4","4","4d","4dd","2","2","2","2","2d","2d","2dd","2ddd","1"];
+function dur_map(dur){
+	dur = (dur*4) >>> 0;
+	//console.log(dur);
+	return dur_mapper[dur-1];
+}
+// m-th measure
+ScoreRenderer.prototype.newStave = function(m){
+	var i = m % this.layout.measure_per_system;
+	var j = (m / this.layout.measure_per_system) >>> 0;
+	var w = this.geo.system_width / this.layout.measure_per_system;
+	var x = this.geo.left_padding + i * w;
+	var y = this.geo.top_padding + j * (this.geo.system_height + this.geo.system_interval);
+	//console.log(x,y,w);
+	if(i % this.layout.measure_per_system == 0){
+		return new Vex.Flow.Stave(x, y, w).addClef('treble');
+	}else{
+		return new Vex.Flow.Stave(x, y, w);
+	}
+	
+}
+ScoreRenderer.prototype.render = function(score){
+	this.r.resize(1000,800);
+	var ctx = this.ctx;
+	var w = (this.geo.system_width / this.layout.measure_per_system * 0.9) >>> 0;
+	var s = this.s = new ScoreObj(score);
+	var nSystems = Math.ceil(s.melody.length/this.layout.measure_per_system);
+
+	this.sys = [];
+	var sys = [];
+	for(var i=0;i<s.melody.length;++i){
+		var stave = this.newStave(i);
+		var dur_tot = 0;
+		var notes = s.melody[i].map(function(e){
+			var key = MIDI.noteToKey[e[1]];
+			dur_tot += e[0];
+			var duration =  dur_map(e[0]/s.ctrl_per_beat);
+			
+			if(key == undefined){
+			    key = "Bb4"; // rest
+			    duration += 'r';
+			}
+			key = key.substr(0,key.length-1)+'/'+key.substr(-1);
+			var res = new Vex.Flow.StaveNote({keys:[key], duration: duration});
+			if(duration.substr(-1)=='d'){
+				res.addDotToAll();
+			}
+			return res;
+		});
+		// add barline
+
+
+	  // Create a voice in 4/4
+	  var voice = new Vex.Flow.Voice({
+	    num_beats: (dur_tot/s.ctrl_per_beat)>>>0,
+	    beat_value: s.time_sig[1],
+	    resolution: Vex.Flow.RESOLUTION
+	  });
+
+	  // Add notes to voice
+	  voice.addTickables(notes);
+
+	  // Format and justify the notes to 500 pixels
+	  
+	  var formatter = new Vex.Flow.Formatter().
+	    joinVoices([voice]).format([voice], w-5);
+	   
+	  this.sys.push({voices:[voice],stave:stave});
+
+	}
+    
+	this.sys.forEach(function(e){
+		e.stave.setContext(ctx).draw();
+		e.voices.forEach(function(v){v.draw(ctx, e.stave);});
+	});
+
+} 
 
 
 var Generator = function(schema){
