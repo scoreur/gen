@@ -174,7 +174,7 @@ function initUI(){
 
 $( document ).ready( function() {
 	function use_local_soundfont(){
-		return location.origin="file://" || location.href.indexOf('http:/localhost')>-1;
+		return location.origin=="file://" || location.href.indexOf('http://localhost')>-1;
 	}
 	var soundfont_cdn = "https://scoreur.github.io/gen/soundfont/";
 	
