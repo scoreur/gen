@@ -173,9 +173,13 @@ function initUI(){
 }
 
 $( document ).ready( function() {
+	function use_local_soundfont(){
+		return location.origin=="file://" || location.href.indexOf('http://localhost')>-1;
+	}
+	var soundfont_cdn = "https://scoreur.github.io/gen/soundfont/";
 	
 	MIDI.loadPlugin({
-		soundfontUrl: "./soundfont/",
+		soundfontUrl: use_local_soundfont()? "./soundfont/": soundfont_cdn,
 		instrument: ["trumpet","acoustic_grand_piano"],
 		onprogress: function(state, progress) {
 			log(state, progress);
