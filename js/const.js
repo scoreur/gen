@@ -99,16 +99,33 @@ var sample_mode = {
 	options:{
 		rhythm:[4,
 		    '1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map(function(e){return e.split(/\s+/).map(function(e2){return parseInt(e2);});}),
-		    [2,3,3,2,1,1,2,1]
+		    [2,3,3,7,1,1,2,1]
 		],
 		interval:{
 			chromatic:false,
-			weights: [1,1,2,2,1,0,1,  1,2,3,2,2,1,0,1],
+			weights: [1,1,2,5,3,6,8,  4,7,12,8,3,1,0,1],
 			choices: (function(){
 				return Array(15).fill().map(function(e,i){return i-7;});
 			})()
 
 		}
+	}
+}
+
+var sample_transpose_mode = {
+	mode:'transpose',
+	options: {
+		src: "A",
+		offset: 0,
+		interval: 5
+	}
+}
+
+var sample_chord_mode = {
+	mode: 'chord',
+	options: {
+		chords: "Am,8 Bb7,8 Am,8 D7,8".split(/\s+/),
+		weights: [1, 9, 4, 6, 4]
 	}
 }
 
@@ -154,4 +171,5 @@ var schema_summer = {
 		'c':""
 	}
 }
-schema_summer.melody.A = schema_summer.melody.B = schema_summer.melody.C = sample_mode;
+schema_summer.melody.A = schema_summer.melody.C = sample_mode;
+schema_summer.melody.B = sample_transpose_mode;

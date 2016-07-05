@@ -664,7 +664,7 @@ var Generator = function(schema){
 	this.schema = schema;
 
 }
-Generator.prototype.melody = function(mode,options,dur){
+Generator.prototype.melody = function(mode,options,dur,res1){
 	return {
 		'random':function(options, dur){
 			var res = {dur:[],pitch:[]};
@@ -683,14 +683,39 @@ Generator.prototype.melody = function(mode,options,dur){
 			return res;
 		},
 		'transpose':function(options,dur){
-			var res = '';
+			var res = {dur:[],pitch:[]};
+			var src = res1[options.src];
+			// TODO: handle offset
+			var refd = 0, refp = 0;
+			
+			while(dur>0){
+                var tmp = [];
+				src.dur[refd].map(function(e,i){
+					if(dur-e>=0){
+						tmp.push(e);
+						res.pitch.push(src.pitch[refd][i]);
+						dur -= e;
+					}else if(dur>0){
+						tmp.push(dur);
+						res.pitch.push(src.pitch[refd][i]);
+						dur = 0;
+					}
+				});
+				refd++;
+				res.dur.push(tmp);
 
-			return this.random(options,dur);
-
+			}
+			log(res.pitch[0]);
+			res.pitch[0] += options.interval;
+			log(res.pitch[0]);
 			return res;
 		},
 		'chord':function(options,dur){
-			var res = '';
+			var chords = options.chords.map(function(e){
+				return e.split(',');
+			});
+			// obtain chords pitch
+			var res = {pitch:[], dur:[]};
 
 
 			return this.random(options,dur);
@@ -753,10 +778,10 @@ function score_gen(schema){
     for(var i in schema.blocks){
     	var dur = schema.blocks[i];
     	var mode = schema.melody[i];
-    	res1[i] = Generator.prototype.melody(mode.mode,mode.options,dur);
+    	res1[i] = Generator.prototype.melody(mode.mode,mode.options,dur,res1);
         mel[i] = b2score(res1[i],7*4);
     }
-	//log('melody',mel,res1);
+	log('melody',mel,res1);
    
     
     var melody = schema.structure.map(function(e){return mel[e];});
