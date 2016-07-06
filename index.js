@@ -12,10 +12,37 @@ function setupEditor(id){
 
 }
 
+function load_local_midi(file, onsuccess){
+	if(file.type != 'audio/midi'){
+		console.log('file type cannot be ' + file.type);
+		return false;
+	}
+	var reader = new FileReader();
+	reader.onload = function(e){
+		onsuccess && onsuccess(e.target.result);
+	};
+	reader.readAsDataURL(file);
+	return true;
+
+}
+function load_json(file, onsuccess){
+	log('load json');
+	var reader = new FileReader();
+	reader.onload = function(e){
+		var res = JSON.parse(e.target.result);
+		onsuccess && onsuccess(res);
+	};
+	reader.readAsText(file);
+	return true;
+}
+
 // store all editors
 var eds = {};
 
 var mds = new ScoreRenderer('midi_score', 'midi_pointer');
+
+var cur_schema = schema_summer;
+var cur_score = score_summer;
 
 
 

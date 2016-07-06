@@ -152,3 +152,131 @@ function load_pdf(pdfurl){
     renderPage(pageNum);
   });
 }
+
+/**
+ * Render Score
+ */
+
+var ScoreRenderer = function(c, p){
+  // migrate to vexflow
+  this.c = document.getElementById(c);
+  this.r = new Vex.Flow.Renderer(this.c, Vex.Flow.Renderer.Backends.CANVAS);
+  this.ctx = this.r.getContext();
+  this.geo = {system_width:800,system_height:80,system_interval:20,left_padding:10,top_padding:10};
+  this.layout = {measure_per_system:4};
+  this.r.resize(1000,800);
+
+
+  if(typeof p != 'undefined'){
+    this.p = new fabric.StaticCanvas(p, {
+      width: 500,
+      height: 400,
+      backgroundColor: 'rgba(240,250,240, 5)'
+    });
+  }
+};
+ScoreRenderer.prototype.old_render = function(score){
+  var s = this.s = new ScoreObj(score);
+  var nSystems = Math.ceil(s.melody.length/this.layout.measure_per_system);
+  this.sys = [];
+  for(var i=0;i<nSystems;++i){
+    this.sys.push(new fabric.Rect({
+      width:460,
+      height:50,
+      left:0,
+      top:0,
+      fill:'rgb(240,240,240)'
+    }));
+  }
+  var top_padding = 30;
+  var left_padding = 20;
+  var system_dis = 20;
+  this.c.clear();
+  for(var i=0;i<nSystems;++i){
+    this.sys[i].set({top:top_padding+(50+system_dis)*i, left:left_padding});
+    this.c.add(mds.sys[i]);
+
+  }
+  this.c.renderAll();
+  console.log('rendered');
+
+};
+
+var dur_mapper = ["16","8","8d","4","4","4d","4dd","2","2","2","2","2d","2d","2dd","2ddd","1"];
+function dur_map(dur){
+  dur = (dur*4) >>> 0;
+  //console.log(dur);
+  return dur_mapper[dur-1];
+}
+// m-th measure
+ScoreRenderer.prototype.newStave = function(m){
+  var i = m % this.layout.measure_per_system;
+  var j = (m / this.layout.measure_per_system) >>> 0;
+  var w = this.geo.system_width / this.layout.measure_per_system;
+  var x = this.geo.left_padding + i * w;
+  var y = this.geo.top_padding + j * (this.geo.system_height + this.geo.system_interval);
+  //console.log(x,y,w);
+  if(i % this.layout.measure_per_system == 0){
+    return new Vex.Flow.Stave(x, y, w).addClef('treble');
+  }else{
+    return new Vex.Flow.Stave(x, y, w);
+  }
+
+};
+
+ScoreRenderer.prototype.render = function(score){
+  this.r.resize(1000,800);
+  var ctx = this.ctx;
+  var w = (this.geo.system_width / this.layout.measure_per_system * 0.9) >>> 0;
+  var s = this.s = new ScoreObj(score);
+  var nSystems = Math.ceil(s.melody.length/this.layout.measure_per_system);
+
+  this.sys = [];
+  var sys = [];
+  for(var i=0;i<s.melody.length;++i){
+    var stave = this.newStave(i);
+    var dur_tot = 0;
+    var notes = s.melody[i].map(function(e){
+      var key = MIDI.noteToKey[e[1]];
+      dur_tot += e[0];
+      var duration =  dur_map(e[0]/s.ctrl_per_beat);
+
+      if(key == undefined){
+        key = "Bb4"; // rest
+        duration += 'r';
+      }
+      key = key.substr(0,key.length-1)+'/'+key.substr(-1);
+      var res = new Vex.Flow.StaveNote({keys:[key], duration: duration});
+      if(duration.substr(-1)=='d'){
+        res.addDotToAll();
+      }
+      return res;
+    });
+    // add barline
+
+
+    // Create a voice in 4/4
+    var voice = new Vex.Flow.Voice({
+      num_beats: (dur_tot/s.ctrl_per_beat)>>>0,
+      beat_value: s.time_sig[1],
+      resolution: Vex.Flow.RESOLUTION
+    });
+
+    // Add notes to voice
+    voice.addTickables(notes);
+
+    // Format and justify the notes to 500 pixels
+
+    var formatter = new Vex.Flow.Formatter().
+    joinVoices([voice]).format([voice], w-5);
+
+    this.sys.push({voices:[voice],stave:stave});
+
+  }
+
+  this.sys.forEach(function(e){
+    e.stave.setContext(ctx).draw();
+    e.voices.forEach(function(v){v.draw(ctx, e.stave);});
+  });
+
+};
