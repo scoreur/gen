@@ -6,18 +6,16 @@ function setupEditor(id){
 	var editor = ace.edit(id);
 	editor.setTheme("ace/theme/clouds");
 	editor.getSession().setMode("ace/mode/score");
-	editor.getSession().setUseWrapMode(true);
+	//editor.getSession().setUseWrapMode(true);
 	editor.$blockScrolling = Infinity;
 	return editor;
 
 }
+
+// store all editors
 var eds = {};
-['melody','score','schema','harmony','texture'].forEach(function(e){
-	eds[e] = setupEditor(e);
-});
 
-
-var mds = new ScoreRenderer('midi_score');
+var mds = new ScoreRenderer('midi_score', 'midi_pointer');
 
 
 
@@ -25,11 +23,11 @@ var btn_event_list = {
 	'parse': function(){
 		cur_score = JSON.parse(eds.score.getValue());
 		['melody','harmony','texture'].forEach(function(e){
-			console.log(e);
+			//console.log(e);
 			cur_score[e] = eds[e].getValue().split(/[/\n]+/);
 
 		});
-		eds.score.setValue(JSON.stringify(cur_score));
+		eds.score.setValue(JSON.stringify(cur_score, null, 2));
 		mds.render(cur_score);
 		seqPlayer.toMidi(cur_score);
 		setMidi(seqPlayer.midi,false);
@@ -81,7 +79,7 @@ var btn_event_list = {
 		saveAs(file);
 
 	}
-}
+};
 
 var file_open_handlers = {
 	'open_midi': function(evt){
@@ -107,10 +105,10 @@ var file_open_handlers = {
 		var reader = new FileReader();
         reader.onload = function(e){
         	load_pdf(e.target.result);
-        }
+        };
 		reader.readAsArrayBuffer(evt.target.files[0]);
 	}
-}
+};
 
 function registerEvents(){
 	for(var i in btn_event_list){
@@ -121,7 +119,7 @@ function registerEvents(){
 	}
 	seqPlayer.onend = function(){
 		$('button#play').html('Play Melody');
-	}	
+	};
 
 	MIDI.Player.setAnimation(function(res){
 		//console.log(res.percent)
@@ -132,21 +130,32 @@ function registerEvents(){
 			$('button#start').html('Play MIDI');
 		}
 		
-	})
+	});
+
+	['melody','harmony','texture'].forEach(function(e){
+		var r = ['melody','harmony','texture'];
+		r.splice(r.indexOf(e),1);
+		eds[e].getSession().selection.on('changeCursor', function(e2){
+			var line = eds[e].selection.getCursor().row+1;
+			r.forEach(function(e3){
+				eds[e3].gotoLine(line);
+			});
+		});
+	});
 
 	$('#play_slider').on('change', function(){
 		MIDI.Player.currentTime = parseInt($('#play_slider').val())/100*MIDI.Player.endTime;
-	})
+	});
 
 
 	// Set up the event handlers for all the buttons
-	$("button.kb").on("mousedown", handlePianoKeyPress);
-	$("button.kb").on("mouseout", handlePianoKeyRelease);
-	$("button.kb").on("mouseup", handlePianoKeyRelease);
+	$("button.kb").on("mousedown", handlePianoKeyPress)
+	  .on("mouseout", handlePianoKeyRelease)
+	  .on("mouseup", handlePianoKeyRelease);
 }
 function updateEditor(){
-	eds.score.setValue(JSON.stringify(cur_score));
-	eds.schema.setValue(JSON.stringify(cur_schema));
+	eds.score.setValue(JSON.stringify(cur_score, null, 2));
+	eds.schema.setValue(JSON.stringify(cur_schema, null, 2));
 	['melody','harmony','texture'].forEach(function(e){
 		eds[e].setValue(cur_score[e].join('\n'));
 	})
@@ -160,17 +169,23 @@ function initUI(){
 	$('input#lowest_pitch').attr("max",109-n_oct*12);
 	$('label[for=lowest_pitch]').html("MIDI lowest pitch (21-"+(109-n_oct*12)+"):");
 	$('#mode_panel').html(make_modeboard(["maj","min","aug", "dim", "dom7", "maj7"]));
-	updateEditor();
+
+	// ace editor
 	['melody','harmony','texture'].forEach(function(e){
-		var r = ['melody','harmony','texture'];
-		r.splice(r.indexOf(e),1);
-		eds[e].getSession().selection.on('changeCursor', function(e2){
-			var line = eds[e].selection.getCursor().row+1;
-			r.forEach(function(e3){
-				eds[e3].gotoLine(line);
-			});
-		});
+		eds[e] = setupEditor(e);
 	});
+
+	['score','schema'].forEach(function(id){
+		var editor = ace.edit(id);
+		editor.setTheme("ace/theme/clouds");
+		editor.getSession().setMode("ace/mode/json");
+		editor.getSession().setUseWrapMode(true);
+		editor.$blockScrolling = Infinity;
+		eds[id] = editor;
+		return editor;
+	});
+	updateEditor();
+
 	var pre = use_local_store()?'':'https://scoreur.github.io/gen/';
 	load_pdf( pre + 'score/invent.pdf');
 	$('#score_img').attr('src','./score/summertime.png');

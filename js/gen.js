@@ -87,9 +87,6 @@ function handlePianoKeyPress(evt) {
   // Use the two numbers to start a MIDI note
   // Handle chord mode
   pressing();
-  
- 
-
 };
 
 
@@ -385,6 +382,7 @@ ScoreObj.prototype.toMidiObj = function(options){
 var seqPlayer = {
 	channel:0,
 	enabled:false,
+	nexti: 0,
 	src: {q:[],c:[],t:[]},
 	midi: null,
 	raw_midi: "",
@@ -394,8 +392,9 @@ var seqPlayer = {
 		}
 		this.enabled = true;
 		var q = this.src.q;
-		var nexti = 1;
-		var cur = q[0];
+		var nexti = this.nexti;
+		var cur = q[nexti];
+		nexti++;
 		var channel = this.channel;
 
 		function loop(){
@@ -415,9 +414,17 @@ var seqPlayer = {
         		        MIDI.noteOff(channel,cur[1]);
         		    }
         		    cur = q[nexti];
-        		    nexti = (seqPlayer.enabled && nexti+1<q.length)? nexti+1 :-1;
+					if(seqPlayer.enabled){
+						nexti++;
+						if(nexti>= q.length){
+							nexti = -1;
+							seqPlayer.nexti = 0;
+						}
+					}else{
+						seqPlayer.nexti = nexti;
+						nexti = -1;
+					}
         		    //log('next',q[nexti]);
-
         		    loop();
         	    }
         	},cur[0]>=0? cur[0]: -cur[0]);
@@ -439,7 +446,7 @@ var seqPlayer = {
 	},
 	stop:function(){
 		this.enabled = false;
-		this.src.q = [];
+		this.nexti = 0;
 
 	},
 	onend:function(){},
@@ -529,7 +536,7 @@ TEST.testSeqPlayer = function (){
 	return true;
 }
 
-var ScoreRenderer = function(c){
+var ScoreRenderer = function(c, p){
 	// migrate to vexflow
 	this.c = document.getElementById(c);
 	this.r = new Vex.Flow.Renderer(this.c, Vex.Flow.Renderer.Backends.CANVAS);
@@ -539,21 +546,14 @@ var ScoreRenderer = function(c){
 	this.r.resize(1000,800);
 
 
-
-
-
-
-
-	return;
-	this.c = new fabric.StaticCanvas(c, {
-		width: 500,
-		height: 400,
-		backgroundColor: 'rgb(250,250,250)'
-	});
-	this.sys = [];
-	this.s = {}
-
-}
+	if(typeof p != 'undefined'){
+		this.p = new fabric.StaticCanvas(p, {
+			width: 500,
+			height: 400,
+			backgroundColor: 'rgba(240,250,240, 5)'
+		});
+	}
+};
 ScoreRenderer.prototype.old_render = function(score){
 	var s = this.s = new ScoreObj(score);
 	var nSystems = Math.ceil(s.melody.length/this.layout.measure_per_system);

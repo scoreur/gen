@@ -215,12 +215,15 @@
 
     </div>
     <div class="col-md-6">
-        <div class="canvas-wrapper">
-            <canvas id="midi_score" style="width: 100%;"></canvas>
+        <div class="canvas-wrapper" style="position: relvative;">
+            <canvas id="midi_pointer" style="width: 100%; position: absolute; left: 0; top: 0; z-index:0;"></canvas>
+            <canvas id="midi_score" style="width: 100%; position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
         </div>
     </div>
   
 </div>
+    <br>
+
 <!-- Player -->
 <div class="row">
     <div class="col-md-2">
