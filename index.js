@@ -151,6 +151,9 @@ function updateEditor(){
 		eds[e].setValue(cur_score[e].join('\n'));
 	})
 }
+function use_local_store(){
+	return location.origin=="file://" || location.href.indexOf('http://localhost')>-1;
+}
 function initUI(){
 	var n_oct = 3;
 	$('#keyboard_panel').html(make_keyboard(n_oct,20,36,28));
@@ -168,18 +171,17 @@ function initUI(){
 			});
 		});
 	});
-	load_pdf('./score/invent.pdf');
+	var pre = use_local_store()?'':'https://scoreur.github.io/gen/';
+	load_pdf( pre + 'score/invent.pdf');
 	$('#score_img').attr('src','./score/summertime.png');
 }
 
 $( document ).ready( function() {
-	function use_local_soundfont(){
-		return location.origin=="file://" || location.href.indexOf('http://localhost')>-1;
-	}
-	var soundfont_cdn = "https://scoreur.github.io/gen/soundfont/";
+	
+	var pre = use_local_store()?'':'https://scoreur.github.io/gen/';
 	
 	MIDI.loadPlugin({
-		soundfontUrl: use_local_soundfont()? "./soundfont/": soundfont_cdn,
+		soundfontUrl: pre + "soundfont/",
 		instrument: ["trumpet","acoustic_grand_piano"],
 		onprogress: function(state, progress) {
 			log(state, progress);
