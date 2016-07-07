@@ -39,7 +39,7 @@ function load_json(file, onsuccess){
 // store all editors
 var eds = {};
 
-var mds = new ScoreRenderer('midi_score', 'midi_pointer');
+var mds = new ScoreRenderer('midi_score', undefined,  'midi_pointer');
 
 var cur_schema = schema_summer;
 var cur_score = score_summer;
@@ -88,7 +88,9 @@ var btn_event_list = {
 	},
 	'gen': function(){
 		cur_schema = JSON.parse(eds.schema.getValue());
-		var res = score_gen(cur_schema);
+        var generator = new Generator(cur_schema);
+        generator.generate();
+		var res = generator.toScore();
 	    console.log(res.melody);
 	    cur_score.melody = res.melody;
 	    updateEditor();
@@ -226,11 +228,11 @@ $( document ).ready( function() {
 		soundfontUrl: pre + "soundfont/",
 		instrument: ["trumpet","acoustic_grand_piano"],
 		onprogress: function(state, progress) {
-			log(state, progress);
+			console.log(state, progress);
 		},
 		onsuccess: function() {
 			// At this point the MIDI system is ready to be used
-			MIDI.setVolume(0, 127); // Set the general volume level			
+			MIDI.setVolume(0, 100); // Set the general volume level
 			MIDI.programChange(0, 0);
 			MIDI.programChange(1,0);
 		}

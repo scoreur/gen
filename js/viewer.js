@@ -169,8 +169,8 @@ var ScoreRenderer = function(c, p){
 
   if(typeof p != 'undefined'){
     this.p = new fabric.StaticCanvas(p, {
-      width: 500,
-      height: 400,
+      width: $('.canvas-wrapper').width(),
+      height: $('.canvas-wrapper').height(),
       backgroundColor: 'rgba(240,250,240, 5)'
     });
   }

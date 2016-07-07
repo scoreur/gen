@@ -1,8 +1,3 @@
-var debugFlag = true;
-function log(){
-	if(debugFlag) console.log(...arguments);
-	return debugFlag;
-}
 
 var instrs = {
 		'Piano': ['1 Acoustic Grand Piano', '2 Bright Acoustic Piano', '3 Electric Grand Piano', '4 Honky-tonk Piano', '5 Electric Piano 1', '6 Electric Piano 2', '7 Harpsichord', '8 Clavinet'],
@@ -123,7 +118,7 @@ var sample_transpose_mode = {
 	options: {
 		src: "A",
 		offset: 0,
-		interval: 5
+		interval: 7
 	}
 }
 

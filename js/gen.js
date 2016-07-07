@@ -234,7 +234,6 @@ ScoreObj.prototype.toMidiObj = function(options){
 	var q = src.melody, t = src.texture, c = src.harmony;
     var m = new simpMidi();
 	var delta = 0;
-	log('toMidi')
 	// one melody line
 	for(var i=0;i<q.length;++i){
 		if(q[i][1]<21){ // valid lower bound
@@ -411,29 +410,39 @@ TEST.testSeqPlayer = function (){
 
 var Generator = function(schema){
 	this.schema = schema;
+	var keyref = this.keyref = MIDI.keyToNote[schema.key_sig+'4'];
 
-}
-Generator.prototype.melody = function(mode,options,dur,res1){
+	this.pitchSimple = function(pitch){
+		return {
+			0: 1, 2: 2, 4: 3, 5: 4, 7: 5, 9: 6, 11: 7
+		}[((pitch-keyref)%12 + 12) % 12] || 0;
+	};
+    this.res = {};
+};
+
+Generator.prototype.melody = function(mode,options,dur){
 	return {
 		'random':function(options, dur){
+			// not chromatic
 			var res = {dur:[],pitch:[]};
 			var n = dur/options.rhythm[0] >>>0;
 			var rc1 = rndChoice(options.rhythm[1], options.rhythm[2]);
 			var rc2 = rndChoice(options.interval.choices,options.interval.weights);
+			var pre = 60;
 			for(var i=0;i<n;++i){
 				res.dur.push(rc1.gen());
 				var tmp = []
 				for(var j=0;j<res.dur[i].length;++j){
-					tmp.push(rc2.gen());
+					pre += rc2.gen();
+					tmp.push(white_key_num[pre%7]+12*((pre/7)>>>0));
 				}
 				res.pitch.push(tmp);
 			}
-
 			return res;
 		},
-		'transpose':function(options,dur){
+		'transpose':function(options,dur,self){
 			var res = {dur:[],pitch:[]};
-			var src = res1[options.src];
+			var src = self.res[options.src];
 			// TODO: handle offset
 			var refd = 0, refp = 0;
 			
@@ -442,11 +451,11 @@ Generator.prototype.melody = function(mode,options,dur,res1){
 				src.dur[refd].map(function(e,i){
 					if(dur-e>=0){
 						tmp.push(e);
-						res.pitch.push(src.pitch[refd][i]);
+						res.pitch.push(options.interval + src.pitch[refd][i]);
 						dur -= e;
 					}else if(dur>0){
 						tmp.push(dur);
-						res.pitch.push(src.pitch[refd][i]);
+						res.pitch.push(options.interval + src.pitch[refd][i]);
 						dur = 0;
 					}
 				});
@@ -454,9 +463,6 @@ Generator.prototype.melody = function(mode,options,dur,res1){
 				res.dur.push(tmp);
 
 			}
-			log(res.pitch[0]);
-			res.pitch[0] += options.interval;
-			log(res.pitch[0]);
 			return res;
 		},
 		'chord':function(options,dur){
@@ -471,85 +477,91 @@ Generator.prototype.melody = function(mode,options,dur,res1){
 
 			return res;
 		}
-	}[mode](options, dur);
+	}[mode](options, dur, this);
 	
-}
+};
 
-function score_gen(schema){
-    var st = schema.structure.map(function(e){return e.split(',');});
-    var sec = schema.ctrl_per_beat*schema.time_sig[0]; // separate bar
-	var res = {};
-	var mel = {};
-	 // convert to score str
-    function b2score(b,pre){
-    	var dur = _.flatten(b.dur);
-		var pitch = _.flatten(b.pitch);
+Generator.prototype.toScore = function(){
+	if(this.res == {}){
+		// not generate
+		this.generate();
+	}
+
+	var pitchSimple = this.pitchSimple;
+	var sec = this.schema.ctrl_per_beat*this.schema.time_sig[0]; // separate bar
+
+	
+	function b2score(b){
+		var dur = _.flatten(b.dur);
+        var pitch = _.flatten(b.pitch);
+        var prep = 60;
+		    	
     	var tmp = [':'];
 		var delta = 0;
+		
 		var sc = [];
 		for(var j=0;j<dur.length;++j){
 			function ct(d,p){
 				var ret = '';
-				var cur_p = pre+p;
-
-				
 				delta += d;
-				var oct = (cur_p/7 >>>0) - (pre/7 >>>0);
+				var oct = (p/12 >>>0) - (prep/12 >>>0);
 				if(oct!=0){
 					var mm = {"-1":'-',"-2":'--',1:'+',2:'++'};
 					ret += ':'+ (mm[oct] || '');
 				}
-				ret += ' '+(cur_p%7+1);
+
+				ret += ' '+pitchSimple(p);
 				if(d>1){ret += ','+d;}
-				pre = cur_p;
-				//console.log(cur_p, flag);
+				prep = p;
+				//console.log(p, flag);
 				return ret;
 			}
 			if(delta>=sec){
 			    delta -= sec;
 			    sc.push(tmp.join(' '));
-			    log(i,tmp);
 			    tmp = [];
 			}
 			tmp.push(ct(dur[j],pitch[j]));
-			
 
-		}
+	    }
 		if(tmp != []){ // incomplete measure
-				sc.push(tmp.join(' '));
+			sc.push(tmp.join(' '));
 		}
 		return sc;
 
 	}	
 
-    
-    var res1 = {};
-    for(var i in schema.blocks){
-    	var dur = schema.blocks[i];
-    	var mode = schema.melody[i];
-    	res1[i] = Generator.prototype.melody(mode.mode,mode.options,dur,res1);
-        mel[i] = b2score(res1[i],7*4);
-    }
-	log('melody',mel,res1);
-   
-    
-    var melody = schema.structure.map(function(e){return mel[e];});
+	var res = this.res;
 
+	var melody = this.schema.structure.map(function(e){return b2score(res[e]);});
 
 	return {
 		melody: _.flatten(melody,true),
 		harmony: {},
 		texture: {}
 	}
-
 }
 
+Generator.prototype.generate = function(){
+    
+	var mel = {};
+	 // convert to score str
+    
+    var res1 = {};
+    for(var i in this.schema.blocks){
+    	var dur = this.schema.blocks[i];
+    	var mode = this.schema.melody[i];
+    	this.res[i] = this.melody(mode.mode,mode.options,dur,res1);
+    }
+
+};
+
 TEST.testGen = function(){
-	var res = score_gen(cur_schema);
+	var res = new Generator(cur_schema).generate();
 	console.log(res.melody);
 	cur_score.melody = res.melody;
 	return true;
-}
+};
 
 
 
