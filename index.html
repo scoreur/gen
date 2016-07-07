@@ -1,314 +1,254 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-
-	<!-- jQuery -->
+  <head>
+    <script>
+      if (typeof module === 'object') {
+      window.module = module;
+      module = undefined;
+      }
+    </script>
+    <!-- jQuery-->
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min.js" type="text/javascript"></script>
-    <!-- underscore -->
+    <!-- underscore-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js" type="text/javascript"></script>
-	<!-- Bootstrap -->
-	<!-- Latest compiled and minified CSS -->
+    <!-- Bootstrap-->
+    <!-- Latest compiled and minified CSS-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <!-- Optional theme -->
+    <!-- Optional theme-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
-    <!-- Latest compiled and minified JavaScript -->
+    <!-- Latest compiled and minified JavaScript-->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-
-    <!-- shims -->
-	<script src="./js/shim/Base64.js" type="text/javascript"></script>
-	<script src="./js/shim/Base64binary.js" type="text/javascript"></script>
-	<script src="./js/shim/WebAudioAPI.js" type="text/javascript"></script>
-    <!-- jasmid -->
+    <!-- script(src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.0.0/jszip.min.js", type='text/javascript')-->
+    <!-- shims-->
+    <script src="./js/shim/Base64.js" type="text/javascript"></script>
+    <script src="./js/shim/Base64binary.js" type="text/javascript"></script>
+    <script src="./js/shim/WebAudioAPI.js" type="text/javascript"></script>
+    <!-- jasmid-->
     <script src="./js/jasmid/stream.js" type="text/javascript"></script>
     <script src="./js/jasmid/midifile.js" type="text/javascript"></script>
     <script src="./js/jasmid/replayer.js" type="text/javascript"></script>
-	<!-- midi.js -->
-	<script src="./js/plugin/audioDetect.js" type="text/javascript"></script>
-	<script src="./js/plugin/gm.js" type="text/javascript"></script>
-	<script src="./js/plugin/loader.js" type="text/javascript"></script>
+    <!-- midi.js-->
+    <script src="./js/plugin/audioDetect.js" type="text/javascript"></script>
+    <script src="./js/plugin/gm.js" type="text/javascript"></script>
+    <script src="./js/plugin/loader.js" type="text/javascript"></script>
     <script src="./js/plugin/player.js" type="text/javascript"></script>
-	<script src="./js/plugin/plugin.js" type="text/javascript"></script>
-	<!-- utils -->
-	<script src="./js/util/dom_request_xhr.js" type="text/javascript"></script>
-	<script src="./js/util/dom_request_script.js" type="text/javascript"></script>
+    <script src="./js/plugin/plugin.js" type="text/javascript"></script>
+    <!-- utils-->
+    <script src="./js/util/dom_request_xhr.js" type="text/javascript"></script>
+    <script src="./js/util/dom_request_script.js" type="text/javascript"></script>
     <script src="./js/util/FileSaver.js" type="text/javascript"></script>
-    <!--
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.0.0/jszip.min.js"></script>
-    -->
     <script src="./js/util/FileLoader.js" type="text/javascript"></script>
-    
-	<!-- ace editor -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js" type="text/javascript"></script>
+    <!-- ace editor-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js" type="text/javascript">  </script>
     <script src="./js/editor/mode-score.js" type="text/javascript"></script>
-    <!-- fabric canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.6.2/fabric.min.js" type="text/javascript"></script>
-    <script src="./js/editor/vexflow-debug.js" type="text/javascript"></script>
-    <!-- pdf js -->
+    <!-- pdf js-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/1.5.314/pdf.js" type="text/javascript"></script>
-
-
+    <!-- fabric canvas-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.6.2/fabric.min.js" type="text/javascript"></script>
+    <!-- vexflow-->
+    <script src="./js/editor/vexflow-debug.js" type="text/javascript"></script>
     <style type="text/css" media="screen">
-        .black_key { height:80px; width:28px; background:black; position:absolute; top:20px }
-        .white_key { height:150px; width:40px; background:white; position:absolute; top:20px }
-        form {position:relative;}
+      .black_key {height: 80px;width: 28px;background: black;position: absolute;top: 20px}
+      .white_key {height: 150px;width: 40px;background: white;position: absolute;top: 20px}
+      form {position: relative;}
     </style>
-</head>
-
-
-
-<body>
-
-<nav id="top-menu" class="navbar navbar-default navbar-static-top">
-<div class="container-fluid">
-	<div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="#"><img class="img-circle img-responsive" src="img/logo.png" style="width:50px;height:50px"></a>
-    </div>
-    <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-        <ul class="nav navbar-nav">
+  </head>
+  <body>
+    <!-- Menu-->
+    <nav id="top-menu" class="navbar navbar-default navbar-static-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false" class="navbar-toggle collapsed"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="#" class="navbar-brand"><img src="img/logo.png" style="width:50px;height:50px" class="img-circle img-responsive"></a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling-->
+        <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
             <li class="active"><a href="#">Music Generator<span class="sr-only">(current)</span></a></li>
             <li><a href="#">Demo</a></li>
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File<span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a id="open_midi">Open MIDI</a>
-                    </li>
-                    <li><a id="save_midi">Save MIDI</a></li>
-                    <li>
-                        <a id="open_json">Import</a>
-                    </li>
-                    <li><a id="export">Export</a></li>
-                    <li role="separator" class="divider"></li>
-                    <li><a id="open_img">Open Score Image</a></li>
-                    <li><a id="open_pdf">Open Score PDF</a></li>
-                    <li><a data-toggle="collapse" data-target=".score_viewer">PDF Viewer</a></li>
-                </ul>
+            <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">File<span class="caret">                    </span></a>
+              <ul class="dropdown-menu">
+                <li><a id="open_midi">Open MIDI</a></li>
+                <li><a id="save_midi">Save MIDI</a></li>
+                <li><a id="open_json">Import                      </a></li>
+                <li><a id="export">Export                      </a></li>
+                <li role="separator" class="divider">                        </li>
+                <li><a id="open_img">Open Score Image</a></li>
+                <li><a id="open_pdf">Open Score PDF</a></li>
+                <li><a data-toggle="collapse" data-target=".score_viewer">PDF Viewer</a></li>
+              </ul>
             </li>
-        </ul>
-            <!--
-            <form class="navbar-form navbar-left" role="search">
-                <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Search">
-                </div>
-                <button type="submit" class="btn btn-default">Submit</button>
-            </form>
-            -->
-        <ul class="nav navbar-nav navbar-right navbar-inverse">
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help<span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                    <li><a href="#">Action</a></li>
-                    <li role="separator" class="divider"></li>
-                    <li><a href="#">Separated link</a></li>
-                </ul>
+          </ul>
+          <!--
+          form.navbar-form.navbar-left(role="search")
+            .form-group
+              input.form-control(type="text",placeholder="Search")
+              button.btn.btn-default(type="submit") Submit
+          -->
+          <ul class="nav navbar-nav navbar-right navbar-inverse">
+            <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Help<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#">Separated link</a></li>
+              </ul>
             </li>
             <li><a href="about.pdf" target="_blank">About</a></li>
-
-        </ul>
-    </div><!-- /.navbar-collapse -->
-
-</div>
-</nav>
-<nav id="bottom-menu" class="navbar navbar-default navbar-fixed-bottom">
-    <div class="container-fluid">
-
+          </ul>
+        </div>
+        <!-- /.navbar-collapse-->
+      </div>
+    </nav>
+    <nav id="bottom-menu" class="navbar navbar-default navbar-fixed-bottom">
+      <div class="container-fluid">
         <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
+          <button type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-2" aria-expanded="false" class="navbar-toggle collapsed"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span></button>
         </div>
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
-            <ul class="nav navbar-nav">
-                <li><a href="https://github.com/apwan06/gen">Source Code</a></li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Chords<span class="caret"></span></a>
-                    <ul class="dropdown-menu" style="width:240px">
-                        <li><a id="mode_panel"></a></li>
-                        <li><a id="keyboard_controls">
-                            <label for="amplitude">amplitude(0-127):</label>
-                            <input class="form-control progress" type="range" id="amplitude" min="0" max="127" value="100">
-                            <label for="lowest_pitch">lowest pitch(21-73):</label>
-                            <input class="form-control progress" type="range" id="lowest_pitch" min="21" max="73" value="60">
-                            </a>
-                        </li>
-                    
-                    </ul>
-
-
+        <div id="bs-example-navbar-collapse-2" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="https://github.com/apwan06/gen">Source Code</a></li>
+            <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Chords<span class="caret"></span></a>
+              <ul style="width:240px" class="dropdown-menu">
+                <li><a id="mode_panel"></a></li>
+                <li><a id="keyboard_controls">
+                    <label for="amplitude">amplitude(0-127):</label>
+                    <input id="amplitude" type="range" min="0" max="127" value="100" class="form-control progress">
+                    <label for="lowest_pitch">lowest pitch(21-73):</label>
+                    <input id="lowest_pitch" type="range" min="21" max="73" value="60" class="form-control progress"></a></li>
+              </ul>
+            </li>
+            <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Keyboard<span class="caret"></span></a>
+              <ul style="width:800px" class="dropdown-menu">
+                <li>
+                  <form id="keyboard_panel" style="height:200px"></form>
                 </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Keyboard<span class="caret"></span></a>
-                    <ul class="dropdown-menu" style="width:800px">
-                        <li><form id="keyboard_panel" style="height:200px"></form></li>
-                        <li role="separator" class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                    </ul>
+                <li role="separator" class="divider"></li>
+                <li><a href="#">Separated link</a></li>
+              </ul>
+            </li>
+            <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Console<span class="caret"></span></a>
+              <ul style="width:320px" class="dropdown-menu">
+                <li>
+                  <label>Result:</label><a id="console_result"></a>
                 </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Console<span class="caret"></span></a>
-                    <ul class="dropdown-menu" style="width:320px">
-                        <li><label>Result:</label><a id="console_result"></a></li>
-                        <li><a><input type="text" class="form-control" id="console_panel" style="width:280px; height:50px"></a></li>
-                        <li><a id="console_eval">Run</a></li>
-                        
-                    </ul>
-                </li>
+                <li><a>
+                    <input id="console_panel" type="text" style="width:280px; height:50px" class="form-control"></a></li>
+                <li><a id="console_eval">Run</a></li>
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a data-toggle="modal" data-target="#tutorial">Tutorial</a></li>
+            <li><a id="win_btn">New Window</a></li>
+          </ul>
+        </div>
+        <!-- /.navbar-collapse-->
+      </div>
+    </nav>
+    <!-- Modal-->
+    <div id="tutorial" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" class="modal fade">
+      <div role="document" class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Syntax</h4>
+          </div>
+          <div class="modal-body"><h2 id="melody">Melody</h2>
+<p>One line per measure, each line contains several notes separated by space.<br>Each note has the format <code>pitch,duration[,flag]</code>. The pitch is represented by 1-7 with reference to the key of the score. The duration is in unit of the shortest note in the score. The optional flag can be:</p>
+<ul>
+<li>#, one half step up;</li>
+<li>b, one half step down;</li>
+<li>+, one octave up;</li>
+<li>-, one octave down;</li>
+<li>^, tied to the next note.<br>Use <code>:flag</code> format to shift the reference pitch for all the following notes. Use <code>:</code> to reset the reference pitch.</li>
+</ul>
+<h2 id="harmony">Harmony</h2>
+<p>One line per measure. Use <code>chord_name,duration</code> format.</p>
+<h2 id="texture">Texture</h2>
+<p>Support inversion, doubling of the chords, both vertical and horizontal arrangements. Detailed information to be added.</p>
+<h2 id="schema">Schema</h2>
+<p>JSON format, specify the structures and how the melody/harmony/texture for each block is generated.</p>
 
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li><a data-toggle="modal" data-target="#tutorial">Tutorial</a></li>
-                <li><a id='win_btn'>New Window</a></li>
-            </ul>
-        </div> <!-- /.navbar-collapse -->
-
+          </div>
+          <div class="modal-footer"></div>
+        </div>
+      </div>
     </div>
-</nav>
-
-<!-- Modal -->
-<div class="modal fade" id="tutorial" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"><div class="modal-dialog modal-lg" role="document"><div class="modal-content">
-    <div class="modal-header"><h4 class="modal-title">Syntax</h4></div>
-    <div class="modal-body">
-        <h5>Melody</h5>
-        <p> One line per measure, each line contains several notes separated by space. </p>
-        <p>Each note has the format "pitch,duration[,flag]". The pitch is represented by 1-7 with reference to the key of the score. The duration is in unit of the shortest note in the score. The optional flag can be: (1)#, one half step up; (2)b, one half step down; (3)+, one octave up; (4)-, one octave down; (5)^, tied to the next note.
-        </p>
-        <p>Use ":flag" format to shift the reference pitch for all the following notes. Use ":" to reset the reference pitch. 
-        </p>
-        <h5>Harmony</h5>
-        <p> One line per measure. Use "chord_name,duration" format.</p>
-        <h5>Texture</h5>
-        <p>Support inversion, doubling of the chords, both vertical and horizontal arrangements. Detailed information to be added. </p>
-        <h5>Schema</h5>
-        <p>JSON format, specify the structures and how the melody/harmony/texture for each block is generated.
-        </p>
-    </div>
-    <div class="modal-footer"></div>
-</div></div></div>
-
-
-<div class="container-fluid">
-<!-- Viewer -->
-<div class="row" id="score_display">
-    <div class="col-md-6">
-        <img id="score_img" class='img-responsive score_viewer collapse in' src=''>
-        <div id="viewer" class="collapse score_viewer">
+    <!-- Contents-->
+    <div class="container-fluid">
+      <!-- Viewer-->
+      <div id="score_display" class="row">
+        <div class="col-md-6"><img id="score_img" src="" class="img-responsive score_viewer collapse in">
+          <div id="viewer" class="collapse score_viewer">
             <div id="canvas-wrapper">
-                <canvas id="the-canvas" style="border:1px solid black"></canvas>
+              <canvas id="the-canvas" style="border:1px solid black"> </canvas>
             </div>
-        <ul class="pager">
-            <li><a id="prev">Previous</a></li>
-            <li><a id="next">Next</a></li>
-            &nbsp; &nbsp;
-            <li>Page: <span id="page_num">1</span> / <span id="page_count">14</span></li>
-        </ul>
+            <ul class="pager">
+              <li><a id="prev">Previous </a></li>
+              <li><a id="next">Next </a> &nbsp; &nbsp;  </li>
+              <li>Page: <span id="page_num">1 </span> / <span id="page_count">14</span></li>
+            </ul>
+          </div>
         </div>
-
-    </div>
-    <div class="col-md-6">
-        <div class="canvas-wrapper" style="height: 600;">
-            <!--
-            <canvas id="midi_pointer" style="width: 100%; height:100%;left: 0; top: 0; z-index:0;"></canvas>
-            -->
-            <canvas id="midi_score" style="width: 100%;left: 0; top: 0; z-index: 1;"></canvas>
+        <div class="col-md-6">
+          <div style="height: 600;" class="canvas-wrapper">
+            <!-- canvas#midi_pointer(style='width: 100%; height:100%;left: 0; top: 0; z-index:0;')-->
+            <canvas id="midi_score" style="width: 100%;left: 0; top: 0; z-index: 1;"> </canvas>
+          </div>
         </div>
+      </div><br>
+      <!-- Player-->
+      <div class="row">
+        <div class="col-md-2"><a>
+            <button id="start" class="btn btn-info">Play MIDI </button></a></div>
+        <div class="col-md-7">
+          <progress id="midi_progress" max="100" value="0" style="width: 100%;" class="progress hidden progress-info"> </progress>
+          <input id="play_slider" type="range" min="0" max="100" value="0" class="progress">
+        </div>
+        <div class="col-md-1"><a class="pager"><span id="currentTime"> </span>/ <span id="endTime"> </span></a></div>
+        <div class="col-md-2"></div>
+      </div>
+      <!-- Editor 1-->
+      <div class="row">
+        <div class="col-md-4">
+          <h4><span for="ace_melody" class="label label-primary">Melody </span></h4>
+          <div id="ace_melody" style="height:300px"> </div>
+        </div>
+        <div class="col-md-3">
+          <h4><span for="ace_harmony" class="label label-primary">Harmony </span></h4>
+          <div id="ace_harmony" style="height:300px"> </div>
+        </div>
+        <div class="col-md-5">
+          <h4><span for="ace_texture" class="label label-primary">Texture </span></h4>
+          <div id="ace_texture" style="height:300px"> </div>
+        </div>
+      </div><br>
+      <!-- Editor 2-->
+      <div class="row">
+        <div id="score_input" class="col-md-6">
+          <ul id="btn_gp1">
+            <button id="parse" class="btn btn-info">Parse </button>
+            <button id="play" class="btn btn-default">Play Melody </button>
+            <button id="stop" class="btn btn-default">Stop </button>
+          </ul>
+          <label for="ace_score" style="">Score Object</label><br>
+          <div id="ace_score" style="width:400px; height:200px"> </div>
+        </div>
+        <div id="schema_input" class="col-md-6">
+          <ul id="btn_gp2">
+            <button id="gen" class="btn btn-info">Generate </button>
+            <button id="render" class="btn btn-default">Render </button>
+          </ul>
+          <label for="ace_schema" style="">Schema Object</label><br>
+          <div id="ace_schema" style="width:400px; height:200px"> </div>
+        </div><br><br>
+      </div>
     </div>
-  
-</div>
-    <br>
-
-<!-- Player -->
-<div class="row">
-    <div class="col-md-2">
-        <a><button id='start' class='btn btn-info'>Play MIDI</button></a>
-    </div>
-    <div class="col-md-7">
-    <progress id="midi_progress" class="progress hidden progress-info" max="100" value="0" style="width: 100%;"></progress>
-    <input id="play_slider" type="range" class="progress" min="0" max="100" value="0">
-    </div>
-    <div class='col-md-1'><a class="pager"><span id='currentTime'></span> / <span id='endTime'></span></a></div>
-    <div class='col-md-2'></div>
-</div>
-<!-- Editor 1 -->
-<div class="row">
-    <div class="col-md-4">
-        <h4><span class="label label-primary" for="melody">Melody</span></h4>
-        <div id="melody" style="height:300px"></div>
-    </div>
-    <div class="col-md-3">
-        <h4><span class="label label-primary" for="harmony">Harmony</span></h4>
-        <div id="harmony" style="height:300px"></div>
-    </div>
-    <div class="col-md-5">
-        <h4><span class="label label-primary" for="texture">Texture</span></h4>
-        <div id="texture" style="height:300px"></div>
-    </div>
-</div>
-<br>
-<!-- Editor 2 -->
-<div class="row">
-    <div class="col-md-6" id='score_input'>
-        <ul id="btn_gp1">
-            <button id='parse' class='btn btn-info'>Parse</button>
-            <button id='play' class='btn btn-default'>Play Melody</button>
-            <button id='stop' class='btn btn-default'>Stop</button>
-        </ul>
-      <label for="score" style="">Score Object</label><br>
-      <div id="score" style="width:400px; height:200px"></div>
-    </div>
-    <div class="col-md-6" id='schema_input'>
-      <ul id="btn_gp2">
-        <button id="gen" class="btn btn-info">Generate</button>
-        <button id="render" class="btn btn-default">Render</button>
-      </ul>
-      <label for="schema" style="">Schema Object</label><br>
-      <div id="schema" style="width:400px; height:200px"></div>
-    </div>
-    
-</div>
-<div class="row" id="notification">
-    <br>
-    <br>
-</div>
-
-</div>
-
-
-
-<!-- my js file-->>
-<script src="./js/const.js" type="text/javascript"></script>
-<script src="./js/viewer.js" type="text/javascript"></script>
-<script src="./js/keyboard.js" type="text/javascript"></script>
-<script src="./js/gen.js" type="text/javascript"></script>
-<script src="./index.js" type="text/javascript"></script>
-<script>
-if(window.module) module = window.module;
-if(typeof TEST != 'undefined'){
-    Object.defineProperty(TEST, 'result', {
-        get: function(){
-            for(var t in this){
-                if(typeof this[t] == 'function' && !this[t]()){
-                    return false;
-                }
-            }
-            //console.log('All PASS');
-            return true;
-        }
-    });
-}
-console.log('All JS loaded!')
-</script>
-
-</body>
+    <!-- my js file-->
+    <script src="./js/const.js" type="text/javascript"></script>
+    <script src="./js/viewer.js" type="text/javascript"></script>
+    <script src="./js/keyboard.js" type="text/javascript"></script>
+    <script src="./js/gen.js" type="text/javascript"></script>
+    <script src="./js/index.js" type="text/javascript"></script>
+    <script>if (window.module) module = window.module;</script>
+  </body>
 </html>
-
-

@@ -4,3 +4,4 @@ soundfont/*
 coffee/*.js
 coffee/*.map
 .idea/*
+view/*.html

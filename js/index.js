@@ -3,7 +3,7 @@
 
 
 function setupEditor(id){
-	var editor = ace.edit(id);
+	var editor = ace.edit('ace_'+id);
 	editor.setTheme("ace/theme/clouds");
 	editor.getSession().setMode("ace/mode/score");
 	//editor.getSession().setUseWrapMode(true);
@@ -205,7 +205,7 @@ function initUI(){
 	});
 
 	['score','schema'].forEach(function(id){
-		var editor = ace.edit(id);
+		var editor = ace.edit('ace_'+id);
 		editor.setTheme("ace/theme/clouds");
 		editor.getSession().setMode("ace/mode/json");
 		editor.getSession().setUseWrapMode(true);
@@ -243,6 +243,21 @@ $( document ).ready( function() {
 	
 
 });
+
+if (typeof TEST != 'undefined') {
+	Object.defineProperty(TEST, 'result', {
+		get: function() {
+			for (var t in this) {
+				if (typeof this[t] == 'function' && !this[t]()) {
+					return false;
+				}
+			}
+			//console.log('All PASS');
+			return true;
+		}
+	});
+}
+console.log('All JS loaded!')
 
     // You can also require other files to run in this process
  if(typeof require != 'undefined') require('./renderer.js');

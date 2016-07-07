@@ -1,0 +1,105 @@
+doctype html
+html
+  head
+    script.
+      if (typeof module === 'object') {
+      window.module = module;
+      module = undefined;
+      }
+    include scripts.jade
+   
+    style(type='text/css', media='screen').
+      .black_key {height: 80px;width: 28px;background: black;position: absolute;top: 20px}
+      .white_key {height: 150px;width: 40px;background: white;position: absolute;top: 20px}
+      form {position: relative;}
+  body
+    // Menu
+    include topmenu.jade
+    include bottommenu.jade
+    // Modal
+    #tutorial.modal.fade(tabindex='-1', role='dialog', aria-labelledby='myModalLabel', aria-hidden='true')
+      .modal-dialog.modal-lg(role='document')
+        .modal-content
+          .modal-header
+            h4.modal-title Syntax
+          .modal-body
+            include:marked syntax.md
+          .modal-footer
+    // Contents
+    .container-fluid
+      // Viewer
+      #score_display.row
+        .col-md-6
+          img#score_img.img-responsive.score_viewer.collapse.in(src='') 
+          #viewer.collapse.score_viewer
+            #canvas-wrapper
+              canvas#the-canvas(style='border:1px solid black') 
+            ul.pager
+              li
+                a#prev Previous 
+              li
+                a#next Next 
+                |  &nbsp; &nbsp;  
+              li Page: 
+                span#page_num 1 
+                |  / 
+                span#page_count 14
+        .col-md-6
+          .canvas-wrapper(style='height: 600;')
+            // canvas#midi_pointer(style='width: 100%; height:100%;left: 0; top: 0; z-index:0;')
+            canvas#midi_score(style='width: 100%;left: 0; top: 0; z-index: 1;') 
+      br
+      // Player
+      .row
+        .col-md-2
+          a
+            button#start.btn.btn-info Play MIDI 
+        .col-md-7
+          progress#midi_progress.progress.hidden.progress-info(max='100', value='0', style='width: 100%;') 
+          input#play_slider.progress(type='range', min='0', max='100', value='0') 
+        .col-md-1
+          a.pager
+            span#currentTime 
+            | / 
+            span#endTime 
+        .col-md-2
+      // Editor 1
+      .row
+        .col-md-4
+          h4
+            span.label.label-primary(for='ace_melody') Melody 
+          #ace_melody(style='height:300px') 
+        .col-md-3
+          h4
+            span.label.label-primary(for='ace_harmony') Harmony 
+          #ace_harmony(style='height:300px') 
+        .col-md-5
+          h4
+            span.label.label-primary(for='ace_texture') Texture 
+          #ace_texture(style='height:300px') 
+      br
+      // Editor 2
+      .row
+        #score_input.col-md-6
+          ul#btn_gp1
+            button#parse.btn.btn-info Parse 
+            button#play.btn.btn-default Play Melody 
+            button#stop.btn.btn-default Stop 
+          label(for='ace_score', style='') Score Object
+          br 
+          #ace_score(style='width:400px; height:200px') 
+        #schema_input.col-md-6
+          ul#btn_gp2
+            button#gen.btn.btn-info Generate 
+            button#render.btn.btn-default Render 
+          label(for='ace_schema', style='') Schema Object
+          br 
+          #ace_schema(style='width:400px; height:200px') 
+        br        
+        br
+    // my js file
+    each item in ['const', 'viewer', 'keyboard', 'gen', 'index']
+      script(src='./js/#{item}.js', type='text/javascript')
+    script.
+      if (window.module) module = window.module;
+      

@@ -4,7 +4,8 @@
   "description": "A musical Electron application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "render": "jade -P view/index.jade && mv view/index.html ./"
   },
   "repository": {
     "type": "git",
@@ -23,5 +24,6 @@
   },
   "devDependencies": {
     "electron-prebuilt": "^1.2.0"
-  }
+  },
+  "dependencies": {}
 }

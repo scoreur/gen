@@ -1,0 +1,54 @@
+nav#top-menu.navbar.navbar-default.navbar-static-top
+  .container-fluid
+    .navbar-header
+      button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1', aria-expanded='false')
+        span.sr-only Toggle navigation
+        span.icon-bar
+        span.icon-bar
+      a.navbar-brand(href='#')
+        img.img-circle.img-responsive(src='img/logo.png', style='width:50px;height:50px')
+    // Collect the nav links, forms, and other content for toggling
+    #bs-example-navbar-collapse-1.collapse.navbar-collapse
+      ul.nav.navbar-nav
+        li.active
+          a(href='#') Music Generator
+            span.sr-only (current)
+        li
+          a(href='#') Demo
+        li.dropdown
+          a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') File
+            span.caret                     
+          ul.dropdown-menu
+            li
+              a#open_midi Open MIDI
+            li
+              a#save_midi Save MIDI
+            li
+              a#open_json Import                      
+            li
+              a#export Export                      
+            li.divider(role='separator')                         
+            li
+              a#open_img Open Score Image
+            li
+              a#open_pdf Open Score PDF
+            li
+              a(data-toggle='collapse', data-target='.score_viewer') PDF Viewer
+      //
+        form.navbar-form.navbar-left(role="search")
+          .form-group
+            input.form-control(type="text",placeholder="Search")
+            button.btn.btn-default(type="submit") Submit
+      ul.nav.navbar-nav.navbar-right.navbar-inverse
+        li.dropdown
+          a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Help
+            span.caret
+          ul.dropdown-menu
+            li
+              a(href='#') Action
+            li.divider(role='separator')
+            li
+              a(href='#') Separated link
+        li
+          a(href='about.pdf', target='_blank') About
+    // /.navbar-collapse

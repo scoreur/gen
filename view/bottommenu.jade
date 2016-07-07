@@ -1,0 +1,50 @@
+nav#bottom-menu.navbar.navbar-default.navbar-fixed-bottom
+  .container-fluid
+    .navbar-header
+      button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#bs-example-navbar-collapse-2', aria-expanded='false')
+        span.sr-only Toggle navigation
+        span.icon-bar
+        span.icon-bar
+    #bs-example-navbar-collapse-2.collapse.navbar-collapse
+      ul.nav.navbar-nav
+        li
+          a(href='https://github.com/apwan06/gen') Source Code
+        li.dropdown
+          a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Chords
+            span.caret
+          ul.dropdown-menu(style='width:240px')
+            li
+              a#mode_panel
+            li
+              a#keyboard_controls
+                label(for='amplitude') amplitude(0-127):
+                input#amplitude.form-control.progress(type='range', min='0', max='127', value='100')
+                label(for='lowest_pitch') lowest pitch(21-73):
+                input#lowest_pitch.form-control.progress(type='range', min='21', max='73', value='60')
+        li.dropdown
+          a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Keyboard
+            span.caret
+          ul.dropdown-menu(style='width:800px')
+            li
+              form#keyboard_panel(style='height:200px')
+            li.divider(role='separator')
+            li
+              a(href='#') Separated link
+        li.dropdown
+          a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Console
+            span.caret
+          ul.dropdown-menu(style='width:320px')
+            li
+              label Result:
+              a#console_result
+            li
+              a
+                input#console_panel.form-control(type='text', style='width:280px; height:50px')
+            li
+              a#console_eval Run
+      ul.nav.navbar-nav.navbar-right
+        li
+          a(data-toggle='modal', data-target='#tutorial') Tutorial
+        li
+          a#win_btn New Window
+    // /.navbar-collapse
