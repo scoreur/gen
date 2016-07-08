@@ -5,5 +5,4 @@ coffee/*.js
 coffee/*.map
 .idea/*
 view/*.html
-*.html
-js/gen-build.js
+app.html
