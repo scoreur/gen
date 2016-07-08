@@ -71,7 +71,7 @@ var seqPlayer = {
 
 
 	},
-	toQ(score){
+	toQ: function(score){
 
 
 	},
@@ -126,7 +126,7 @@ TEST.testSeqPlayer = function (){
 	seqPlayer.setQ(arr);
 	seqPlayer.play();
 	return true;
-}
+};
 
 
 // TODO: migrate to Generator.coffee
@@ -178,21 +178,50 @@ Generator.prototype.melody = function(mode,options,dur){
 				});
 				refd++;
 				res.dur.push(tmp);
-
 			}
 			return res;
 		},
 		'chord':function(options,dur){
-			var chords = options.chords.map(function(e){
-				return e.split(',');
-			});
+			var chords = _.flatten(ScoreObj.prototype.parseHarmony(options.chords, 1),true);
+            console.log('chords', chords);
+			var refc = 0;
+			var refdur = chords[refc][0];
+
 			// obtain chords pitch
-			var res = {pitch:[], dur:[]};
+
+			// not chromatic
+			var res = {dur:[],pitch:[]};
+			var n = dur/options.rhythm[0] >>>0;
+
+			var rc1 = rndChoice(options.rhythm[1], options.rhythm[2]);
+			var rc2 = rndChoice(options.interval.choices,options.interval.weights);
+			var pre = 28;
+			for(var i=0;i<n;++i){
+				res.dur.push(rc1.gen());
+				var tmp = [];
+				for(var j=0;j<res.dur[i].length;++j){
+					if(Math.random()>0.9){
+						pre += rc2.gen();
+					}else{
+						var r = Math.random()*9;
+						var ii = (r%3) >>>0;
+						if(refc+1<chords.length && refdur<0){
+							refdur += chords[++refc][0];
+						}
+						pre = chords[refc][1] + chords[refc][2][ii] + 12*((r/3)>>>0);
+						//console.log(pre, chords[refc])
+					}
+					refdur -= options.rhythm[0];
 
 
-			return this.random(options,dur);
-
+					if(pre < 21) pre = 21;
+					if(pre > 108) pre = 108;
+					tmp.push(pitchSimple(pre));
+				}
+				res.pitch.push(tmp);
+			}
 			return res;
+
 		}
 	}[mode](options, dur, this);
 	

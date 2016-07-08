@@ -153,7 +153,7 @@ MG.pitchToKey = (pitch, sharp) ->
 
 @gen_modes = ['random', 'transpose', 'chord'];
 
-@sample_mode =
+@sample_rand_mode =
   mode:'random',
   options:
     rhythm: [
@@ -186,8 +186,23 @@ MG.pitchToKey = (pitch, sharp) ->
 @sample_chord_mode =
   mode: 'chord',
   options:
-    chords: "Am,8 Bb7,8 Am,8 D7,8".split(/\s+/),
-    weights: [1, 9, 4, 6, 4]
+    chords: "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
+    rhythm: [
+      4,
+      ('1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map (e)->
+        e.split(/\s+/).map (e2)-> parseInt(e2)
+      ),
+      [2,3,3,5,1,3,2,1]
+    ],
+
+    interval:
+      chromatic: false,
+      weights: [1,1,2,5,12,6,8,  4,7,12,8,3,1,0,1],
+      choices: (->
+        Array(15).fill().map (e,i)->
+          i-7
+      )()
+
 
 
 
@@ -213,7 +228,7 @@ MG.pitchToKey = (pitch, sharp) ->
     'c':"5,4"
   ,
   melody:
-    'c': sample_mode,
+    'c': sample_rand_mode,
     'A':
       mode:'random',
       options:{}
@@ -227,11 +242,12 @@ MG.pitchToKey = (pitch, sharp) ->
       options:{}
   ,
   harmony:
-    'A':"",
-    'B':"",
-    'C':"",
+    'A':"Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4".split('/'),
+    'B':"Dmin,8/F7,8/F#min7,4 B7,4/E7,8".split('/'),
+    'C':"C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
     'c':""
 
 
-@schema_summer.melody.A = @schema_summer.melody.C = sample_mode
+@schema_summer.melody.A =  @sample_rand_mode
 @schema_summer.melody.B = @sample_transpose_mode
+@schema_summer.melody.C = @sample_chord_mode

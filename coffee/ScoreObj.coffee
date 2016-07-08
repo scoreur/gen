@@ -65,11 +65,11 @@ class @ScoreObj
       return measure
     return res
 
-  parseHarmony: (measures) ->
+  parseHarmony: (measures, ctrlTicks) ->
     measures ?= @options.harmony
     ex = /[ABCDEFG][b#]?/
     alias = {'7':'dom7','':'maj','M':'maj','m':'min','mi':'min','m7':'min7'}
-    ctrlTicks = @init_ctrlTicks
+    ctrlTicks ?= @init_ctrlTicks
     res = measures.map (e) ->
       measure = []
       chords = e.trim().split(/\s+/)
