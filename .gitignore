@@ -6,3 +6,4 @@ coffee/*.map
 .idea/*
 view/*.html
 *.html
+js/gen-build.js

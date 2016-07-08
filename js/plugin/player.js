@@ -393,7 +393,7 @@ var stopAudio = function() {
 
 
 var TEST = TEST || {};
-function setMidi(m, autostart){
+MIDI.setMidi = function(m, autostart){
 	var f = typeof m=='object'? MidiWriter(m): m;
 	MIDI.Player.loadFile('base64,'+btoa(f),function(){
 		if(autostart) MIDI.Player.start();
@@ -412,10 +412,10 @@ TEST.testMidiPlayer = function (){
 
 	}
 	m.finish();
-	MIDI.Player.loadFile('./mid/rachmaninov/rachmaninov3.mid', function(){
+	MIDI.Player.loadFile('./mid/test.mid', function(){
 		TEST.testMidi(MIDI.Player.currentData);
 		//MIDI.Player.start();
-		setMidi(m,true);
+		MIDI.setMidi(m,true);
 	});
 	return TEST.testMidi(m);
 }

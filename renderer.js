@@ -9,7 +9,7 @@ const newWinBtn = document.getElementById('win_btn');
 newWinBtn.addEventListener('click', function(e){
 	let win = new BrowserWindow({width: 400, height: 300});
 	win.on('close', function(){win=null;});
-	win.loadURL(path.join('file://',__dirname,'./index.html'));
+	win.loadURL(path.join('file://',__dirname,'./app.html'));
 	win.show();
 });
 

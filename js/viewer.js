@@ -205,7 +205,6 @@ ScoreRenderer.prototype.old_render = function(score){
 var dur_mapper = ["16","8","8d","4","4","4d","4dd","2","2","2","2","2d","2d","2dd","2ddd","1"];
 function dur_map(dur){
   dur = (dur*4) >>> 0;
-  //console.log(dur);
   return dur_mapper[dur-1];
 }
 // m-th measure
@@ -229,23 +228,25 @@ ScoreRenderer.prototype.render = function(score){
   var ctx = this.ctx;
   var w = (this.geo.system_width / this.layout.measure_per_system * 0.9) >>> 0;
   var s = this.s = new ScoreObj(score);
-  var nSystems = Math.ceil(s.melody.length/this.layout.measure_per_system);
+
+
 
   this.sys = [];
-  var sys = [];
-  for(var i=0;i<s.melody.length;++i){
+  for(var i=0;i < s.melody.length; ++i){
     var stave = this.newStave(i);
     var dur_tot = 0;
     var notes = s.melody[i].map(function(e){
       var key = MIDI.noteToKey[e[1]];
       dur_tot += e[0];
       var duration =  dur_map(e[0]/s.ctrl_per_beat);
+      //console.log(e[0], s.ctrl_per_beat,duration);
 
       if(key == undefined){
         key = "Bb4"; // rest
         duration += 'r';
       }
       key = key.substr(0,key.length-1)+'/'+key.substr(-1);
+      //console.log(duration, key);
       var res = new Vex.Flow.StaveNote({keys:[key], duration: duration});
       if(duration.substr(-1)=='d'){
         res.addDotToAll();

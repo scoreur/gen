@@ -1,0 +1,9 @@
+{
+  "_js": [
+    "gen-build",
+    "viewer",
+    "keyboard",
+    "index"
+  ],
+  "_coffee": []
+}

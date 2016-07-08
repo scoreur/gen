@@ -56,8 +56,10 @@ var btn_event_list = {
 		});
 		eds.score.setValue(JSON.stringify(cur_score, null, 2));
 		mds.render(cur_score);
-		seqPlayer.toMidi(cur_score);
-		setMidi(seqPlayer.midi,false);
+		seqPlayer.fromScore(cur_score);
+		MIDI.Player.loadFile('base64,'+btoa(seqPlayer.raw_midi),function(){
+			console.log('MIDI loaded');
+		});
 	},
 	'start':function(){
 		if(!MIDI.Player.playing){

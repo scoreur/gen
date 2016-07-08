@@ -1,0 +1,13 @@
+{
+  "_coffee": [
+    "musical",
+    "ScoreObj",
+    "Generator"
+  ],
+  "_js": [
+    "gen",
+    "viewer",
+    "keyboard",
+    "index"
+  ]
+}
