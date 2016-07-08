@@ -1,3 +1,4 @@
+MG = @MG ? {}
 
 class @ScoreObj
   constructor: (options) ->
@@ -6,19 +7,24 @@ class @ScoreObj
     @time_sig = options.time_sig ? [4,4]
     @key_sig = options.key_sig ? 'C'
     @ctrl_per_beat = options.ctrl_per_beat ? 4
-    @init_ref = MIDI.keyToNote[@key_sig+'4'];
+    @init_ref = MG.key_class[@key_sig] + 60 # C4 ~ B4
     @init_ctrlTicks = (60000.0/@.tempo/@.ctrl_per_beat) >>>0
-    @parse(options)
+    @scale = options.scale || 'maj'
     @options = options
+    @parse(options)
+
+
 
   parse: (options) ->
     options ?= @options
+    @measures = _.zip(options.melody, options.harmony, options.texture)
     @melody = @parseMelody(options.melody)
     @harmony = @parseHarmony(options.harmony)
     @texture = @parseTexture(options.texture)
 
   parseMelody: (m) ->
     m ?= @options.melody
+    scale = MG.scale_class[@scale]
     ref = @init_ref;
     res = m.map (e)=>
       notes = e.trim().split(/\s+/);
@@ -31,27 +37,30 @@ class @ScoreObj
             else ref = @init_ref
           return
         else
+          tied = false
           terms = e2.split(',')
-          num = parseInt(terms[0])
-          # console.log(num, terms)
-          # TODO: support note name
-          if num == NaN
-            return
-          pitch = if num<=0 then 0 else ref+white_key_num[num-1]
-          dur = if terms.length>=2 then parseInt(terms[1]) else 1
-          tied = false;
-          if terms.length>=3
-            for j in [0...terms[2].length] by 1
-              pitch += {'+':12,'-':-12,'#':1,'b':-1}[terms[2][j]] | 0
-              if terms[2][j]=='^'
+          pitches = []
+          Array.prototype.forEach.call terms[0], (e3)->
+            switch e3
+              when '0'
+                pitches.push(0) # rest
+              when '1','2','3','4','5','6','7'
+                pitches.push ref+scale[e3 - '1']
+              when '+','-','#','b'
+                pitches[pitches.length-1] += {
+                  '+': 12, '-': -12, '#': 1, 'b': -1
+                }[e3]
+              when '^'
                 tied = true
+              else
+                console.log 'skip invalid flag ' + e3
 
+          dur = if terms.length>=2 then (parseInt(terms[1]) ? 1) else 1
           # TODO: add amplitude control
           if tied
-            measure.push [dur, pitch, true]
+            measure.push [dur, pitches, true]
           else
-            measure.push [dur, pitch]
-
+            measure.push [dur, pitches]
           return
       return measure
     return res
@@ -61,7 +70,7 @@ class @ScoreObj
     ex = /[ABCDEFG][b#]?/
     alias = {'7':'dom7','':'maj','M':'maj','m':'min','mi':'min','m7':'min7'}
     ctrlTicks = @init_ctrlTicks
-    res = measures.map (e) =>
+    res = measures.map (e) ->
       measure = []
       chords = e.trim().split(/\s+/)
       octave = 3
@@ -69,10 +78,10 @@ class @ScoreObj
       chords.forEach (e2) =>
         terms = e2.split(',')
         root = ex.exec(terms[0])[0]
-        root_pitch = MIDI.keyToNote[root+octave]
+        root_pitch = MG.keyToPitch(root+octave)
         name = terms[0].substr(ex.lastIndex+root.length)
         name = alias[name] ? name
-        chord_pitches = chords_inv[name] || chords_inv['maj'] # default maj
+        chord_pitches = MG.chords[name] || MG.chords['maj'] # default maj
         dur =  if terms.length>=2 then parseInt(terms[1]) else 1
         dur *= ctrlTicks
         measure.push [dur,root_pitch,chord_pitches,vol]
@@ -87,23 +96,24 @@ class @ScoreObj
     delta = 0
     refc = []
     refi = -1
-    res = measures.map (e) =>
+    res = measures.map (e) ->
       measure = []
       arrange = e.trim().split(/\s+/)
       vol = 80
-      arrange.forEach (e2) =>
+      arrange.forEach (e2) ->
         if e2[0] == ':'
-          refk = MIDI.keyToNote['C3'] # 48
-          while refi < c.length && delta>=0
+          refk = MG.keyToPitch('C3') # 48
+
+          while refi < c.length && delta >= 0
             delta -= c[++refi][0]
           inv = /:i*/.exec(e2)[0].length - 1
           bass = (c[refi][1]+c[refi][2][inv])%12
-          chord = chords_inv.inv(c[refi][2], inv)
+          chord = MG.inverted(c[refi][2], inv)
           inv += 1;
           while e2[inv] in ['+','-']
             refk += {'+':12, '-':-12}[e2[inv++]]
           bass += refk
-          refc = [];
+          refc = []
           for j in [inv...e2.length] by 1
             switch s = e2[j]
               when '0','1','2','3'
@@ -112,10 +122,10 @@ class @ScoreObj
               when '-' then refc[refc.length-1] -= 12
               else console.log('skip unknown config '+s);
         else
-          terms = e2.split(',');
+          terms = e2.split(',')
           dur = if terms.length>=2? then parseInt(terms[1]) else 1
           dur *=  ctrlTicks
-          tmp = Array.prototype.map.call terms[0], (e3)=>
+          tmp = Array.prototype.map.call terms[0], (e3)->
             return refc[e3] ? 0 # console.log('invalid syntac', refc, terms)
           measure.push([dur, tmp, vol])
           delta += dur
@@ -133,14 +143,13 @@ class @ScoreObj
     i = 0
     while i < q.length
       e = q[i]
-      if e[1] < 21 && e[1] > 108
-        delta += e[0]
+      if typeof e[1] == 'number' && e[1] < 21 && e[1] > 108
+        delta += e[0] # skip invalid note
       else
-        m.addEvent delta * ctrlTicks, 'noteOn', 0, [q[i][1], vol]
-        delta = e[0]
-        while q[i][2] == true && i+1 < q.length
-          delta += q[++i][0]
-        m.addEvent delta * ctrlTicks, 'noteOff', 0, [q[i][1], 0]
+        dur = e[0]
+        while q[i][2] == true && i+1 < q.length # tied
+          dur += q[++i][0]
+        m.addNotes 1, dur * ctrlTicks, q[i][1], vol, 0, delta * ctrlTicks
         delta = 0
       ++i
 
@@ -150,16 +159,8 @@ class @ScoreObj
 
     l = m.addTrack() - 1
     m.addEvent l, 0, 'programChange', l-1, 0
-    addNotes = (dur, notes, vol) ->
-      rollTime = 10
-      m.addEvent l, 0, 'noteOn', l-1, [notes[0], vol-40]
-      notes.slice(1).forEach (e)->
-        m.addEvent l, rollTime, 'noteOn', l-1, [e,vol]
-      m.addEvent l, dur-(notes.length-1)*rollTime, 'noteOff', l-1, [e, vol]
-      notes.slice(1).forEach (e) ->
-        m.addEvent l, 0, 'noteOff', l-1, [e, 0]
     t.forEach (e) ->
-      addNotes e...
+      m.addNotes l, e..., 15
     m.finish()
     return m
 

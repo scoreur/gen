@@ -18,20 +18,35 @@ var seqPlayer = {
 		var channel = this.channel;
 
 		function loop(){
-			if(cur[1]>=21 && cur[1]<=108 &&cur[0]>0){
-				MIDI.noteOn(channel, cur[1], cur[2]);
+			if(cur[0]>0){ // not tied
+				var notes = typeof cur[1] == 'number'? [cur[1]] : cur[1];
+				notes.forEach(function(e){
+					if(e>=21 && e<=108) {
+						MIDI.noteOn(channel, e, cur[2]);
+					}
+				});
 			}
         	setTimeout(function(){
-        	    
+				var notes = typeof cur[1] == 'number'? [cur[1]] : cur[1];
         		if(nexti < 0){
-        			if(cur[1]>=21 && cur[1]<=108){
-        		        MIDI.noteOff(channel,cur[1]);
-        		    }
+
+					notes.forEach(function(e){
+						if(e>=21 && e<=108){
+							MIDI.noteOff(channel,e);
+						}
+					});
+
         			seqPlayer.enabled = false;
         			seqPlayer.onend();
         		}else{
-        			if(cur[1]>=21 && cur[1]<=108 && q[nexti][0]>0){
-        		        MIDI.noteOff(channel,cur[1]);
+
+        			if(q[nexti][0]>0){
+						notes.forEach(function(e){
+							if(e>=21 && e<= 108){
+								MIDI.noteOff(channel,e);
+							}
+						});
+
         		    }
         		    cur = q[nexti];
 					if(seqPlayer.enabled){
@@ -99,32 +114,6 @@ var seqPlayer = {
 }
 
 
-function rndChoice(choices, weights){
-	//console.log(choices,weights);
-	var s = weights.reduce(function(a,b){return a+b;}, 0);
-	var p = weights.map(function(e){return e/s;});
-	s = 0;
-	for(var i=0;i<p.length;++i){
-		s = (p[i] += s);
-	}
-	// TODO: add random seed
-	//var seed = Date.now();
-	function generate(){
-		var r = Math.random();
-		for(var i=0;i<p.length;++i){
-			if(r<p[i]){
-				return choices[i];
-			}
-		}
-		return choices[p.length-1];
-	}
-	return {
-		gen: generate
-	}
-}
-
-
-
 
 var TEST = TEST || {};
 
@@ -143,20 +132,26 @@ TEST.testSeqPlayer = function (){
 // TODO: migrate to Generator.coffee
 
 Generator.prototype.melody = function(mode,options,dur){
+	var rndChoice = this.rndPicker;
+	var pitchSimple = this.pitchSimple;
 	return {
 		'random':function(options, dur){
 			// not chromatic
 			var res = {dur:[],pitch:[]};
 			var n = dur/options.rhythm[0] >>>0;
+
 			var rc1 = rndChoice(options.rhythm[1], options.rhythm[2]);
+			console.log(options.rhythm);
 			var rc2 = rndChoice(options.interval.choices,options.interval.weights);
-			var pre = 60;
+			var pre = 28;
 			for(var i=0;i<n;++i){
 				res.dur.push(rc1.gen());
-				var tmp = []
+				var tmp = [];
 				for(var j=0;j<res.dur[i].length;++j){
 					pre += rc2.gen();
-					tmp.push(white_key_num[pre%7]+12*((pre/7)>>>0));
+					if(pre < 21) pre = 21;
+					if(pre > 108) pre = 108;
+					tmp.push(pitchSimple(pre));
 				}
 				res.pitch.push(tmp);
 			}
@@ -209,11 +204,13 @@ Generator.prototype.toScore = function(){
 		this.generate();
 	}
 
-	var pitchSimple = this.pitchSimple;
+	var pitchSimple = MG.pitchToScale(this.scale,this.key_sig);
+	var scale = MG.scale_class[this.scale];
 	var sec = this.schema.ctrl_per_beat*this.schema.time_sig[0]; // separate bar
 
 	
 	function b2score(b){
+		console.log(b)
 		var dur = _.flatten(b.dur);
         var pitch = _.flatten(b.pitch);
         var prep = 60;
@@ -229,10 +226,10 @@ Generator.prototype.toScore = function(){
 				var oct = (p/12 >>>0) - (prep/12 >>>0);
 				if(oct!=0){
 					var mm = {"-1":'-',"-2":'--',1:'+',2:'++'};
-					ret += ':'+ (mm[oct] || '');
+					ret += ':'+ (mm[oct] || '') + ' ';
 				}
 
-				ret += ' '+pitchSimple(p);
+				ret += (pitchSimple(p) % scale.length + 1);
 				if(d>1){ret += ','+d;}
 				prep = p;
 				//console.log(p, flag);

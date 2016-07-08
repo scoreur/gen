@@ -39,13 +39,13 @@ MG.inverted = (arr,n) ->
   return ret
 
 @chords_inv = MG.chords = ( ->
-  res = {};
-  for c in chord_num
+  res = {}
+  for c,v of MG.chord_class
     ci = c + ''
-  for i in [0...chord_num[c].length] by 1
-    res[ci] = MG.inverted(chord_num[c],i)
-    ci += 'i'
-  # res.inv = inverted;
+    for i in [0...v.length] by 1
+      res[ci] = MG.inverted(v,i)
+      ci += 'i'
+  res.inv = MG.inverted;
   # TODO: alias
   return res;
 )()
@@ -91,16 +91,39 @@ MG.scaleToPitch = (mode, tonic) ->
   scale = MG.scale_class[mode] ? MG.scale_class['maj']
   ref = MG.key_class[tonic] ? 0
   return (num) ->
-    num -= ref
-    return (num // scale.length) * 12 + (num %% scale.length) + 22 # lowest 22
+    return ref + (num // scale.length) * 12 + scale[num %% scale.length] + 12 # lowest 12
+
+MG.pitchToScale = (mode, tonic) ->
+  scale = MG.scale_class[mode] ? MG.scale_class['maj']
+  ref = MG.key_class[tonic] ? 0
+  return (pitch) ->
+
+    pitch -= ref
+    oct = pitch // 12
+    pitch = pitch %% 12
+    for i in [scale.length-1 ..0] by -1
+      if pitch >= scale[i]
+        return i + oct * scale.length
+    return oct * scale.length
+
 
 MG.keyToPitch = (key) ->
-  key_class = /[CDEFGAB][#b]{0,2}/.exec(key)[0] ? 'C'
+  key_class = /[CDEFGAB][#b]{0,2}/.exec(key)[0]
+  key_class ?= 'C'
   ref = MG.key_class[key_class] ? 0
   oct = /[0-9]/.exec(key)[0]
   oct = parseInt(oct) ? 4
-  return 22 + key_class + oct * 12
+  return 12 + ref + oct * 12
 
+MG.pitchToKey = (pitch, sharp) ->
+  if pitch < 21 || pitch > 108
+    return undefined
+  kn = ['C', 'C#', 'D', 'D#', 'E', 'E', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+  if sharp == true
+    kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+  oct = pitch // 12 -1
+  ref = pitch % 12
+  return [kn[ref],oct]
 
 
 @chord_name = MG.chord_class_label =
@@ -120,9 +143,10 @@ MG.keyToPitch = (key) ->
   tempo: 120,
   time_sig: [4,4],
   key_sig: 'C',
+  scale: 'maj',
   ctrl_per_beat: 2,
   incomplete_measure: true,
-  melody: ':+ 3,2 1,2/3,8,^/3,2 2 1 2 3 1,2/:- 6,4 3,4,^/3,4 :+ 3,2 1,2/2 2,7,^/2,2 1 6,1,- 1 6,1,- 1,2/:- 7,8,^/7,4 0 :+ 3,2 1/3 3,2 3,1,^ 3,4,^/3,2 2 1 2 3 1,2/:- 6,4 3,4,^/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6,8,^/6,4 :+ 3,2 1,2'.split('/'),
+  melody: ':+ 3,2 1,2/3^,8/3,2 2 1 2 3 1,2/:- 6,4 3^,4/3,4 :+ 3,2 1,2/2 2^,7/2,2 1 6-,1 1 6-,1 1,2/:- 7^,8/7,4 0 :+ 3,2 1/3 3,2 3^,1 3^,4/3,2 2 1 2 3 1,2/:- 6,4 3^,4/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6^,8/6,4 :+ 3,2 1,2'.split('/'),
   harmony: "E7,4/Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4/Dmin,8/F7,8/F#min7,4 B7,4/E7,8/Am,8/Bb7,8/Am,8/D7,8/C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4 E7,4".split('/'),
   texture: ":-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:iii-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4".split('/')
 
@@ -134,20 +158,19 @@ MG.keyToPitch = (key) ->
   options:
     rhythm: [
       4,
-      '1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map (e)->
-        e.split(/\s+/).map (e2)->
-          parseInt(e2)
-      ,
-      [2,3,3,7,1,1,2,1]
+      ('1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map (e)->
+        e.split(/\s+/).map (e2)-> parseInt(e2)
+      ),
+      [2,3,3,5,1,3,2,1]
     ],
 
     interval:
       chromatic: false,
-      weights: [1,1,2,5,3,6,8,  4,7,12,8,3,1,0,1],
-      choices: ->
+      weights: [1,1,2,5,12,6,8,  4,7,12,8,3,1,0,1],
+      choices: (->
         Array(15).fill().map (e,i)->
           i-7
-
+      )()
 
 
 
@@ -174,6 +197,7 @@ MG.keyToPitch = (key) ->
   ctrl_per_beat: 2,
   time_sig: [4,4],
   key_sig: 'C',
+  scale: 'maj',
   blocks: ((a,b)->
     res = {}
     a.split('').forEach (e,i)->

@@ -228,32 +228,40 @@ ScoreRenderer.prototype.render = function(score){
   var ctx = this.ctx;
   var w = (this.geo.system_width / this.layout.measure_per_system * 0.9) >>> 0;
   var s = this.s = new ScoreObj(score);
-
-
-
   this.sys = [];
   for(var i=0;i < s.melody.length; ++i){
     var stave = this.newStave(i);
     var dur_tot = 0;
     var notes = s.melody[i].map(function(e){
-      var key = MIDI.noteToKey[e[1]];
+
       dur_tot += e[0];
       var duration =  dur_map(e[0]/s.ctrl_per_beat);
-      //console.log(e[0], s.ctrl_per_beat,duration);
-
-      if(key == undefined){
-        key = "Bb4"; // rest
+      var keys = [];
+      if(typeof e[1] == 'number'){
+        e[1] = [e[1]];
+      }
+      e[1].forEach(function(e1){
+        if(key == undefined){
+          var key = MG.pitchToKey(e1);
+          if(typeof key != 'undefined'){
+            keys.push(key.join('/'));
+          }
+        }
+      });
+      if(keys.length <= 0){
+        keys.push('Bb/4'); // rest
         duration += 'r';
       }
-      key = key.substr(0,key.length-1)+'/'+key.substr(-1);
-      //console.log(duration, key);
-      var res = new Vex.Flow.StaveNote({keys:[key], duration: duration});
+      //console.log(duration, keys);
+      var res = new Vex.Flow.StaveNote({keys:keys, duration: duration, auto_stem: true});
       if(duration.substr(-1)=='d'){
         res.addDotToAll();
+        if(duration.substr(-2,1)=='d'){
+          res.addDotToAll();
+        }
       }
       return res;
     });
-    // add barline
 
 
     // Create a voice in 4/4

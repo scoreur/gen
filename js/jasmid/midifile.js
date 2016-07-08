@@ -509,6 +509,33 @@ simpMidi.prototype.addTrack = function(){
 	this.tracks.push([]);
 	return this.header.trackCount = this.tracks.length;
 }
+simpMidi.prototype.addNotes = function(l,dur,notes,vols,rollTime,delta){
+	var delta = delta || 0;
+	if(typeof rollTimes == 'undefined'){
+		rollTime = 0;
+	}
+	if(typeof vols == 'undefined'){
+		vols = [110];
+	}
+	if(typeof vols == 'number'){
+		vols = [vols];
+	}
+	if(typeof notes == 'number'){
+		notes = [notes];
+	}
+	if(l < 1){l = 1;}
+	if(l >= this.tracks.length){ l = this.tracks.length - 1}
+	var track = this.tracks[l];
+	track.push(simpEvent(delta, 'noteOn', l-1, [notes[0], vols[0]]));
+	notes.slice(1).forEach( function(e, i){
+	    track.push(simpEvent(rollTime, 'noteOn', l-1, [e,vols[i] || vols[0]]));
+	});
+	track.push(simpEvent(dur-(notes.length-1)*rollTime, 'noteOn', l-1, [notes[0], 0]));
+	notes.slice(1).forEach( function(e){
+		track.push(simpEvent(0, 'noteOn', l-1, [e,0]));
+	});
+
+}
 
 var TEST = TEST || {};
 
