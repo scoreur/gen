@@ -191,7 +191,7 @@
 
   this.gen_modes = ['random', 'transpose', 'chord'];
 
-  this.sample_mode = {
+  this.sample_rand_mode = {
     mode: 'random',
     options: {
       rhythm: [
@@ -225,8 +225,23 @@
   this.sample_chord_mode = {
     mode: 'chord',
     options: {
-      chords: "Am,8 Bb7,8 Am,8 D7,8".split(/\s+/),
-      weights: [1, 9, 4, 6, 4]
+      chords: "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
+      rhythm: [
+        4, '1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map(function(e) {
+          return e.split(/\s+/).map(function(e2) {
+            return parseInt(e2);
+          });
+        }), [2, 3, 3, 5, 1, 3, 2, 1]
+      ],
+      interval: {
+        chromatic: false,
+        weights: [1, 1, 2, 5, 12, 6, 8, 4, 7, 12, 8, 3, 1, 0, 1],
+        choices: (function() {
+          return Array(15).fill().map(function(e, i) {
+            return i - 7;
+          });
+        })()
+      }
     }
   };
 
@@ -252,7 +267,7 @@
       'c': "5,4"
     },
     melody: {
-      'c': sample_mode,
+      'c': sample_rand_mode,
       'A': {
         mode: 'random',
         options: {}
@@ -267,16 +282,18 @@
       }
     },
     harmony: {
-      'A': "",
-      'B': "",
-      'C': "",
+      'A': "Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4".split('/'),
+      'B': "Dmin,8/F7,8/F#min7,4 B7,4/E7,8".split('/'),
+      'C': "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
       'c': ""
     }
   };
 
-  this.schema_summer.melody.A = this.schema_summer.melody.C = sample_mode;
+  this.schema_summer.melody.A = this.sample_rand_mode;
 
   this.schema_summer.melody.B = this.sample_transpose_mode;
+
+  this.schema_summer.melody.C = this.sample_chord_mode;
 
 }).call(this);
 
@@ -505,8 +522,8 @@
       return res;
     };
 
-    ScoreObj.prototype.parseHarmony = function(measures) {
-      var alias, ctrlTicks, ex, res;
+    ScoreObj.prototype.parseHarmony = function(measures, ctrlTicks) {
+      var alias, ex, res;
       if (measures == null) {
         measures = this.options.harmony;
       }
@@ -519,7 +536,9 @@
         'mi': 'min',
         'm7': 'min7'
       };
-      ctrlTicks = this.init_ctrlTicks;
+      if (ctrlTicks == null) {
+        ctrlTicks = this.init_ctrlTicks;
+      }
       res = measures.map(function(e) {
         var chords, measure, octave, vol;
         measure = [];
@@ -732,7 +751,7 @@ var seqPlayer = {
 
 
 	},
-	toQ(score){
+	toQ: function(score){
 
 
 	},
@@ -787,7 +806,7 @@ TEST.testSeqPlayer = function (){
 	seqPlayer.setQ(arr);
 	seqPlayer.play();
 	return true;
-}
+};
 
 
 // TODO: migrate to Generator.coffee
@@ -839,21 +858,50 @@ Generator.prototype.melody = function(mode,options,dur){
 				});
 				refd++;
 				res.dur.push(tmp);
-
 			}
 			return res;
 		},
 		'chord':function(options,dur){
-			var chords = options.chords.map(function(e){
-				return e.split(',');
-			});
+			var chords = _.flatten(ScoreObj.prototype.parseHarmony(options.chords, 1),true);
+            console.log('chords', chords);
+			var refc = 0;
+			var refdur = chords[refc][0];
+
 			// obtain chords pitch
-			var res = {pitch:[], dur:[]};
+
+			// not chromatic
+			var res = {dur:[],pitch:[]};
+			var n = dur/options.rhythm[0] >>>0;
+
+			var rc1 = rndChoice(options.rhythm[1], options.rhythm[2]);
+			var rc2 = rndChoice(options.interval.choices,options.interval.weights);
+			var pre = 28;
+			for(var i=0;i<n;++i){
+				res.dur.push(rc1.gen());
+				var tmp = [];
+				for(var j=0;j<res.dur[i].length;++j){
+					if(Math.random()>0.9){
+						pre += rc2.gen();
+					}else{
+						var r = Math.random()*9;
+						var ii = (r%3) >>>0;
+						if(refc+1<chords.length && refdur<0){
+							refdur += chords[++refc][0];
+						}
+						pre = chords[refc][1] + chords[refc][2][ii] + 12*((r/3)>>>0);
+						//console.log(pre, chords[refc])
+					}
+					refdur -= options.rhythm[0];
 
 
-			return this.random(options,dur);
-
+					if(pre < 21) pre = 21;
+					if(pre > 108) pre = 108;
+					tmp.push(pitchSimple(pre));
+				}
+				res.pitch.push(tmp);
+			}
 			return res;
+
 		}
 	}[mode](options, dur, this);
 	
