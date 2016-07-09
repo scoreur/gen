@@ -15,8 +15,9 @@ nav#top-menu.navbar.navbar-default.navbar-static-top
             span.sr-only (current)
         li
           a(href='#') Demo
+        // Menu File
         li.dropdown
-          a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') File
+          a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') File
             span.caret                     
           ul.dropdown-menu
             li
@@ -33,7 +34,28 @@ nav#top-menu.navbar.navbar-default.navbar-static-top
             li
               a#open_pdf Open Score PDF
             li
-              a(data-toggle='collapse', data-target='.score_viewer') PDF Viewer
+              a#save_score Save Rendered Score
+        // Menu Edit
+        li.dropdown
+          a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Edit
+            span.caret
+          ul.dropdown-menu
+            li
+              a#reset_editor Reset Editor
+            li
+              a(data-toggle='modal', data-target='#ctrl') Increase Controls
+        // Menu View
+        li.dropdown
+          a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') View
+            span.caret
+          ul.dropdown-menu.nav.nav-tabs.nav-stacked
+            li(data-toggle='tab', data-target='#img_viewer')
+              a View Image
+            li(data-toggle='tab', data-target='#pdf_viewer')
+              a View PDF
+            li(data-toggle='tab', data-target='#midi_viewer')
+              a View MIDI Score
+
       //
         form.navbar-form.navbar-left(role="search")
           .form-group

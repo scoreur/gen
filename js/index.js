@@ -7,6 +7,7 @@ function setupEditor(id){
 	editor.setTheme("ace/theme/clouds");
 	editor.getSession().setMode("ace/mode/score");
 	//editor.getSession().setUseWrapMode(true);
+	editor.setFontSize(14);
 	editor.$blockScrolling = Infinity;
 	return editor;
 
@@ -54,11 +55,11 @@ var btn_event_list = {
 			cur_score[e] = eds[e].getValue().split(/[/\n]+/);
 
 		});
-		eds.score.setValue(JSON.stringify(cur_score, null, 2));
-		mds.render(cur_score);
+		eds.score.setValue(JSON.stringify(cur_score, null, 2), -1);
 		seqPlayer.fromScore(cur_score);
 		MIDI.Player.loadFile('base64,'+btoa(seqPlayer.raw_midi),function(){
-			console.log('MIDI loaded');
+			$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
+			$.notify('MIDI loaded!', 'success');
 		});
 	},
 	'start':function(){
@@ -82,11 +83,13 @@ var btn_event_list = {
 			$('button#play').html('Play Melody');
 		}
 	},
-	'stop': function(){
-		seqPlayer.stop();
-	},
 	'save_midi': function(){
 		seqPlayer.saveMidi();
+	},
+	'save_score': function(){
+		$('#midi_score')[0].toBlob(function(blob){
+			saveAs(blob, 'sample.png');
+		});//default image/png
 	},
 	'gen': function(){
 		cur_schema = JSON.parse(eds.schema.getValue());
@@ -99,7 +102,8 @@ var btn_event_list = {
 
 	},
 	'render':function(){
-
+		mds.render(cur_score);
+		$('li[data-target="#midi_viewer"]').click();
 	},
 	'console_eval': function(){
 		$('#console_result').html(eval($('#console_panel').val()));
@@ -109,13 +113,63 @@ var btn_event_list = {
 		var file = new File([ext],'sample.json',{type:"application/json"});
 		saveAs(file);
 
+	},
+	'reset_editor': function(){
+
+	},
+	'inc_ctrl': function(){
+		var mul;
+		try{
+			mul = $('#ctrl_mul').val();
+			if(mul == '') mul = 2;
+			mul = parseInt(mul);
+		}catch(e){
+			mul = 1;
+			$.notify('Bad parameter!', 'info');
+		}finally {
+			if(mul == 1 || mul == NaN){
+				$.notify('NOT updated!', 'info');
+				return;
+			}
+			var obj = JSON.parse(eds.score.getValue());
+			['melody', 'harmony', 'texture'].forEach(function(e0){
+				var data = eds[e0].getValue().split(/[/\n]+/);
+				data = data.map(function(e1){
+					return e1.split(/\s+/).map(function(e2){
+						if(e2[0]==':'){
+							return e2;
+						}else{
+							var e3 = e2.split(',');
+							if(e3.length<2){
+								e3.push(mul);
+							}else{
+								e3[1]  = parseInt(e3[1]) * mul;
+							}
+							return e3.join(',');
+						}
+					}).join(' ');
+				});
+				obj[e0] = data;
+				eds[e0].setValue(data.join('\n'), -1);
+			});
+
+			obj.ctrl_per_beat *= mul;
+			eds.score.setValue(JSON.stringify(obj, null, 2), -1);
+			obj = JSON.parse(eds.schema.getValue());
+			obj.ctrl_per_beat *= mul;
+			eds.schema.setValue(JSON.stringify(obj, null, 2), -1);
+			$.notify('Ctrl per beat updated!', 'success');
+		}
 	}
+
 };
 
 var file_open_handlers = {
 	'open_midi': function(evt){
 		load_local_midi(evt.target.files[0], function(res){
-			MIDI.Player.loadFile(res);
+			MIDI.Player.loadFile(res, function(){
+				$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
+			});
 		});
 	},
 	'open_img': function(evt){
@@ -157,12 +211,14 @@ function registerEvents(){
 		$('#midi_progress').val(''+(100*res.percent)>>>0);
 		if(MIDI.Player.playing){
 			$('#play_slider').val(''+(100*res.percent)>>>0);
+			$('#currentTime').html(res.now);
+			//$('#endTime').html(res.end);
 		}else{
 			$('button#start').html('Play MIDI');
 		}
 		
 	});
-
+    /*
 	['melody','harmony','texture'].forEach(function(e){
 		var r = ['melody','harmony','texture'];
 		r.splice(r.indexOf(e),1);
@@ -173,6 +229,7 @@ function registerEvents(){
 			});
 		});
 	});
+	*/
 
 	$('#play_slider').on('change', function(){
 		MIDI.Player.currentTime = parseInt($('#play_slider').val())/100*MIDI.Player.endTime;
@@ -185,10 +242,10 @@ function registerEvents(){
 	  .on("mouseup", handlePianoKeyRelease);
 }
 function updateEditor(){
-	eds.score.setValue(JSON.stringify(cur_score, null, 2));
-	eds.schema.setValue(JSON.stringify(cur_schema, null, 2));
+	eds.score.setValue(JSON.stringify(cur_score, null, 2), -1);
+	eds.schema.setValue(JSON.stringify(cur_schema, null, 2), -1);
 	['melody','harmony','texture'].forEach(function(e){
-		eds[e].setValue(cur_score[e].join('\n'));
+		eds[e].setValue(cur_score[e].join('\n'), -1);
 	})
 }
 function use_local_store(){
