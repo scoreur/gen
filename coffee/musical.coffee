@@ -99,7 +99,7 @@ MG.pitchToScale = (mode, tonic) ->
   return (pitch) ->
 
     pitch -= ref
-    oct = pitch // 12
+    oct = pitch // 12 - 1
     pitch = pitch %% 12
     for i in [scale.length-1 ..0] by -1
       if pitch >= scale[i]
@@ -118,7 +118,7 @@ MG.keyToPitch = (key) ->
 MG.pitchToKey = (pitch, sharp) ->
   if pitch < 21 || pitch > 108
     return undefined
-  kn = ['C', 'C#', 'D', 'D#', 'E', 'E', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+  kn = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
   if sharp == true
     kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
   oct = pitch // 12 -1
@@ -220,7 +220,7 @@ MG.pitchToKey = (pitch, sharp) ->
     return res
   )('cABC',[4,32,32,28]),
   structure: "c/A/B/A/C/c".split('/'),
-  scale:'min',
+  scale:'maj',
   funcs:
     'A': "1,8/4,8/1,4 2,4/1,8".split('/'),
     'B':"4,8/6,8/2,4 5,4/5,8".split('/'),

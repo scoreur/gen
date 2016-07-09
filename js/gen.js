@@ -116,7 +116,6 @@ var seqPlayer = {
 		if(this.raw_midi.length<1) return;
 		var bf = new Uint8Array(this.raw_midi.split("").map(function(e){return e.charCodeAt(0);}));
 		saveAs(new File([bf], 'sample.mid', {type:"audio/midi"}));
-		log('midi saved');
 	}
 }
 
@@ -169,22 +168,23 @@ Generator.prototype.melody = function(mode,options,dur){
 			var src = self.res[options.src];
 			// TODO: handle offset
 			var refd = 0, refp = 0;
-			
 			while(dur>0){
                 var tmp = [];
+				var tmp2 = []; // pitch
 				src.dur[refd].map(function(e,i){
 					if(dur-e>=0){
 						tmp.push(e);
-						res.pitch.push(options.interval + src.pitch[refd][i]);
+						tmp2.push(options.interval + src.pitch[refd][i]);
 						dur -= e;
 					}else if(dur>0){
 						tmp.push(dur);
-						res.pitch.push(options.interval + src.pitch[refd][i]);
+						tmp2.push(options.interval + src.pitch[refd][i]);
 						dur = 0;
 					}
 				});
 				refd++;
 				res.dur.push(tmp);
+				res.pitch.push(tmp2);
 			}
 			return res;
 		},
@@ -233,69 +233,6 @@ Generator.prototype.melody = function(mode,options,dur){
 	}[mode](options, dur, this);
 	
 };
-
-Generator.prototype.toScore = function(){
-	if(this.res == {}){
-		// not generate
-		this.generate();
-	}
-
-	var pitchSimple = MG.pitchToScale(this.scale,this.key_sig);
-	var scale = MG.scale_class[this.scale];
-	var sec = this.schema.ctrl_per_beat*this.schema.time_sig[0]; // separate bar
-
-	
-	function b2score(b){
-		console.log(b)
-		var dur = _.flatten(b.dur);
-        var pitch = _.flatten(b.pitch);
-        var prep = 60;
-		    	
-    	var tmp = [':'];
-		var delta = 0;
-		
-		var sc = [];
-		for(var j=0;j<dur.length;++j){
-			function ct(d,p){
-				var ret = '';
-				delta += d;
-				var oct = (p/12 >>>0) - (prep/12 >>>0);
-				if(oct!=0){
-					var mm = {"-1":'-',"-2":'--',1:'+',2:'++'};
-					ret += ':'+ (mm[oct] || '') + ' ';
-				}
-
-				ret += (pitchSimple(p) % scale.length + 1);
-				if(d>1){ret += ','+d;}
-				prep = p;
-				//console.log(p, flag);
-				return ret;
-			}
-			if(delta>=sec){
-			    delta -= sec;
-			    sc.push(tmp.join(' '));
-			    tmp = [];
-			}
-			tmp.push(ct(dur[j],pitch[j]));
-
-	    }
-		if(tmp != []){ // incomplete measure
-			sc.push(tmp.join(' '));
-		}
-		return sc;
-
-	}	
-
-	var res = this.res;
-
-	var melody = this.schema.structure.map(function(e){return b2score(res[e]);});
-
-	return {
-		melody: _.flatten(melody,true),
-		harmony: {},
-		texture: {}
-	}
-}
 
 
 TEST.testGen = function(){

@@ -162,7 +162,7 @@ var ScoreRenderer = function(c, p){
   this.c = document.getElementById(c);
   this.r = new Vex.Flow.Renderer(this.c, Vex.Flow.Renderer.Backends.CANVAS);
   this.ctx = this.r.getContext();
-  this.geo = {system_width:800,system_height:80,system_interval:20,left_padding:10,top_padding:10};
+  this.geo = {system_width:820,system_height:80,system_interval:30,left_padding:25,top_padding:10};
   this.layout = {measure_per_system:4};
   this.r.resize(1000,800);
 
@@ -181,7 +181,7 @@ ScoreRenderer.prototype.old_render = function(score){
   this.sys = [];
   for(var i=0;i<nSystems;++i){
     this.sys.push(new fabric.Rect({
-      width:460,
+      width:480,
       height:50,
       left:0,
       top:0,
@@ -189,8 +189,8 @@ ScoreRenderer.prototype.old_render = function(score){
     }));
   }
   var top_padding = 30;
-  var left_padding = 20;
-  var system_dis = 20;
+  var left_padding = 25;
+  var system_dis = 30;
   this.c.clear();
   for(var i=0;i<nSystems;++i){
     this.sys[i].set({top:top_padding+(50+system_dis)*i, left:left_padding});
@@ -242,7 +242,9 @@ ScoreRenderer.prototype.render = function(score){
       }
       e[1].forEach(function(e1){
         if(key == undefined){
+
           var key = MG.pitchToKey(e1);
+          //console.log('render', e1, key)
           if(typeof key != 'undefined'){
             keys.push(key.join('/'));
           }

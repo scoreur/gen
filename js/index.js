@@ -42,20 +42,25 @@ var eds = {};
 
 var mds = new ScoreRenderer('midi_score', undefined,  'midi_pointer');
 
-var cur_schema = schema_summer;
-var cur_score = score_summer;
+var cur_schema = Object.assign({},schema_summer);
+var cur_score = Object.assign({},score_summer);
 
 
 
-var btn_event_list = {
+var click_event_list = {
 	'parse': function(){
-		cur_score = JSON.parse(eds.score.getValue());
+		try{
+			cur_score = JSON.parse(eds.score.getValue());
+		}catch(e){
+			$.notify('Bad score format!', 'warning');
+		}
+
+		//eds.score.setValue(JSON.stringify(cur_score, null, 2), -1);
 		['melody','harmony','texture'].forEach(function(e){
 			//console.log(e);
 			cur_score[e] = eds[e].getValue().split(/[/\n]+/);
 
 		});
-		eds.score.setValue(JSON.stringify(cur_score, null, 2), -1);
 		seqPlayer.fromScore(cur_score);
 		MIDI.Player.loadFile('base64,'+btoa(seqPlayer.raw_midi),function(){
 			$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
@@ -85,19 +90,24 @@ var btn_event_list = {
 	},
 	'save_midi': function(){
 		seqPlayer.saveMidi();
+		$.notify('MIDI saved!', 'success');
 	},
 	'save_score': function(){
 		$('#midi_score')[0].toBlob(function(blob){
 			saveAs(blob, 'sample.png');
+			// not detect abort
+			$.notify('Score Image Saved!', 'success');
+
 		});//default image/png
 	},
 	'gen': function(){
 		cur_schema = JSON.parse(eds.schema.getValue());
         var generator = new Generator(cur_schema);
         generator.generate();
-		var res = generator.toScore();
-	    console.log(res.melody);
-	    cur_score.melody = res.melody;
+		var score = generator.toScoreObj()
+		console.log('to Text')
+	    cur_score.melody = score.toText();
+
 	    updateEditor();
 
 	},
@@ -112,10 +122,13 @@ var btn_event_list = {
 		var ext = JSON.stringify({score:cur_score,schema:cur_schema});
 		var file = new File([ext],'sample.json',{type:"application/json"});
 		saveAs(file);
+		$.notify('JSON exported!', 'success');
 
 	},
 	'reset_editor': function(){
-
+		cur_schema = Object.assign({},schema_summer);
+		cur_score = Object.assign({},score_summer);
+		updateEditor();
 	},
 	'inc_ctrl': function(){
 		var mul;
@@ -176,6 +189,7 @@ var file_open_handlers = {
 	    var reader = new FileReader();
 	    reader.onload = function(e){
 	    	$('#score_img').attr('src', e.target.result);
+			$('li[data-target="#img_viewer"]').click();
 	    }	
 	    reader.readAsDataURL(evt.target.files[0]);
     },
@@ -190,14 +204,15 @@ var file_open_handlers = {
 		var reader = new FileReader();
         reader.onload = function(e){
         	load_pdf(e.target.result);
+			$('li[data-target="#pdf_viewer"]').click();
         };
 		reader.readAsArrayBuffer(evt.target.files[0]);
 	}
 };
 
 function registerEvents(){
-	for(var i in btn_event_list){
-		$('#'+i).on('click', btn_event_list[i]);
+	for(var i in click_event_list){
+		$('#'+i).on('click', click_event_list[i]);
 	}
 	for(var id in file_open_handlers){
 		openFor(id, file_open_handlers[id]);
@@ -242,11 +257,17 @@ function registerEvents(){
 	  .on("mouseup", handlePianoKeyRelease);
 }
 function updateEditor(){
-	eds.score.setValue(JSON.stringify(cur_score, null, 2), -1);
-	eds.schema.setValue(JSON.stringify(cur_schema, null, 2), -1);
+
 	['melody','harmony','texture'].forEach(function(e){
 		eds[e].setValue(cur_score[e].join('\n'), -1);
-	})
+	});
+	var tmp1 = cur_score.melody, tmp2 = cur_score.harmony, tmp3 = cur_score.texture;
+	cur_score.melody = cur_score.harmony = cur_score.texture = undefined;
+	eds.score.setValue(JSON.stringify(cur_score, null, 2), -1);
+	eds.schema.setValue(JSON.stringify(cur_schema, null, 2), -1);
+	cur_score.melody = tmp1;
+	cur_score.harmony = tmp2;
+	cur_score.texture = tmp3;
 }
 function use_local_store(){
 	return location.origin=="file://" || location.href.indexOf('http://localhost')>-1;

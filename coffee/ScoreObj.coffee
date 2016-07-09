@@ -3,13 +3,15 @@ MG = @MG ? {}
 class @ScoreObj
   constructor: (options) ->
     options ?= {}
-    @tempo = options.tempo ? 120
-    @time_sig = options.time_sig ? [4,4]
-    @key_sig = options.key_sig ? 'C'
-    @ctrl_per_beat = options.ctrl_per_beat ? 4
+    {@tempo, @time_sig, @key_sig, @ctrl_per_beat, @scale} = options
+    @tempo ?= 120
+    @time_sig ?= [4,4]
+    @key_sig ?='C'
+    @ctrl_per_beat ?= 4
     @init_ref = MG.key_class[@key_sig] + 60 # C4 ~ B4
-    @init_ctrlTicks = (60000.0/@.tempo/@.ctrl_per_beat) >>>0
-    @scale = options.scale || 'maj'
+    @init_ctrlTicks = (60000.0/@tempo/@ctrl_per_beat) >>>0
+    @scale ?= 'maj'
+    # remove this
     @options = options
     @parse(options)
 
@@ -18,17 +20,17 @@ class @ScoreObj
   parse: (options) ->
     options ?= @options
     @measures = _.zip(options.melody, options.harmony, options.texture)
-    @melody = @parseMelody(options.melody)
-    @harmony = @parseHarmony(options.harmony)
-    @texture = @parseTexture(options.texture)
+    @melody = if options.melody then @parseMelody(options.melody) else null
+    @harmony = if options.harmony then @parseHarmony(options.harmony) else null
+    @texture = if options.texture then @parseTexture(options.texture) else null
 
   parseMelody: (m) ->
     m ?= @options.melody
     scale = MG.scale_class[@scale]
-    ref = @init_ref;
+    ref = @init_ref
     res = m.map (e)=>
       notes = e.trim().split(/\s+/);
-      measure = [];
+      measure = []
       notes.forEach (e2) =>
         if e2[0]==':'
           switch e2[1]
@@ -132,11 +134,40 @@ class @ScoreObj
       return measure
     return res
 
+  toText: ->
+    console.log 'to score text'
+    if @melody == null
+      return
+    pitchSimple = MG.pitchToScale(@scale,@key_sig)
+    scale_len = MG.scale_class[@scale].length
+    ref_oct = 4
+    res = @melody.map (e)->
+      ret = []
+      e.forEach (e1)->
+        o = ''
+        if typeof e1[1] == 'number'
+          e1[1] = [e1[1]]
+        e1[1].forEach (e2)->
+          tmp = pitchSimple(e2)
+          oct = tmp // scale_len
+          o += 1 + (tmp %% scale_len)
+          o += {'-2':'--','-1':'-',1:'+',2:'++'}[oct-ref_oct] || ''
+        if e1[2] == true
+          o += '^'
+        if e1[0] > 1
+          o += ',' + e1[0] # dur
+        ret.push o
+      #console.log 'text', e, ret
+      return ret.join(' ')
+
+    return res
+
+
   toMidi: ->
     console.log('to midi')
     ctrlTicks = @init_ctrlTicks
     q = _.flatten(@melody, true)
-    t = _.flatten(@texture, true)
+    t = if @texture then _.flatten(@texture, true) else null
     m = new simpMidi()
     delta = 0
     vol = 110
@@ -156,6 +187,10 @@ class @ScoreObj
     m.setTimeSignature @time_sig...
     m.setKeySignature MIDI.key_sig[@key_sig], 'maj'
     m.setTempo @tempo
+
+    if t == null
+      m.finish()
+      return m
 
     l = m.addTrack() - 1
     m.addEvent l, 0, 'programChange', l-1, 0

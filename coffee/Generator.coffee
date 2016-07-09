@@ -11,8 +11,48 @@ class @Generator
     for i,dur of @schema.blocks
       mode = @schema.melody[i]
       @res[i] = @melody(mode.mode, mode.options, dur)
+
     return
 
+  toScoreObj: ->
+    if res == {}
+      @generate()
+    sec = @schema.ctrl_per_beat * @schema.time_sig[0] # separate bar
+    res = {}
+    console.log 'to Score obj'
+    for e0, b of @res
+      dur = _.flatten(b.dur);
+      pitch = _.flatten(b.pitch);
+      # console.log dur.length == pitch.length
+      ret = []
+      # separate measure, add ties
+      tmp = []
+      delta = 0
+      dur.forEach (e,j)->
+        while delta + e > sec # exceed
+          tmp.push [sec-delta, pitch[j], true] # tie
+          ret.push tmp
+          tmp = []
+          e -= sec-delta
+          delta = 0
+        tmp.push [e, pitch[j]]
+        delta += e
+        if delta == sec
+          ret.push tmp
+          tmp = []
+          delta = 0
+      if tmp.length > 0
+        ret.push tmp  # incomplete measure
+      res[e0] = ret
+
+    res = @schema.structure.map (e)-> res[e]
+
+
+
+    obj = new ScoreObj({ctrl_per_beat:@schema.ctrl_per_beat});
+
+    obj.melody = _.flatten res, true
+    return obj
 
   rndPicker: (choices, weights) ->
     s = weights.reduce ((a,b)-> a+b), 0
