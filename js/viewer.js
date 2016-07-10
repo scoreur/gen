@@ -162,7 +162,7 @@ var ScoreRenderer = function(c, p){
   this.c = document.getElementById(c);
   this.r = new Vex.Flow.Renderer(this.c, Vex.Flow.Renderer.Backends.CANVAS);
   this.ctx = this.r.getContext();
-  this.geo = {system_width:820,system_height:80,system_interval:30,left_padding:25,top_padding:10};
+  this.geo = {system_width:820,system_height:80,system_interval:30,left_padding:25,top_padding:10, reserved_width:48};
   this.layout = {measure_per_system:4};
   this.r.resize(1000,800);
 
@@ -208,16 +208,17 @@ function dur_map(dur){
   return dur_mapper[dur-1];
 }
 // m-th measure
-ScoreRenderer.prototype.newStave = function(m){
+ScoreRenderer.prototype.newStave = function(m,k){
   var i = m % this.layout.measure_per_system;
   var j = (m / this.layout.measure_per_system) >>> 0;
-  var w = this.geo.system_width / this.layout.measure_per_system;
+  var w = (this.geo.system_width-this.geo.reserved_width) / this.layout.measure_per_system >>> 0;
   var x = this.geo.left_padding + i * w;
   var y = this.geo.top_padding + j * (this.geo.system_height + this.geo.system_interval);
   //console.log(x,y,w);
-  if(i % this.layout.measure_per_system == 0){
-    return new Vex.Flow.Stave(x, y, w).addClef('treble');
+  if(i == 0){
+    return new Vex.Flow.Stave(x, y, w+this.geo.reserved_width).addClef('treble').addKeySignature(k);
   }else{
+    x += this.geo.reserved_width;
     return new Vex.Flow.Stave(x, y, w);
   }
 
@@ -228,10 +229,13 @@ ScoreRenderer.prototype.render = function(score){
   var ctx = this.ctx;
   var w = (this.geo.system_width / this.layout.measure_per_system * 0.9) >>> 0;
   var s = this.s = new ScoreObj(score);
-  console.log(s)
+  //console.log(s)
   this.sys = [];
   for(var i=0;i < s.melody.length; ++i){
-    var stave = this.newStave(i);
+    var stave = this.newStave(i, s.key_sig);
+    if(i==0){
+      stave.addTimeSignature(s.time_sig.join('/'));
+    }
     var dur_tot = 0;
     var notes = s.melody[i].map(function(e){
 
@@ -275,21 +279,24 @@ ScoreRenderer.prototype.render = function(score){
       resolution: Vex.Flow.RESOLUTION
     });
 
+
     // Add notes to voice
     voice.addTickables(notes);
+    var beams = Vex.Flow.Beam.applyAndGetBeams(voice);
 
-    // Format and justify the notes to 500 pixels
-
+    // Format and justify the notes
     var formatter = new Vex.Flow.Formatter().
-    joinVoices([voice]).format([voice], w-5);
+    joinVoices([voice]).
+    format([voice], w - (i % this.layout.measure_per_system == 0? 40: 10) - (i == 0? 10: 0));
 
-    this.sys.push({voices:[voice],stave:stave});
+    this.sys.push({voices:[voice],stave:stave, beams:beams});
 
   }
 
   this.sys.forEach(function(e){
     e.stave.setContext(ctx).draw();
     e.voices.forEach(function(v){v.draw(ctx, e.stave);});
+    e.beams.forEach(function(v){v.setContext(ctx).draw()})
   });
 
 };
