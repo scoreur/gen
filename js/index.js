@@ -66,6 +66,23 @@ var click_event_list = {
 			$.notify('MIDI loaded!', 'success');
 		});
 	},
+	'eg_load_json':function(){
+		$.ajax('score/sample.json').done(function(res){
+			var obj = JSON.parse(res);
+			cur_score = obj.score;
+			cur_schema = obj.schema;
+			updateEditor();
+			$.notify('sample JSON loaded!', 'success');
+		});
+
+	},
+	'eg_load_midi':function(){
+		MIDI.Player.loadFile('score/sample.mid', function(){
+			$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
+			$.notify('sample MIDI loaded!', 'success');
+		})
+
+	},
 	'start':function(){
 		if(!MIDI.Player.playing){
             MIDI.Player.start();
@@ -226,8 +243,17 @@ function registerEvents(){
 	for(var id in file_open_handlers){
 		openFor(id, file_open_handlers[id]);
 	}
-	seqPlayer.onend = function(){
-		$('button#play').html('Play Melody');
+	seqPlayer.onend = function(n){
+		switch(n){
+			case 0:
+				$('button#play_melody').html('Play Melody');
+				break;
+			case 1:
+				$('button#play_harmony').html('Play Harmony');
+				break;
+			default:
+		};
+
 	};
 
 	MIDI.Player.setAnimation(function(res){

@@ -55,6 +55,16 @@ nav#top-menu.navbar.navbar-default.navbar-static-top
               a(href='#pdf_viewer') View PDF
             li(data-toggle='tab', data-target='#midi_viewer')
               a(href='#midi_viewer') View MIDI Score
+        // Menu Example
+        li.dropdown
+          a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Example
+            span.caret
+          ul.dropdown-menu
+            li
+              a#eg_load_json Load sample json
+            li
+              a#eg_load_midi load sample midi
+
 
       //
         form.navbar-form.navbar-left(role="search")
