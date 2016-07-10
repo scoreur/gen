@@ -71,12 +71,10 @@ class @ScoreObj
     measures ?= @options.harmony
     ex = /[ABCDEFG][b#]?/
     alias = {'7':'dom7','':'maj','M':'maj','m':'min','mi':'min','m7':'min7'}
-    ctrlTicks ?= @init_ctrlTicks
     res = measures.map (e) ->
       measure = []
       chords = e.trim().split(/\s+/)
       octave = 3
-      vol = 50
       chords.forEach (e2) =>
         terms = e2.split(',')
         root = ex.exec(terms[0])[0]
@@ -85,8 +83,7 @@ class @ScoreObj
         name = alias[name] ? name
         chord_pitches = MG.chords[name] || MG.chords['maj'] # default maj
         dur =  if terms.length>=2 then parseInt(terms[1]) else 1
-        dur *= ctrlTicks
-        measure.push [dur,root_pitch,chord_pitches,vol]
+        measure.push [dur,root_pitch,chord_pitches]
       return measure
     return res
 
@@ -94,14 +91,13 @@ class @ScoreObj
   parseTexture: (measures) ->
     measures ?= @options.texture
     c = _.flatten(@harmony, true)
-    ctrlTicks = @init_ctrlTicks
+
     delta = 0
     refc = []
     refi = -1
     res = measures.map (e) ->
       measure = []
       arrange = e.trim().split(/\s+/)
-      vol = 80
       arrange.forEach (e2) ->
         if e2[0] == ':'
           refk = MG.keyToPitch('C3') # 48
@@ -120,16 +116,25 @@ class @ScoreObj
             switch s = e2[j]
               when '0','1','2','3'
                 refc.push(bass+chord[parseInt(s)])
-              when '+' then refc[refc.length-1] += 12
-              when '-' then refc[refc.length-1] -= 12
+              when '+', '-', '#', 'b'
+                refc[refc.length-1] += {
+                  '+': 12, '-': -12, '#': 1, 'b':-1
+                }[s]
               else console.log('skip unknown config '+s);
         else
+          tied = false
           terms = e2.split(',')
           dur = if terms.length>=2? then parseInt(terms[1]) else 1
-          dur *=  ctrlTicks # rm this
-          tmp = Array.prototype.map.call terms[0], (e3)->
-            return refc[e3] ? 0 # console.log('invalid syntac', refc, terms)
-          measure.push([dur, tmp, vol])
+          tmp = []
+          for j in [0...terms[0].length] by 1
+            e3 = terms[0][j]
+            if  e3 == '^'
+              tied = true
+            else if refc[e3]
+              tmp.push(refc[e3])
+            else
+              console.log 'invalid texture ' + e3
+          measure.push(if tied then [dur, tmp, true] else [dur, tmp])
           delta += dur
       return measure
     return res
@@ -191,11 +196,11 @@ class @ScoreObj
     if t == null
       m.finish()
       return m
-
+    vol = 80
     l = m.addTrack() - 1
     m.addEvent l, 0, 'programChange', l-1, 0
     t.forEach (e) ->
-      m.addNotes l, e..., 0 # rollTime = 0
+      m.addNotes l, e[0]*ctrlTicks, e[1], vol
     m.finish()
     return m
 

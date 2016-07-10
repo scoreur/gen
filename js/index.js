@@ -78,22 +78,22 @@ var click_event_list = {
 
 	},
 	'play_melody': function(){
-		if(!seqPlayer.enabled){
-            seqPlayer.play();
-			$('button#play').html('Pause Melody');
+		if(!seqPlayer.playing[0]){
+            seqPlayer.play(0);
+			$('button#play_melody').html('Pause Melody');
 
 		}else{
-			seqPlayer.pause();
-			$('button#play').html('Play Melody');
+			seqPlayer.pause(0);
+			$('button#play_melody').html('Play Melody');
 		}
 	},
 	'play_harmony': function(){
-		if(!seqPlayer.enabled){
-			seqPlayer.play('harmony');
+		if(!seqPlayer.playing[1]){
+			seqPlayer.play(1);
 			$('button#play_harmony').html('Pause Harmony');
 
 		}else{
-			seqPlayer.pause();
+			seqPlayer.pause(1);
 			$('button#play_harmony').html('Play Harmony');
 		}
 
@@ -117,7 +117,6 @@ var click_event_list = {
 		var score = generator.toScoreObj()
 		console.log('to Text')
 	    cur_score.melody = score.toText();
-
 	    updateEditor();
 
 	},

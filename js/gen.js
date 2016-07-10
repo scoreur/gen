@@ -8,19 +8,21 @@ function dataURLtoBlob(dataurl) {
 }
 var seqPlayer = {
 	channel:0,
-	enabled:false,
-	nexti: 0,
 	src: {q:[],c:[],t:[]},
+	tracks: [],
+	playing:[],
+	cur_i:[],
 	midi: null,
 	raw_midi: "",
-	play:function(h){
-		if(this.src.q.length <= 0){
+	play:function(n){
+		n = n || 0;
+		if(!this.tracks[n] || this.tracks[n].length<=0){
 			return;
 		}
-		this.enabled = true;
-		var q = typeof h == 'undefined'? this.src.q: this.src.t;
-		console.log(q)
-		var nexti = this.nexti;
+		this.playing[n] = true;
+		var q = this.tracks[n];
+		var nexti = this.cur_i[n];
+
 		var cur = q[nexti];
 		nexti++;
 		var channel = this.channel;
@@ -44,7 +46,7 @@ var seqPlayer = {
 						}
 					});
 
-        			seqPlayer.enabled = false;
+        			seqPlayer.playing[n] = false;
         			seqPlayer.onend();
         		}else{
 
@@ -57,14 +59,14 @@ var seqPlayer = {
 
         		    }
         		    cur = q[nexti];
-					if(seqPlayer.enabled){
+					if(seqPlayer.playing[n]){
 						nexti++;
 						if(nexti>= q.length){
 							nexti = -1;
-							seqPlayer.nexti = 0;
+							seqPlayer.cur_i[n] = 0;
 						}
 					}else{
-						seqPlayer.nexti = nexti;
+						seqPlayer.cur_i[n] = nexti;
 						nexti = -1;
 					}
         		    //log('next',q[nexti]);
@@ -79,45 +81,49 @@ var seqPlayer = {
 
 
 	},
-	toQ: function(score){
-
+	toQ: function(arr, ctrlTicks, vol){
+		var vol = vol || 110;
+		var m = _.flatten(arr, true);
+		var res = [];
+		for (var j = 0; j < m.length; ++j) {
+			var delta = m[j][0];
+			while (m[j][2] == true && j + 1 < m.length) {
+				j++;
+				delta += m[j][0];
+			}
+			res.push([delta * ctrlTicks, m[j][1], vol])
+		}
+		return res;
 
 	},
-	pause:function(){
-		this.enabled = false;
+	pause:function(n){
+		var n = n || 0;
+		if(n >= this.tracks.length){
+			return;
+		}
+		this.playing[n] = false;
 
 	},
-	stop:function(){
-		this.enabled = false;
-		this.nexti = 0;
+	stop:function(n){
+		var n = n || 0;
+		if(n >= this.tracks.length){
+			return;
+		}
+		this.playing[n] = false;
+		this.cur_i[n] = 0;
 
 	},
 	onend:function(){},
     fromScore:function (src) {
-        var ctrlTicks = (60000.0 / src.tempo / src.ctrl_per_beat) >>> 0;
         var obj = new ScoreObj(src);
-        var vol = 110;
-        var q = [];
-        var m = _.flatten(obj.melody,true);
-        for (var j = 0; j < m.length; ++j) {
-            var delta = m[j][0];
-            while (m[j][2] == true && j + 1 < m.length) {
-                j++;
-                delta += m[j][0];
-            }
-            q.push([delta * ctrlTicks, m[j][1], vol])
-        }
-		var t = [];
-		m = _.flatten(obj.texture, true);
-		for (var j = 0; j < m.length; ++j) {
-			var delta = m[j][0];
-			while (m[j][3] == true && j + 1 < m.length) {
-				j++;
-				delta += m[j][0];
-			}
-			t.push([delta, m[j][1], m[j][2] || vol])
-		}
-
+		var ctrlTicks = obj.init_ctrlTicks;
+		// TODO: add volume control
+		var q = this.toQ(obj.melody, ctrlTicks, 110);
+		var t = this.toQ(obj.texture, ctrlTicks, 60);
+		this.tracks = [];
+		this.tracks.push(q, t);
+		this.playing = [false, false];
+		this.cur_i = [0,0];
         this.src = {c: obj.harmony, t: t, q: q};
         this.midi = obj.toMidi();
         this.raw_midi = MidiWriter(this.midi);
