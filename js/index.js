@@ -68,7 +68,11 @@ var click_event_list = {
 	},
 	'eg_load_json':function(){
 		$.ajax('score/sample.json').done(function(res){
-			var obj = JSON.parse(res);
+
+			var obj = typeof res == 'string'? JSON.parse(res): res;
+			if(typeof obj != 'object'){
+				$.notify('wrong JSON!', 'warning');
+			}
 			cur_score = obj.score;
 			cur_schema = obj.schema;
 			updateEditor();
