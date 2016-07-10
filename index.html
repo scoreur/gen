@@ -103,6 +103,13 @@
                 <li data-toggle="tab" data-target="#midi_viewer"><a href="#midi_viewer">View MIDI Score</a></li>
               </ul>
             </li>
+            <!-- Menu Example-->
+            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Example<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a id="eg_load_json">Load sample json</a></li>
+                <li><a id="eg_load_midi">load sample midi</a></li>
+              </ul>
+            </li>
           </ul>
           <!--
           form.navbar-form.navbar-left(role="search")
@@ -269,9 +276,9 @@ Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord
       <div class="row">
         <div class="col-md-6 col-sr-10">
           <ul class="nav nav-tabs nav-justified nav-pills">
-            <li data-toggle="tab" data-target="#melody_wrapper" class="active"><a>Melody</a></li>
-            <li data-toggle="tab" data-target="#harmony_wrapper"><a>Harmony</a></li>
-            <li data-toggle="tab" data-target="#texture_wrapper"><a>Texture</a></li>
+            <li data-toggle="tab" data-target="#melody_wrapper" class="active"><a href="#melody_wrapper">Melody</a></li>
+            <li data-toggle="tab" data-target="#harmony_wrapper"><a href="#harmony_wrapper">Harmony</a></li>
+            <li data-toggle="tab" data-target="#texture_wrapper"><a href="#texture_wrapper">Texture</a></li>
             <li class="xs-only"></li>
           </ul>
           <div class="tab-content">
@@ -289,8 +296,8 @@ Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord
         <div class="sr-only col-sr-2"></div>
         <div class="col-md-6 col-sr-10">
           <ul class="nav nav-tabs nav-justified nav-pills">
-            <li data-toggle="tab" data-target="#score_wrapper" class="active"><a>Score</a></li>
-            <li data-toggle="tab" data-target="#schema_wrapper"><a>Schema</a></li>
+            <li data-toggle="tab" data-target="#score_wrapper" class="active"><a href="#score_wrapper">Score</a></li>
+            <li data-toggle="tab" data-target="#schema_wrapper"><a href="#schema_wrapper">Schema</a></li>
             <li class="xs-only"></li>
           </ul>
           <div class="tab-content">

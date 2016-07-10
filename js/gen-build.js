@@ -837,7 +837,7 @@ var seqPlayer = {
 					});
 
         			seqPlayer.playing[n] = false;
-        			seqPlayer.onend();
+        			seqPlayer.onend(n);
         		}else{
 
         			if(q[nexti][0]>0){
