@@ -126,7 +126,7 @@ class @ScoreObj
         else
           terms = e2.split(',')
           dur = if terms.length>=2? then parseInt(terms[1]) else 1
-          dur *=  ctrlTicks
+          dur *=  ctrlTicks # rm this
           tmp = Array.prototype.map.call terms[0], (e3)->
             return refc[e3] ? 0 # console.log('invalid syntac', refc, terms)
           measure.push([dur, tmp, vol])
@@ -195,7 +195,7 @@ class @ScoreObj
     l = m.addTrack() - 1
     m.addEvent l, 0, 'programChange', l-1, 0
     t.forEach (e) ->
-      m.addNotes l, e..., 15
+      m.addNotes l, e..., 0 # rollTime = 0
     m.finish()
     return m
 

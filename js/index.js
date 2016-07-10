@@ -27,7 +27,6 @@ function load_local_midi(file, onsuccess){
 
 }
 function load_json(file, onsuccess){
-	log('load json');
 	var reader = new FileReader();
 	reader.onload = function(e){
 		var res = JSON.parse(e.target.result);
@@ -78,7 +77,7 @@ var click_event_list = {
 		}
 
 	},
-	'play': function(){
+	'play_melody': function(){
 		if(!seqPlayer.enabled){
             seqPlayer.play();
 			$('button#play').html('Pause Melody');
@@ -87,6 +86,17 @@ var click_event_list = {
 			seqPlayer.pause();
 			$('button#play').html('Play Melody');
 		}
+	},
+	'play_harmony': function(){
+		if(!seqPlayer.enabled){
+			seqPlayer.play('harmony');
+			$('button#play_harmony').html('Pause Harmony');
+
+		}else{
+			seqPlayer.pause();
+			$('button#play_harmony').html('Play Harmony');
+		}
+
 	},
 	'save_midi': function(){
 		seqPlayer.saveMidi();

@@ -228,6 +228,7 @@ ScoreRenderer.prototype.render = function(score){
   var ctx = this.ctx;
   var w = (this.geo.system_width / this.layout.measure_per_system * 0.9) >>> 0;
   var s = this.s = new ScoreObj(score);
+  console.log(s)
   this.sys = [];
   for(var i=0;i < s.melody.length; ++i){
     var stave = this.newStave(i);
@@ -267,8 +268,9 @@ ScoreRenderer.prototype.render = function(score){
 
 
     // Create a voice in 4/4
+    var num_beats = (dur_tot/s.ctrl_per_beat)>>>0;
     var voice = new Vex.Flow.Voice({
-      num_beats: (dur_tot/s.ctrl_per_beat)>>>0,
+      num_beats: num_beats,
       beat_value: s.time_sig[1],
       resolution: Vex.Flow.RESOLUTION
     });

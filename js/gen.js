@@ -13,12 +13,13 @@ var seqPlayer = {
 	src: {q:[],c:[],t:[]},
 	midi: null,
 	raw_midi: "",
-	play:function(){
+	play:function(h){
 		if(this.src.q.length <= 0){
 			return;
 		}
 		this.enabled = true;
-		var q = this.src.q;
+		var q = typeof h == 'undefined'? this.src.q: this.src.t;
+		console.log(q)
 		var nexti = this.nexti;
 		var cur = q[nexti];
 		nexti++;
@@ -101,13 +102,23 @@ var seqPlayer = {
         for (var j = 0; j < m.length; ++j) {
             var delta = m[j][0];
             while (m[j][2] == true && j + 1 < m.length) {
-
                 j++;
                 delta += m[j][0];
             }
             q.push([delta * ctrlTicks, m[j][1], vol])
         }
-        this.src = {c: obj.harmony, t: obj.texture, q: q};
+		var t = [];
+		m = _.flatten(obj.texture, true);
+		for (var j = 0; j < m.length; ++j) {
+			var delta = m[j][0];
+			while (m[j][3] == true && j + 1 < m.length) {
+				j++;
+				delta += m[j][0];
+			}
+			t.push([delta, m[j][1], m[j][2] || vol])
+		}
+
+        this.src = {c: obj.harmony, t: t, q: q};
         this.midi = obj.toMidi();
         this.raw_midi = MidiWriter(this.midi);
 
