@@ -118,9 +118,9 @@ MG.keyToPitch = (key) ->
 MG.pitchToKey = (pitch, sharp) ->
   if pitch < 21 || pitch > 108
     return undefined
-  kn = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+  kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
   if sharp == true
-    kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+    kn = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
   oct = pitch // 12 -1
   ref = pitch % 12
   return [kn[ref],oct]

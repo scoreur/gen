@@ -229,6 +229,7 @@ ScoreRenderer.prototype.render = function(score){
   var ctx = this.ctx;
   var w = (this.geo.system_width / this.layout.measure_per_system * 0.9) >>> 0;
   var s = this.s = new ScoreObj(score);
+  var sharp = MIDI.key_sig[s.key_sig] >= 0;
   //console.log(s)
   this.sys = [];
   for(var i=0;i < s.melody.length; ++i){
@@ -248,7 +249,7 @@ ScoreRenderer.prototype.render = function(score){
       e[1].forEach(function(e1){
         if(key == undefined){
 
-          var key = MG.pitchToKey(e1);
+          var key = MG.pitchToKey(e1, sharp);
           //console.log('render', e1, key)
           if(typeof key != 'undefined'){
             keys.push(key.join('/'));
@@ -282,6 +283,7 @@ ScoreRenderer.prototype.render = function(score){
 
     // Add notes to voice
     voice.addTickables(notes);
+    Vex.Flow.Accidental.applyAccidentals([voice], s.key_sig);
     var beams = Vex.Flow.Beam.applyAndGetBeams(voice);
 
     // Format and justify the notes
