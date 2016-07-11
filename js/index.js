@@ -88,35 +88,35 @@ var click_event_list = {
 		})
 
 	},
-	'start':function(){
+	'play_MIDI':function(){
 		if(!MIDI.Player.playing){
             MIDI.Player.start();
-			$('button#start').html('Pause MIDI');
+			$('#play_MIDI').html('Pause MIDI');
 
 		}else{
 			MIDI.Player.pause();
-			$('button#start').html('Play MIDI');
+			$('#play_MIDI').html('Play MIDI');
 		}
 
 	},
 	'play_melody': function(){
 		if(!seqPlayer.playing[0]){
             seqPlayer.play(0);
-			$('button#play_melody').html('Pause Melody');
+			$('#play_melody').html('Pause Melody');
 
 		}else{
 			seqPlayer.pause(0);
-			$('button#play_melody').html('Play Melody');
+			$('#play_melody').html('Play Melody');
 		}
 	},
 	'play_harmony': function(){
 		if(!seqPlayer.playing[1]){
 			seqPlayer.play(1);
-			$('button#play_harmony').html('Pause Harmony');
+			$('#play_harmony').html('Pause Harmony');
 
 		}else{
 			seqPlayer.pause(1);
-			$('button#play_harmony').html('Play Harmony');
+			$('#play_harmony').html('Play Harmony');
 		}
 
 	},
@@ -270,10 +270,10 @@ function registerEvents(){
 	seqPlayer.onend = function(n){
 		switch(n){
 			case 0:
-				$('button#play_melody').html('Play Melody');
+				$('#play_melody').html('Play Melody');
 				break;
 			case 1:
-				$('button#play_harmony').html('Play Harmony');
+				$('#play_harmony').html('Play Harmony');
 				break;
 			default:
 		};
@@ -288,7 +288,7 @@ function registerEvents(){
 			$('#currentTime').html(res.now);
 			//$('#endTime').html(res.end);
 		}else{
-			$('button#start').html('Play MIDI');
+			$('#play_MIDI').html('Play MIDI');
 		}
 		
 	});
