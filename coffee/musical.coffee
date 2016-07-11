@@ -209,6 +209,7 @@ MG.pitchToKey = (pitch, sharp) ->
 
 
 @schema_summer =
+  tempo: 120,
   ctrl_per_beat: 2,
   time_sig: [4,4],
   key_sig: 'C',

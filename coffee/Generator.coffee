@@ -54,7 +54,13 @@ class @Generator
 
 
 
-    obj = new ScoreObj({ctrl_per_beat:@schema.ctrl_per_beat});
+    obj = new ScoreObj({
+      ctrl_per_beat:@schema.ctrl_per_beat,
+      tempo: @schema.tempo,
+      time_sig: @schema.time_sig,
+      key_sig: @schema.key_sig,
+      scale: @schema.scale
+    })
 
     obj.melody = _.flatten res, true
     return obj

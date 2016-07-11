@@ -139,6 +139,11 @@ var click_event_list = {
 		var score = generator.toScoreObj()
 		console.log('to Text')
 	    cur_score.melody = score.toText();
+		cur_score.key_sig = score.key_sig;
+		cur_score.ctrl_per_beat = score.ctrl_per_beat;
+		cur_score.time_sig = score.time_sig;
+		cur_score.scale = score.scale;
+		cur_score.tempo = score.tempo;
 	    updateEditor();
 		$.notify('Music generated!', 'success');
 
