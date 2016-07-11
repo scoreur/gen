@@ -298,7 +298,7 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 
 
         // fix: change <= to <
-		if ((queuedTime += obj[1]) < currentTime ) {
+		if ((queuedTime += obj[1]) <= currentTime ) {
 			offset = queuedTime;
 			//console.log('skip',queuedTime, currentTime, obj[0].event);
 			continue;

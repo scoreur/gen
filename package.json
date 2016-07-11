@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "grunt app"
+    "build": "coffee -m -c ./coffee/; grunt app; grunt web"
   },
   "repository": {
     "type": "git",

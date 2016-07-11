@@ -10,9 +10,14 @@ class @Generator
   generate: ->
     for i,dur of @schema.blocks
       mode = @schema.melody[i]
-      @res[i] = @melody(mode.mode, mode.options, dur)
-
-    return
+      switch mode.mode
+        when 'random'
+          @res[i] = @gen_random(dur, mode.options)
+        when 'transpose'
+          @res[i] = @gen_transpose(dur, mode.options)
+        when 'chord'
+          @res[i] = @gen_chord(dur, mode.options)
+    return @res
 
   toScoreObj: ->
     if res == {}
@@ -70,7 +75,7 @@ class @Generator
           return choices[i]
       return choices[p.length-1]
 
-  gen_random: (end_pos, states, start, constraint)->
+  gen_random_new: (end_pos, states, start, constraint)->
     # start from states[0]
     res = []
     cur = state: start.state, pos: start: start.pos, val: start.val

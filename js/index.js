@@ -64,6 +64,7 @@ var click_event_list = {
 		MIDI.Player.loadFile('base64,'+btoa(seqPlayer.raw_midi),function(){
 			$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
 			$.notify('MIDI loaded!', 'success');
+			$('#play_slider').val(''+0);
 		});
 	},
 	'eg_load_json':function(){
@@ -225,6 +226,7 @@ var file_open_handlers = {
 		load_local_midi(evt.target.files[0], function(res){
 			MIDI.Player.loadFile(res, function(){
 				$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
+				$('#play_slider').val(''+0);
 			});
 		});
 	},
