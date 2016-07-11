@@ -246,6 +246,7 @@
   };
 
   this.schema_summer = {
+    tempo: 120,
     ctrl_per_beat: 2,
     time_sig: [4, 4],
     key_sig: 'C',
@@ -376,7 +377,11 @@
         return res[e];
       });
       obj = new ScoreObj({
-        ctrl_per_beat: this.schema.ctrl_per_beat
+        ctrl_per_beat: this.schema.ctrl_per_beat,
+        tempo: this.schema.tempo,
+        time_sig: this.schema.time_sig,
+        key_sig: this.schema.key_sig,
+        scale: this.schema.scale
       });
       obj.melody = _.flatten(res, true);
       return obj;
