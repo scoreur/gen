@@ -153,10 +153,14 @@ class @ScoreObj
         if typeof e1[1] == 'number'
           e1[1] = [e1[1]]
         e1[1].forEach (e2)->
-          tmp = pitchSimple(e2)
-          oct = tmp // scale_len
-          o += 1 + (tmp %% scale_len)
-          o += {'-2':'--','-1':'-',1:'+',2:'++'}[oct-ref_oct] || ''
+          if e2<21 || e2>108
+            o += '0'
+          else
+            tmp = pitchSimple(e2)
+            #console.log(e2, tmp)
+            o += 1 + tmp[0]
+            o += {'-2':'--','-1':'-',1:'+',2:'++'}[tmp[1]-ref_oct] || ''
+            o += {1:'#',2:'##',3:'###'}[tmp[2]] || ''
         if e1[2] == true
           o += '^'
         if e1[0] > 1

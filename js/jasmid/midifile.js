@@ -263,14 +263,14 @@ function MidiFile(data) {
 			var event = {};
 			try{
 				event = readEvent(trackStream);
-
+				tracks[i].push(event);
 			}catch(e){
 				console.log(e,i);
 			}finally{
-				tracks[i].push(event);
+				//console.log(event);
 			}
 			
-			//console.log(event);
+
 		}
 	}
 	
@@ -481,6 +481,35 @@ function simpMidi(){
 
 }
 
+simpMidi.prototype.getMeta = function(subtype){
+	var res = null;
+	var track = this.tracks[0];
+	for (var i = 0; i < track.length; ++i) {
+		if (track[i].type == 'meta' && track[i].subtype == subtype) {
+			res = track[i];
+			break;
+		}
+	}
+	return res;
+}
+
+simpMidi.prototype.getTimeSignature = function(){
+	this.tsig = this.tsig || simpMidi.prototype.getMeta.call(this,'timeSignature') || simpEvent(0, 'timeSignature', 4,4);
+	return [this.tsig.numerator, this.tsig.denominator];
+};
+
+simpMidi.prototype.getTempo = function(){
+	// TODO: handle tempo change
+	this.tempo = this.tempo || simpMidi.prototype.getMeta.call(this,'setTempo') || simpEvent(0, 'setTempo', 120);
+	return 60000000/this.tempo.microsecondsPerBeat >>> 0
+
+}
+
+simpMidi.prototype.getKeySignature = function(){
+	this.ksig = this.ksig || simpMidi.prototype.getMeta.call(this,'keySignature') || simpEvent(0, 'keySignature', 0, 'maj');
+	return [this.ksig.key, this.ksig.scale];
+}
+
 simpMidi.prototype.setTimeSignature = function(n,d){
 	this.tsig.numerator = n;
 	this.tsig.denominator = d;
@@ -490,7 +519,7 @@ simpMidi.prototype.setKeySignature = function(k,m){
 	this.ksig.scale = {"maj":0, "min":1}[m];
 }
 simpMidi.prototype.setTempo = function(t){
-	this.tempo.microsecondsPerBeat = 60000000/t >> 0;
+	this.tempo.microsecondsPerBeat = 60000000/t >>> 0;
 }
 simpMidi.prototype.addEvent = function(){
 	if(this.tracks.length == 2){
@@ -537,6 +566,37 @@ simpMidi.prototype.addNotes = function(l,dur,notes,vols,rollTime,delta){
 
 }
 
+simpMidi.prototype.quantize = function(ctrl_per_beat){
+	var ticks = this.header.ticksPerBeat;
+	var res = [];
+	for(var i=1;i<this.tracks.length;++i){
+		var tmp = [];
+		var delta = 0;
+		this.tracks[i].forEach(function(e,i){
+			if(e.type=='channel'){
+				if(e.deltaTime > 0){
+					delta += e.deltaTime
+				}
+				var tmp2 = [(delta / ticks * ctrl_per_beat)>>0];
+				switch(e.subtype){
+					case 'noteOn':case 'noteOff':
+						tmp2.push(e.subtype, e.noteNumber, e.velocity);
+						break;
+					case 'programChange':
+						tmp2.push(e.subtype, e.programNumber);
+						break;
+					default:
+						console.log(e.subtype);
+						return;
+				}
+				tmp.push(tmp2);
+			}
+		});
+        res.push(tmp);
+	}
+	return res;
+};
+
 var TEST = TEST || {};
 
 TEST.testMidi = function(m){
@@ -559,6 +619,37 @@ TEST.testMidi = function(m){
 	}
 	return true;
 }
+
+TEST.analysis = function(data, ctrl_per_beat){
+	var ctrl_per_beat = ctrl_per_beat || 4;
+	var m = MidiFile(data);
+	var q = simpMidi.prototype.quantize.call(m, ctrl_per_beat);
+
+	return q.map(function(track){
+		var res = [];
+		var tmp = [];
+		// handle
+		var delta = 0;
+		track.forEach(function(e){
+			if(e[0]>delta){
+				if(tmp.length>0){
+					res.push([e[0]-delta, tmp]);
+					tmp = [];
+				}else{
+					res.push([e[0]-delta, [0]]);//rest
+				}
+				delta = e[0];
+			}else{
+				// ignore 'noteOff' and velocity == 0
+				if(e[1] == 'noteOn' && e[3] != 0){
+					tmp.push(e[2]); //noteNumber
+				}
+			}
+		});
+		res = _.unzip(res);
+		return {dur:res[0], pitch:res[1]};
+	});
+};
 
 if(typeof module!='undefined'){
 	module.exports = function(t){

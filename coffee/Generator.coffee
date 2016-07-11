@@ -19,6 +19,32 @@ class @Generator
           @res[i] = @gen_chord(dur, mode.options)
     return @res
 
+  b2score: (b, sec, flat) ->
+    dur = if flat then b.dur else _.flatten(b.dur, true);
+    pitch = if flat then else _.flatten(b.pitch, true);
+    # console.log dur.length == pitch.length
+    ret = []
+    # separate measure, add ties
+    tmp = []
+    delta = 0
+    dur.forEach (e,j)->
+      while delta + e > sec # exceed
+        tmp.push [sec-delta, pitch[j], true] # tie
+        ret.push tmp
+        tmp = []
+        e -= sec-delta
+        delta = 0
+      tmp.push [e, pitch[j]]
+      delta += e
+      if delta == sec
+        ret.push tmp
+        tmp = []
+        delta = 0
+    if tmp.length > 0
+      ret.push tmp  # incomplete measure
+    return ret
+
+
   toScoreObj: ->
     if res == {}
       @generate()
@@ -26,33 +52,8 @@ class @Generator
     res = {}
     console.log 'to Score obj'
     for e0, b of @res
-      dur = _.flatten(b.dur);
-      pitch = _.flatten(b.pitch);
-      # console.log dur.length == pitch.length
-      ret = []
-      # separate measure, add ties
-      tmp = []
-      delta = 0
-      dur.forEach (e,j)->
-        while delta + e > sec # exceed
-          tmp.push [sec-delta, pitch[j], true] # tie
-          ret.push tmp
-          tmp = []
-          e -= sec-delta
-          delta = 0
-        tmp.push [e, pitch[j]]
-        delta += e
-        if delta == sec
-          ret.push tmp
-          tmp = []
-          delta = 0
-      if tmp.length > 0
-        ret.push tmp  # incomplete measure
-      res[e0] = ret
-
+      res[e0] = @b2score(b, sec)
     res = @schema.structure.map (e)-> res[e]
-
-
 
     obj = new ScoreObj({
       ctrl_per_beat:@schema.ctrl_per_beat,

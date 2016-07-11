@@ -103,8 +103,8 @@ MG.pitchToScale = (mode, tonic) ->
     pitch = pitch %% 12
     for i in [scale.length-1 ..0] by -1
       if pitch >= scale[i]
-        return i + oct * scale.length
-    return oct * scale.length
+        return [i, oct, pitch - scale[i]]
+    return [0, oct, pitch-scale[0]]
 
 
 MG.keyToPitch = (key) ->

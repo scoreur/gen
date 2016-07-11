@@ -81,6 +81,13 @@ var click_event_list = {
 		});
 
 	},
+	'eg_load_pdf': function(){
+	    var pre = use_local_store()?'':'https://scoreur.github.io/gen/';
+	    load_pdf( pre + 'score/invent.pdf');
+		$('li[data-target="#pdf_viewer"]').click();
+		$.notify('sample PDF loaded!', 'success');
+
+    },
 	'eg_load_midi':function(){
 		MIDI.Player.loadFile('score/sample.mid', function(){
 			$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
@@ -354,8 +361,6 @@ function initUI(){
 	});
 	updateEditor();
 
-	var pre = use_local_store()?'':'https://scoreur.github.io/gen/';
-	//load_pdf( pre + 'score/invent.pdf');
 	$('#score_img').attr('src','./score/summertime.png');
 }
 
