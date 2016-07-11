@@ -1,34 +1,29 @@
-nav#top-menu.navbar.navbar-default.navbar-static-top
+nav#top-menu.navbar.navbar-default.navbar-fixed-top
   .container-fluid
     .navbar-header
       button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1', aria-expanded='false')
         span.sr-only Toggle navigation
         span.icon-bar
         span.icon-bar
-      a.navbar-brand(href='#')
+      a.navbar-brand(href='#') Music Generator
         img.img-circle.img-responsive(src='img/logo.png', style='width:50px;height:50px')
     // Collect the nav links, forms, and other content for toggling
     #bs-example-navbar-collapse-1.collapse.navbar-collapse
       ul.nav.navbar-nav
-        li.active
-          a(href='#') Music Generator
-            span.sr-only (current)
-        li
-          a(href='#') Demo
         // Menu File
         li.dropdown
           a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') File
-            span.caret                     
-          ul.dropdown-menu
+            span.caret
+          ul.dropdown-menu.nav.nav-tabs.nav-stacked
             li
               a#open_midi Open MIDI
             li
               a#save_midi Save MIDI
             li
-              a#open_json Import                      
+              a#open_json Import JSON
             li
-              a#export Export                      
-            li.divider(role='separator')                         
+              a#export Export JSON
+            li.divider(role='separator')
             li
               a#open_img Open Score Image
             li
@@ -39,7 +34,7 @@ nav#top-menu.navbar.navbar-default.navbar-static-top
         li.dropdown
           a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Edit
             span.caret
-          ul.dropdown-menu
+          ul.dropdown-menu.nav.nav-tabs.nav-stacked
             li
               a#reset_editor Reset Editor
             li
@@ -67,11 +62,13 @@ nav#top-menu.navbar.navbar-default.navbar-static-top
         li.dropdown
           a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Example
             span.caret
-          ul.dropdown-menu
+          ul.dropdown-menu.nav.nav-tabs.nav-stacked
             li
-              button.btn.btn-block.btn-default#eg_load_json Load sample json
+              a#eg_load_json Load sample json
             li
-              button.btn.btn-block.btn-default#eg_load_midi Load sample midi
+              a#eg_load_midi Load sample midi
+            li
+              a#eg_load_pdf Load sample pdf
 
 
       //
@@ -85,10 +82,10 @@ nav#top-menu.navbar.navbar-default.navbar-static-top
             span.caret
           ul.dropdown-menu
             li
-              a(href='#') Action
+              a(href='https://github.com/apwan06/gen') Source Code
             li.divider(role='separator')
             li
-              a(href='#') Separated link
+              a(data-toggle='modal', data-target='#tutorial', href='#tutorial') Tutorial
         li
           a(href='about.pdf', target='_blank') About
     // /.navbar-collapse

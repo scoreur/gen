@@ -7,8 +7,6 @@ nav#bottom-menu.navbar.navbar-default.navbar-fixed-bottom
         span.icon-bar
     #bs-example-navbar-collapse-2.collapse.navbar-collapse
       ul.nav.navbar-nav
-        li
-          a(href='https://github.com/apwan06/gen') Source Code
         li.dropdown
           a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Chords
             span.caret
@@ -33,15 +31,13 @@ nav#bottom-menu.navbar.navbar-default.navbar-fixed-bottom
         li.dropdown
           a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Console
             span.caret
-          ul.dropdown-menu(style='width:320px')
-            li
+          ul.list-group.dropdown-menu(style='width:320px')
+            li.list-group-item
               label.label.label-default Result:
               a#console_result
-            li
-              a
-                input#console_panel.form-control(type='text', style='width:280px; height:50px')
-            li
-              a#console_eval Run
+            li.list-group-item
+              input#console_panel.form-control(type='text', style='width:280px; height:50px')
+            li.list-group-item#console_eval Run
       ul.nav.navbar-nav.navbar-right
         li
           a(data-toggle='modal', data-target='#tutorial', href='#tutorial') Tutorial

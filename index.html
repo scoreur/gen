@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Music Generator</title>
     <script>
       if (typeof module === 'object') {
       window.module = module;
@@ -52,6 +53,7 @@
       body {
         /* Margin bottom by footer height */
         margin-bottom: 60px;
+        margin-top: 60px;
       }
       .black_key {height: 80px;width: 28px;background: black;position: absolute;top: 20px}
       .white_key {height: 150px;width: 40px;background: white;position: absolute;top: 20px}
@@ -65,24 +67,22 @@
   </head>
   <body>
     <!-- Menu-->
-    <nav id="top-menu" class="navbar navbar-default navbar-static-top">
+    <nav id="top-menu" class="navbar navbar-default navbar-fixed-top">
       <div class="container-fluid">
         <div class="navbar-header">
-          <button type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false" class="navbar-toggle collapsed"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="#" class="navbar-brand"><img src="img/logo.png" style="width:50px;height:50px" class="img-circle img-responsive"></a>
+          <button type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false" class="navbar-toggle collapsed"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="#" class="navbar-brand">Music Generator<img src="img/logo.png" style="width:50px;height:50px" class="img-circle img-responsive"></a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling-->
         <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Music Generator<span class="sr-only">(current)</span></a></li>
-            <li><a href="#">Demo</a></li>
             <!-- Menu File-->
-            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">File<span class="caret">                    </span></a>
-              <ul class="dropdown-menu">
+            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">File<span class="caret"></span></a>
+              <ul class="dropdown-menu nav nav-tabs nav-stacked">
                 <li><a id="open_midi">Open MIDI</a></li>
                 <li><a id="save_midi">Save MIDI</a></li>
-                <li><a id="open_json">Import                      </a></li>
-                <li><a id="export">Export                      </a></li>
-                <li role="separator" class="divider">                        </li>
+                <li><a id="open_json">Import JSON</a></li>
+                <li><a id="export">Export JSON</a></li>
+                <li role="separator" class="divider"></li>
                 <li><a id="open_img">Open Score Image</a></li>
                 <li><a id="open_pdf">Open Score PDF</a></li>
                 <li><a id="save_score">Save Rendered Score</a></li>
@@ -90,7 +90,7 @@
             </li>
             <!-- Menu Edit-->
             <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Edit<span class="caret"></span></a>
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu nav nav-tabs nav-stacked">
                 <li><a id="reset_editor">Reset Editor</a></li>
                 <li><a data-toggle="modal" data-target="#ctrl" href="#ctrl">Increase Controls</a></li>
                 <li><a id="melody_absolute">Melody in Note Name</a></li>
@@ -109,13 +109,10 @@
             </li>
             <!-- Menu Example-->
             <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Example<span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li>
-                  <button id="eg_load_json" class="btn btn-block btn-default">Load sample json</button>
-                </li>
-                <li>
-                  <button id="eg_load_midi" class="btn btn-block btn-default">Load sample midi</button>
-                </li>
+              <ul class="dropdown-menu nav nav-tabs nav-stacked">
+                <li><a id="eg_load_json">Load sample json</a></li>
+                <li><a id="eg_load_midi">Load sample midi</a></li>
+                <li><a id="eg_load_pdf">Load sample pdf</a></li>
               </ul>
             </li>
           </ul>
@@ -128,9 +125,9 @@
           <ul class="nav navbar-nav navbar-right navbar-inverse">
             <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Help<span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="#">Action</a></li>
+                <li><a href="https://github.com/apwan06/gen">Source Code</a></li>
                 <li role="separator" class="divider"></li>
-                <li><a href="#">Separated link</a></li>
+                <li><a data-toggle="modal" data-target="#tutorial" href="#tutorial">Tutorial</a></li>
               </ul>
             </li>
             <li><a href="about.pdf" target="_blank">About</a></li>
@@ -146,7 +143,6 @@
         </div>
         <div id="bs-example-navbar-collapse-2" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li><a href="https://github.com/apwan06/gen">Source Code</a></li>
             <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Chords<span class="caret"></span></a>
               <ul style="width:240px" class="dropdown-menu">
                 <li><a id="mode_panel"></a></li>
@@ -167,13 +163,14 @@
               </ul>
             </li>
             <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Console<span class="caret"></span></a>
-              <ul style="width:320px" class="dropdown-menu">
-                <li>
+              <ul style="width:320px" class="list-group dropdown-menu">
+                <li class="list-group-item">
                   <label class="label label-default">Result:</label><a id="console_result"></a>
                 </li>
-                <li><a>
-                    <input id="console_panel" type="text" style="width:280px; height:50px" class="form-control"></a></li>
-                <li><a id="console_eval">Run</a></li>
+                <li class="list-group-item">
+                  <input id="console_panel" type="text" style="width:280px; height:50px" class="form-control">
+                </li>
+                <li id="console_eval" class="list-group-item">Run</li>
               </ul>
             </li>
           </ul>
@@ -228,7 +225,7 @@ Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord
     <div class="container-fluid">
       <!-- Viewer-->
       <div id="score_viewer" class="row">
-        <div class="tab-content col-sr-10 col-xs-8">
+        <div class="tab-content col-sr-10 col-xs-9">
           <div id="img_viewer" class="tab-pane in active"><img id="score_img" src="" class="img-responsive"></div>
           <div id="pdf_viewer" class="tab-pane">
             <div id="canvas-wrapper">
@@ -247,25 +244,25 @@ Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord
             </div>
           </div>
         </div>
-        <div class="nav col-sr-1 col-xs-4">
+        <div class="nav col-sr-1 col-xs-3">
           <ul class="list-group">
             <li class="list-group-item">
-              <button id="gen" class="btn btn-info btn-block">Generate</button>
+              <div id="gen" class="btn btn-info btn-block">Generate</div>
             </li>
             <li class="list-group-item">
-              <button id="parse" class="btn btn-info btn-block">Parse</button>
+              <div id="parse" class="btn btn-primary btn-block">Parse</div>
             </li>
             <li class="list-group-item">
-              <button id="render" class="btn btn-info btn-block">Render</button>
+              <div id="render" class="btn btn-info btn-block">Render</div>
             </li>
             <li class="list-group-item">
-              <button id="play_melody" class="btn btn-info btn-block">Play Melody</button>
+              <div id="play_melody" class="btn btn-info btn-block">Play Melody</div>
             </li>
             <li class="list-group-item">
-              <button id="play_harmony" class="btn btn-info btn-block">Play Harmony</button>
+              <div id="play_harmony" class="btn btn-info btn-block">Play Harmony</div>
             </li>
             <li class="list-group-item">
-              <button id="start" class="btn btn-info btn-block">Play MIDI</button>
+              <div id="start" class="btn btn-info btn-block">Play MIDI</div>
             </li>
           </ul>
         </div>

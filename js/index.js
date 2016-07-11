@@ -7,7 +7,7 @@ function setupEditor(id){
 	editor.setTheme("ace/theme/clouds");
 	editor.getSession().setMode("ace/mode/score");
 	//editor.getSession().setUseWrapMode(true);
-	editor.setFontSize(14);
+	editor.setFontSize(16);
 	editor.$blockScrolling = Infinity;
 	return editor;
 

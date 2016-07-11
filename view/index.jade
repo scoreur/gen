@@ -1,6 +1,7 @@
 doctype html
 html
   head
+    title Music Generator
     script.
       if (typeof module === 'object') {
       window.module = module;
@@ -15,6 +16,7 @@ html
       body {
         /* Margin bottom by footer height */
         margin-bottom: 60px;
+        margin-top: 60px;
       }
       .black_key {height: 80px;width: 28px;background: black;position: absolute;top: 20px}
       .white_key {height: 150px;width: 40px;background: white;position: absolute;top: 20px}
@@ -47,7 +49,7 @@ html
     .container-fluid
       // Viewer
       #score_viewer.row
-        .tab-content.col-sr-10.col-xs-8
+        .tab-content.col-sr-10.col-xs-9
           .tab-pane.in.active#img_viewer
             img#score_img.img-responsive(src='')
           .tab-pane#pdf_viewer
@@ -67,21 +69,20 @@ html
             .canvas-wrapper(style='height: 600;')
               // canvas#midi_pointer(style='width: 100%; height:100%;left: 0; top: 0; z-index:0;')
               canvas#midi_score(style='width: 100%;left: 0; top: 0; z-index: 1;border:1px solid black;')
-        .nav.col-sr-1.col-xs-4
+        .nav.col-sr-1.col-xs-3
           ul.list-group
             li.list-group-item
-              button#gen.btn.btn-info.btn-block Generate
+              #gen.btn.btn-info.btn-block Generate
             li.list-group-item
-              button#parse.btn.btn-info.btn-block Parse
+              #parse.btn.btn-primary.btn-block Parse
             li.list-group-item
-              button#render.btn.btn-info.btn-block Render
+              #render.btn.btn-info.btn-block Render
             li.list-group-item
-              button#play_melody.btn.btn-info.btn-block Play Melody
+              #play_melody.btn.btn-info.btn-block Play Melody
             li.list-group-item
-              button#play_harmony.btn.btn-info.btn-block Play Harmony
+              #play_harmony.btn.btn-info.btn-block Play Harmony
             li.list-group-item
-              button#start.btn.btn-info.btn-block Play MIDI
-
+              #start.btn.btn-info.btn-block Play MIDI
         .col-sr-1.sr-only
 
       // Player
