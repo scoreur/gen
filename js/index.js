@@ -139,6 +139,7 @@ var click_event_list = {
 		console.log('to Text')
 	    cur_score.melody = score.toText();
 	    updateEditor();
+		$.notify('Music generated!', 'success');
 
 	},
 	'render':function(){
@@ -153,6 +154,18 @@ var click_event_list = {
 		var file = new File([ext],'sample.json',{type:"application/json"});
 		saveAs(file);
 		$.notify('JSON exported!', 'success');
+
+	},
+	'melody_absolute': function(){
+
+	},
+	'melody_relative': function(){
+
+	},
+	'harmony_absolute': function(){
+
+	},
+	'harmony_relative': function(){
 
 	},
 	'reset_editor': function(){
@@ -335,7 +348,7 @@ function initUI(){
 	updateEditor();
 
 	var pre = use_local_store()?'':'https://scoreur.github.io/gen/';
-	load_pdf( pre + 'score/invent.pdf');
+	//load_pdf( pre + 'score/invent.pdf');
 	$('#score_img').attr('src','./score/summertime.png');
 }
 

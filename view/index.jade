@@ -6,7 +6,10 @@ html
       window.module = module;
       module = undefined;
       }
-    include scripts.jade
+    if stand_alone
+      include scripts_alone.jade
+    else
+      include scripts.jade
    
     style(type='text/css', media='screen').
       body {

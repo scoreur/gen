@@ -5,5 +5,6 @@
     "keyboard",
     "index"
   ],
-  "_coffee": []
+  "_coffee": [],
+  "stand_alone": false
 }

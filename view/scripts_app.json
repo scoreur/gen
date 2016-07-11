@@ -2,12 +2,14 @@
   "_coffee": [
     "musical",
     "ScoreObj",
-    "Generator"
+    "Generator",
+    "ScoreRenderer"
   ],
   "_js": [
     "gen",
     "viewer",
     "keyboard",
     "index"
-  ]
+  ],
+  "stand_alone": true
 }
