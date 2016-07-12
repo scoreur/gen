@@ -490,7 +490,7 @@
     Generator.prototype.b2score = function(b, sec, flat) {
       var delta, dur, pitch, ret, tmp;
       dur = flat ? b.dur : _.flatten(b.dur, true);
-      pitch = _.flatten(b.pitch, true);
+      pitch = flat ? void 0 : _.flatten(b.pitch, true);
       ret = [];
       tmp = [];
       delta = 0;
@@ -674,21 +674,32 @@
         options = this.options;
       }
       this.measures = _.zip(options.melody, options.harmony, options.texture);
-      this.melody = this.parseMelody(options.melody);
+      this.melody = this.parseMelody(options.melody, MG.scale_class[this.scale], this.init_ref);
+      this.tracks.push(this.melody);
       this.harmony = this.parseHarmony(options.harmony);
-      return this.texture = this.parseTexture(options.texture, this.harmony);
+      this.texture = this.parseTexture(options.texture, this.harmony);
+      return this.tracks.push(this.texture);
     };
 
-    ScoreObj.prototype.pre_processing = function() {};
+    ScoreObj.prototype.pre_processing = function(text) {
+      var ex;
+      return ex = /\/\/[^\n][\n]+|[\/\n]]/;
+    };
 
-    ScoreObj.prototype.parseMelody = function(m) {
-      var ref, res, scale;
-      if (m === null) {
+    ScoreObj.prototype.parseMelody = function(m, scale, init_ref) {
+      var ref, res;
+      if (typeof m === 'undefined') {
         console.log('empty melody');
-        return null;
+        return;
       }
-      scale = MG.scale_class[this.scale];
-      ref = this.init_ref;
+      if (scale == null) {
+        scale = MG.scale_class['maj'];
+      }
+      console.log(scale, init_ref);
+      if (init_ref == null) {
+        init_ref = 60;
+      }
+      ref = init_ref;
       res = m.map((function(_this) {
         return function(e) {
           var measure, notes;
@@ -705,7 +716,7 @@
                   ref -= 12;
                   break;
                 default:
-                  ref = _this.init_ref;
+                  ref = init_ref;
               }
             } else {
               tied = false;
@@ -754,9 +765,9 @@
     };
 
     ScoreObj.prototype.parseHarmony = function(measures) {
-      if (measures === null) {
+      if (typeof measures === 'undefined') {
         console.log('empty harmony');
-        return null;
+        return;
       }
       return measures.map(function(e) {
         return e.trim().split(/\s+/).map(function(e2) {
@@ -771,9 +782,9 @@
 
     ScoreObj.prototype.parseTexture = function(measures, harmony) {
       var c, delta, refc, refi, res;
-      if (measures === null || harmony === null) {
+      if (typeof measures === 'undefined' || typeof harmony === 'undefined') {
         console.log('empty texture');
-        return null;
+        return;
       }
       c = _.flatten(harmony, true);
       delta = 0;
@@ -1008,6 +1019,7 @@
       s = this.s = new ScoreObj(score);
       sharp = MG.key_sig[score.key_sig] >= 0;
       toScale = MG.pitchToScale(score.scale, s.key_sig);
+      console.log(s);
       this.sys = [];
       for (i = l = 0, ref = s.melody.length; l < ref; i = l += 1) {
         stave = this.newStave(i, score.key_sig);

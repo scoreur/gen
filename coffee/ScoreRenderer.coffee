@@ -43,7 +43,7 @@ class @ScoreRenderer
     s = @s = new ScoreObj(score)
     sharp = MG.key_sig[score.key_sig] >= 0
     toScale = MG.pitchToScale(score.scale, s.key_sig)
-    #console.log(s)
+    console.log(s)
     @sys = []
     for  i in [0...s.melody.length] by 1
       stave = this.newStave(i, score.key_sig)
@@ -74,7 +74,7 @@ class @ScoreRenderer
           keys.push 'Bb/4' # rest
           duration += 'r'
 
-        #console.log(duration, keys);
+        #console.log(duration, keys, e);
         res = new Vex.Flow.StaveNote {keys:keys, duration: duration, auto_stem: true}
         if duration.substr(-1)=='d'
           res.addDotToAll()

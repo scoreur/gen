@@ -31,16 +31,18 @@ class @ScoreObj
     @tracks.push(@texture)
 
   # leave out comment, separate into measures
-  pre_processing(text): ->
+  pre_processing: (text) ->
      ex = /\/\/[^\n][\n]+|[\/\n]]/
 
 
   parseMelody: (m, scale, init_ref) ->
-    if m==null
+    if typeof m == 'undefined'
       console.log 'empty melody'
-      return null
+      return
     scale ?= MG.scale_class['maj']
+    console.log scale, init_ref
     init_ref ?= 60 # C4
+    ref = init_ref
     res = m.map (e)=>
       notes = e.trim().split(/\s+/);
       measure = []
@@ -56,6 +58,7 @@ class @ScoreObj
           terms = e2.split(',')
           pitches = []
           Array.prototype.forEach.call terms[0], (e3)->
+
             switch e3
               when '0'
                 pitches.push(0) # rest
@@ -69,7 +72,6 @@ class @ScoreObj
                 tied = true
               else
                 console.log 'skip invalid flag ' + e3
-
           dur = if terms.length>=2 then (parseInt(terms[1]) ? 1) else 1
           if tied
             measure.push [dur, pitches, true]
@@ -80,9 +82,9 @@ class @ScoreObj
     return res
 
   parseHarmony: (measures) ->
-    if measures==null
+    if typeof measures == 'undefined'
       console.log 'empty harmony'
-      return null
+      return
     measures.map (e) ->
       e.trim().split(/\s+/).map (e2) ->
         terms = e2.split(',')
@@ -93,9 +95,9 @@ class @ScoreObj
 
 
   parseTexture: (measures, harmony) ->
-    if measures==null || harmony == null
+    if typeof measures == 'undefined' || typeof harmony == 'undefined'
       console.log 'empty texture'
-      return null
+      return
     c = _.flatten(harmony, true)
 
     delta = 0
