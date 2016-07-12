@@ -98,33 +98,27 @@ var click_event_list = {
 	'play_MIDI':function(){
 		if(!MIDI.Player.playing){
             MIDI.Player.start();
-			$('#play_MIDI').html('Pause MIDI');
-
 		}else{
 			MIDI.Player.pause();
-			$('#play_MIDI').html('Play MIDI');
 		}
+		$('#play_MIDI>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
 
 	},
 	'play_melody': function(){
 		if(!seqPlayer.playing[0]){
             seqPlayer.play(0);
-			$('#play_melody').html('Pause Melody');
-
 		}else{
 			seqPlayer.pause(0);
-			$('#play_melody').html('Play Melody');
 		}
+		$('#play_melody>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
 	},
 	'play_harmony': function(){
 		if(!seqPlayer.playing[1]){
 			seqPlayer.play(1);
-			$('#play_harmony').html('Pause Harmony');
-
 		}else{
 			seqPlayer.pause(1);
-			$('#play_harmony').html('Play Harmony');
 		}
+		$('#play_harmony>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
 
 	},
 	'save_midi': function(){
@@ -275,12 +269,15 @@ function registerEvents(){
 		openFor(id, file_open_handlers[id]);
 	}
 	seqPlayer.onend = function(n){
+		var i = seqPlayer.cur_i[n];
+		if(i>0 && i<seqPlayer.tracks[n].length)
+		  return;
 		switch(n){
 			case 0:
-				$('#play_melody').html('Play Melody');
+				$('#play_melody>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
 				break;
 			case 1:
-				$('#play_harmony').html('Play Harmony');
+				$('#play_harmony>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
 				break;
 			default:
 		};
@@ -295,7 +292,7 @@ function registerEvents(){
 			$('#currentTime').html(res.now);
 			//$('#endTime').html(res.end);
 		}else{
-			$('#play_MIDI').html('Play MIDI');
+			//
 		}
 		
 	});

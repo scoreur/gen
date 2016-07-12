@@ -39,27 +39,36 @@ class @ScoreRenderer
 
   render: (score)->
     @r.resize(1000,800)
-    raw_w = (@geo.system_width - @geo.reserved_width) // this.layout.measure_per_system
-    @s = new ScoreObj(score)
-    sharp = MIDI.key_sig[@s.key_sig] >= 0
+    raw_w = (@geo.system_width - @geo.reserved_width) // @layout.measure_per_system
+    s = @s = new ScoreObj(score)
+    sharp = MG.key_sig[score.key_sig] >= 0
+    toScale = MG.pitchToScale(score.scale, s.key_sig)
     #console.log(s)
     @sys = []
-    for  i in [0...@s.melody.length] by 1
-      stave = this.newStave(i, @s.key_sig)
+    for  i in [0...s.melody.length] by 1
+      stave = this.newStave(i, score.key_sig)
       if i==0
-        stave.addTimeSignature(@s.time_sig.join('/'))
+        stave.addTimeSignature(score.time_sig.join('/'))
       dur_tot = 0
-      notes = @s.melody[i].map (e)=>
+      notes = s.melody[i].map (e)=>
+
         dur_tot += e[0]
-        duration =  @dur_map(e[0]/@s.ctrl_per_beat)
+        duration =  @dur_map(e[0]/score.ctrl_per_beat)
         keys = []
         if typeof e[1] == 'number'
           e[1] = [e[1]]
 
         e[1].forEach (e1)->
-
-          if (key = MG.pitchToKey(e1, sharp))?
-            keys.push key.join('/')
+          if e1<21 || e1>108
+            return
+          tmp = toScale(e1)
+          key = MG.scale_keys[score.key_sig][tmp[0]]
+          # adjust
+          key += '/' + ( (e1//12) - 1 + ({'Cb':1, 'B#':-1}[key] || 0))
+          if tmp[2] != 0
+            key = MG.pitchToKey(e1, sharp).join('/')
+          if key?
+            keys.push key
 
         if keys.length <= 0
           keys.push 'Bb/4' # rest
@@ -68,16 +77,16 @@ class @ScoreRenderer
         #console.log(duration, keys);
         res = new Vex.Flow.StaveNote {keys:keys, duration: duration, auto_stem: true}
         if duration.substr(-1)=='d'
-          res.addDotToAll();
+          res.addDotToAll()
           if duration.substr(-2,1)=='d'
-            res.addDotToAll();
+            res.addDotToAll()
         return res
 
 
-      num_beats = dur_tot // @s.ctrl_per_beat
+      num_beats = dur_tot // s.ctrl_per_beat
       voice = new Vex.Flow.Voice {
         num_beats: num_beats,
-        beat_value: @s.time_sig[1],
+        beat_value: s.time_sig[1],
         resolution: Vex.Flow.RESOLUTION
       }
 

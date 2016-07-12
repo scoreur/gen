@@ -178,8 +178,6 @@
 	--------------------------------------------------- */
 	MIDI.keyToNote = {}; // C8  == 108
 	MIDI.noteToKey = {}; // 108 ==  C8
-	MIDI.key_sig = {}; // key signature
-	MIDI.key_sig_rev = {};
 
 	(function() {
 		var A0 = 0x15; // first note
@@ -194,14 +192,7 @@
 			MIDI.keyToNote[name2] = n;
 			MIDI.noteToKey[n] = name;
 		}
-		for (var i=0;i<12;++i){
-			var j = (i*7)%12;
-			var l = (i+6)%12 - 6;
-			MIDI.key_sig[number2key[j]] = l;
-			MIDI.key_sig_rev[l] = number2key[j];
-		}
-		MIDI.key_sig['F#'] = 6;
-		MIDI.key_sig_rev[6] = 'F#';
+
 	})();
 	
 

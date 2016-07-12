@@ -620,36 +620,6 @@ TEST.testMidi = function(m){
 	return true;
 }
 
-TEST.analysis = function(data, ctrl_per_beat){
-	var ctrl_per_beat = ctrl_per_beat || 4;
-	var m = MidiFile(data);
-	var q = simpMidi.prototype.quantize.call(m, ctrl_per_beat);
-
-	return q.map(function(track){
-		var res = [];
-		var tmp = [];
-		// handle
-		var delta = 0;
-		track.forEach(function(e){
-			if(e[0]>delta){
-				if(tmp.length>0){
-					res.push([e[0]-delta, tmp]);
-					tmp = [];
-				}else{
-					res.push([e[0]-delta, [0]]);//rest
-				}
-				delta = e[0];
-			}else{
-				// ignore 'noteOff' and velocity == 0
-				if(e[1] == 'noteOn' && e[3] != 0){
-					tmp.push(e[2]); //noteNumber
-				}
-			}
-		});
-		res = _.unzip(res);
-		return {dur:res[0], pitch:res[1]};
-	});
-};
 
 if(typeof module!='undefined'){
 	module.exports = function(t){

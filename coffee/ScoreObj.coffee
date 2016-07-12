@@ -8,9 +8,13 @@ class @ScoreObj
     @time_sig ?= [4,4]
     @key_sig ?='C'
     @ctrl_per_beat ?= 4
+    @scale ?= 'maj'
+
     @init_ref = MG.key_class[@key_sig] + 60 # C4 ~ B4
     @init_ctrlTicks = (60000.0/@tempo/@ctrl_per_beat) >>>0
-    @scale ?= 'maj'
+
+    @tracks = []
+
     # remove this
     @options = options
     @parse(options)
@@ -20,14 +24,23 @@ class @ScoreObj
   parse: (options) ->
     options ?= @options
     @measures = _.zip(options.melody, options.harmony, options.texture)
-    @melody = if options.melody then @parseMelody(options.melody) else null
-    @harmony = if options.harmony then @parseHarmony(options.harmony) else null
-    @texture = if options.texture then @parseTexture(options.texture) else null
+    @melody = @parseMelody(options.melody,  MG.scale_class[@scale], @init_ref)
+    @tracks.push(@melody)
+    @harmony = @parseHarmony(options.harmony)
+    @texture = @parseTexture(options.texture, @harmony)
+    @tracks.push(@texture)
 
-  parseMelody: (m) ->
-    m ?= @options.melody
-    scale = MG.scale_class[@scale]
-    ref = @init_ref
+  # leave out comment, separate into measures
+  pre_processing(text): ->
+     ex = /\/\/[^\n][\n]+|[\/\n]]/
+
+
+  parseMelody: (m, scale, init_ref) ->
+    if m==null
+      console.log 'empty melody'
+      return null
+    scale ?= MG.scale_class['maj']
+    init_ref ?= 60 # C4
     res = m.map (e)=>
       notes = e.trim().split(/\s+/);
       measure = []
@@ -36,7 +49,7 @@ class @ScoreObj
           switch e2[1]
             when '+' then ref += 12
             when '-' then ref -= 12
-            else ref = @init_ref
+            else ref = init_ref
           return
         else
           tied = false
@@ -58,7 +71,6 @@ class @ScoreObj
                 console.log 'skip invalid flag ' + e3
 
           dur = if terms.length>=2 then (parseInt(terms[1]) ? 1) else 1
-          # TODO: add amplitude control
           if tied
             measure.push [dur, pitches, true]
           else
@@ -67,30 +79,24 @@ class @ScoreObj
       return measure
     return res
 
-  parseHarmony: (measures, ctrlTicks) ->
-    measures ?= @options.harmony
-    ex = /[ABCDEFG][b#]?/
-    alias = {'7':'dom7','':'maj','M':'maj','m':'min','mi':'min','m7':'min7'}
-    res = measures.map (e) ->
-      measure = []
-      chords = e.trim().split(/\s+/)
-      octave = 3
-      chords.forEach (e2) =>
+  parseHarmony: (measures) ->
+    if measures==null
+      console.log 'empty harmony'
+      return null
+    measures.map (e) ->
+      e.trim().split(/\s+/).map (e2) ->
         terms = e2.split(',')
-        root = ex.exec(terms[0])[0]
-        root_pitch = MG.keyToPitch(root+octave)
-        name = terms[0].substr(ex.lastIndex+root.length)
-        name = alias[name] ? name
-        chord_pitches = MG.chords[name] || MG.chords['maj'] # default maj
+        chord_info = MG.getChords(terms[0],3)
         dur =  if terms.length>=2 then parseInt(terms[1]) else 1
-        measure.push [dur,root_pitch,chord_pitches]
-      return measure
-    return res
+        [dur,chord_info[0],chord_info[1]]
 
 
-  parseTexture: (measures) ->
-    measures ?= @options.texture
-    c = _.flatten(@harmony, true)
+
+  parseTexture: (measures, harmony) ->
+    if measures==null || harmony == null
+      console.log 'empty texture'
+      return null
+    c = _.flatten(harmony, true)
 
     delta = 0
     refc = []
@@ -143,8 +149,7 @@ class @ScoreObj
     console.log 'to score text'
     if @melody == null
       return
-    pitchSimple = MG.pitchToScale(@scale,@key_sig)
-    scale_len = MG.scale_class[@scale].length
+    toScale = MG.pitchToScale(@scale,@key_sig)
     ref_oct = 4
     res = @melody.map (e)->
       ret = []
@@ -156,8 +161,7 @@ class @ScoreObj
           if e2<21 || e2>108
             o += '0'
           else
-            tmp = pitchSimple(e2)
-            #console.log(e2, tmp)
+            tmp = toScale(e2)
             o += 1 + tmp[0]
             o += {'-2':'--','-1':'-',1:'+',2:'++'}[tmp[1]-ref_oct] || ''
             o += {1:'#',2:'##',3:'###'}[tmp[2]] || ''
@@ -166,7 +170,6 @@ class @ScoreObj
         if e1[0] > 1
           o += ',' + e1[0] # dur
         ret.push o
-      #console.log 'text', e, ret
       return ret.join(' ')
 
     return res
@@ -194,7 +197,7 @@ class @ScoreObj
       ++i
 
     m.setTimeSignature @time_sig...
-    m.setKeySignature MIDI.key_sig[@key_sig], 'maj'
+    m.setKeySignature MG.key_sig[@key_sig], 'maj'
     m.setTempo @tempo
 
     if t == null

@@ -220,7 +220,7 @@ Generator.prototype.gen_chord = function(dur, options){
 
 	var rc1 = this.rndPicker(options.rhythm[1], options.rhythm[2]);
 	var rc2 = this.rndPicker(options.interval.choices,options.interval.weights);
-	var pre = scale_len * 4;
+	var pre = scale_len * 4, pre2 = pre;
 	for(var i=0;i<n;++i){
 		res.dur.push(rc1.gen());
 		var tmp = [];
@@ -268,6 +268,83 @@ TEST.testGen = function(){
 	cur_score.melody = res.toScoreObj().melody
 	return true;
 };
+
+TEST.analysis = function(data, ctrl_per_beat){
+	var ctrl_per_beat = ctrl_per_beat || 4;
+	var m = MidiFile(data);
+	var q = simpMidi.prototype.quantize.call(m, ctrl_per_beat);
+
+	var tracks =  q.map(function(track){
+		var res = [];
+		var tmp = [];
+		// handle
+		var delta = 0;
+		track.forEach(function(e){
+			if(e[0]>delta){
+				if(tmp.length>0){
+					res.push([e[0]-delta, tmp]);
+					tmp = [];
+				}else{
+					res.push([e[0]-delta, [0]]);//rest
+				}
+				delta = e[0];
+			}else{
+				// ignore 'noteOff' and velocity == 0
+				if(e[1] == 'noteOn' && e[3] != 0){
+					tmp.push(e[2]); //noteNumber
+				}
+			}
+		});
+		res = _.unzip(res);
+		res = {dur:res[0], pitch:res[1]};
+		return Generator.prototype.b2score.call({},res,ctrl_per_beat);
+	});
+	var info =  tracks.map(function(e){
+		return midi_statistics(e);
+	});
+	
+	return true;
+};
+
+function midi_statistics(obj){
+	function obj_sort(data){
+		var k = Object.keys(data);
+		var v = k.map(function(key){return data[key]});
+		var kv = _.zip(k,v);
+		kv.sort(function(a,b){return b[1]-a[1]});// decending
+		return kv;
+	}
+	var info = {rhythm:{}, melody:{one:{}, two:{}}};
+	var one = {}, two = {};
+	var n_one = 0, n_two = 0;
+	obj.forEach(function(e){
+		var measure = _.unzip(e);
+		var r = measure[0];
+		info.rhythm[r] = 1+ (info.rhythm[r] || 0);
+		r = measure[1];
+		if(r.length<2) return;
+		var c = [r[0] % 12, (r[1]-r[0])%12];
+		one[c] = 1+ (one[c] || 0); n_one ++;
+		for(var i=2;i < r.length;++i){
+			c = [r[i-1]%12, (r[i]-r[i-1])%12];
+			one[c] = 1 + (one[c]||0); n_one ++;
+			c = [r[i-2] % 12, (r[i-1] - r[i-2]) % 12, c[1]];
+			two[c] = 1 + (two[c]||0); n_two ++;
+		}
+	});
+
+	info = {
+		rhythm: obj_sort(info.rhythm),
+		melody: {
+			one: obj_sort(one),
+			two: obj_sort(two),
+			n: [0,n_one, n_two]
+		}
+	};
+	return info;
+
+
+}
 
 
 

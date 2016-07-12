@@ -115,15 +115,76 @@ MG.keyToPitch = (key) ->
   oct = parseInt(oct) ? 4
   return 12 + ref + oct * 12
 
-MG.pitchToKey = (pitch, sharp) ->
+ex = /[ABCDEFG][b#]{0,2}/
+alias = {'7':'dom7','':'maj','M':'maj','m':'min','mi':'min','m7':'min7'}
+MG.getChords = (chord_str, oct)->
+  oct ?= 4
+  root = ex.exec(chord_str)[0]
+  root_pitch = MG.keyToPitch(root + oct)
+  chord_name = chord_str.substr(ex.lastIndex+root.length)
+  chord_name = alias[chord_name] ? chord_name
+  chord_pitches = MG.chords[chord_name] || MG.chords['maj'] # default maj
+  return [root_pitch, chord_pitches]
+
+
+MG.pitchToKey = (pitch, sharp, nooct) ->
   if pitch < 21 || pitch > 108
     return undefined
   kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
   if sharp == true
     kn = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-  oct = pitch // 12 -1
   ref = pitch % 12
-  return [kn[ref],oct]
+  return if nooct? then kn[ref] else [kn[ref],pitch // 12 -1]
+
+MG.key_sig_rev = {}
+MG.key_sig = (()->
+  kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+  res = {}
+  for i in [0...12] by 1
+    j = (i*7)%12;
+    l = (i+6)%12 - 6;
+    res[kn[j]] = l;
+    MG.key_sig_rev[l] = kn[j];
+
+  res['F#'] = 6;
+  MG.key_sig_rev[6] = 'F#'
+  return res
+)()
+
+# all valid note names for the pitch class
+MG.keyNames = (()->
+  res = new Array(12).fill(0).map (e)-> []
+  ref = MG.scale_class['maj']
+  "CDEFGAB".split("").forEach (key,i)->
+    #console.log ref[i]
+    res[(ref[i]-2)%%12].push(key + 'bb')
+    res[(ref[i]-1)%%12].push(key + 'b')
+    res[ref[i]%12].push(key)
+    res[(ref[i]+1)%12].push(key+'#')
+    res[(ref[i]+2)%12].push(key+'##')
+  return res
+)()
+
+# note names in the major scale
+MG.scale_keys = (()->
+  kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+  res = {}
+  res['C'] = "CDEFGAB".split("")
+  ref = MG.scale_class['maj']
+  kn.forEach (e,i)->
+    if e == 'C'
+      return
+    res[e] = [e]
+    for j in [1...ref.length] by 1
+      pitch = (i + ref[j]) % 12
+      notes = MG.keyNames[pitch]
+
+      for k,v of notes
+        if v[0] == res['C'][(res['C'].indexOf(e[0])+j)%7]
+          res[e].push v
+          break
+  return res
+)()
 
 
 @chord_name = MG.chord_class_label =
