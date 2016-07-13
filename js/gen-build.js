@@ -143,6 +143,30 @@
     };
   };
 
+  MG.testPitchScaleConversion = function() {
+    var flag, i, j, m, mode, ref2, scale, tmp, toPitch, toScale, tonic;
+    ref2 = MG.scale_class;
+    for (scale in ref2) {
+      mode = ref2[scale];
+      flag = true;
+      for (tonic in MG.key_class) {
+        toPitch = MG.scaleToPitch(scale, tonic);
+        toScale = MG.pitchToScale(scale, tonic);
+        for (i = m = 21; m <= 108; i = ++m) {
+          tmp = toScale(i);
+          j = toPitch(tmp[0] + mode.length * tmp[1]) + tmp[2];
+          if (j !== i) {
+            flag = false;
+            console.log(tonic, scale, i, tmp, j);
+          }
+        }
+      }
+      if (flag) {
+        console.log(scale, 'success');
+      }
+    }
+  };
+
   MG.keyToPitch = function(key) {
     var key_class, oct, ref, ref2, ref3;
     key_class = /[CDEFGAB][#b]{0,2}/.exec(key)[0];
@@ -153,6 +177,39 @@
     oct = /[0-9]/.exec(key)[0];
     oct = (ref3 = parseInt(oct)) != null ? ref3 : 4;
     return 12 + ref + oct * 12;
+  };
+
+  MG.pitchToKey = function(pitch, sharp, nooct) {
+    var kn, ref;
+    if (pitch < 21 || pitch > 108) {
+      return void 0;
+    }
+    kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+    if (sharp === true) {
+      kn = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    }
+    ref = pitch % 12;
+    if (nooct != null) {
+      return kn[ref];
+    } else {
+      return [kn[ref], Math.floor(pitch / 12) - 1];
+    }
+  };
+
+  MG.testPitchKeyConversion = function() {
+    var flag, i, j, m, tmp;
+    flag = true;
+    for (i = m = 21; m <= 108; i = ++m) {
+      tmp = MG.pitchToKey(i, true);
+      j = MG.keyToPitch(tmp[0] + tmp[1]);
+      if (j !== i) {
+        flag = false;
+        console.log(i, tmp, j);
+      }
+    }
+    if (flag) {
+      console.log('success');
+    }
   };
 
   MG.transposer = function(scale_name, key_sig) {
@@ -196,23 +253,6 @@
     chord_name = (ref2 = alias[chord_name]) != null ? ref2 : chord_name;
     chord_pitches = MG.chords[chord_name] || MG.chords['maj'];
     return [root_pitch, chord_pitches];
-  };
-
-  MG.pitchToKey = function(pitch, sharp, nooct) {
-    var kn, ref;
-    if (pitch < 21 || pitch > 108) {
-      return void 0;
-    }
-    kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-    if (sharp === true) {
-      kn = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    }
-    ref = pitch % 12;
-    if (nooct != null) {
-      return kn[ref];
-    } else {
-      return [kn[ref], Math.floor(pitch / 12) - 1];
-    }
   };
 
   MG.key_sig_rev = {};
@@ -299,124 +339,117 @@
   this.MG = MG;
 
   this.score_summer = {
-    tempo: 120,
-    time_sig: [4, 4],
-    key_sig: 'C',
-    scale: 'maj',
-    ctrl_per_beat: 2,
-    incomplete_measure: true,
-    melody: ':+ 3,2 1,2/3^,8/3,2 2 1 2 3 1,2/:- 6,4 3^,4/3,4 :+ 3,2 1,2/2 2^,7/2,2 1 6-,1 1 6-,1 1,2/:- 7^,8/7,4 0 :+ 3,2 1/3 3,2 3^,1 3^,4/3,2 2 1 2 3 1,2/:- 6,4 3^,4/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6^,8/6,4 :+ 3,2 1,2'.split('/'),
-    harmony: "E7,4/Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4/Dmin,8/F7,8/F#min7,4 B7,4/E7,8/Am,8/Bb7,8/Am,8/D7,8/C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4 E7,4".split('/'),
-    texture: ":-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:iii-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4".split('/')
-  };
-
-  this.gen_modes = ['random', 'transpose', 'chord'];
-
-  this.sample_rand_mode = {
-    mode: 'random',
-    options: {
-      rhythm: [
-        4, '1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map(function(e) {
-          return e.split(/\s+/).map(function(e2) {
-            return parseInt(e2);
-          });
-        }), [2, 3, 3, 5, 1, 3, 2, 1]
-      ],
-      interval: {
-        chromatic: false,
-        weights: [1, 1, 2, 5, 12, 6, 8, 4, 7, 12, 8, 3, 1, 0, 1],
-        choices: (function() {
-          return Array(15).fill().map(function(e, i) {
-            return i - 7;
-          });
-        })()
-      }
-    }
-  };
-
-  this.sample_transpose_mode = {
-    mode: 'transpose',
-    options: {
-      src: "A",
-      offset: 0,
+    settings: {
+      tempo: 120,
+      time_sig: [4, 4],
+      key_sig: 'C',
       scale: 'maj',
-      interval: 4
+      ctrl_per_beat: 2,
+      incomplete_measure: true,
+      volumes: [110, 80]
+    },
+    contents: {
+      melody: ':+ 3,2 1,2/3^,8/3,2 2 1 2 3 1,2/:- 6,4 3^,4/3,4 :+ 3,2 1,2/2 2^,7/2,2 1 6-,1 1 6-,1 1,2/:- 7^,8/7,4 0 :+ 3,2 1/3 3,2 3^,1 3^,4/3,2 2 1 2 3 1,2/:- 6,4 3^,4/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6^,8/6,4 :+ 3,2 1,2'.split('/'),
+      harmony: "E7,4/Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4/Dmin,8/F7,8/F#min7,4 B7,4/E7,8/Am,8/Bb7,8/Am,8/D7,8/C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4 E7,4".split('/'),
+      texture: ":-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:iii-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4".split('/')
     }
   };
 
-  this.sample_chord_mode = {
-    mode: 'chord',
-    options: {
-      chords: "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
-      rhythm: [
-        4, '1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map(function(e) {
-          return e.split(/\s+/).map(function(e2) {
-            return parseInt(e2);
-          });
-        }), [2, 3, 3, 5, 1, 3, 2, 1]
-      ],
-      interval: {
-        chromatic: false,
-        weights: [1, 1, 2, 5, 12, 6, 8, 4, 7, 12, 8, 3, 1, 0, 1],
-        choices: (function() {
-          return Array(15).fill().map(function(e, i) {
-            return i - 7;
-          });
-        })()
-      }
-    }
-  };
+  this.gen_modes = ['random', 'transpose', 'chord', 'reverse', 'sequence'];
 
   this.schema_summer = {
-    tempo: 120,
-    ctrl_per_beat: 2,
-    time_sig: [4, 4],
-    key_sig: 'C',
-    scale: 'maj',
     blocks: (function(a, b) {
       var res;
       res = {};
-      a.split('').forEach(function(e, i) {
+      a.split('/').forEach(function(e, i) {
         return res[e] = b[i];
       });
       return res;
-    })('cABC', [4, 32, 32, 28]),
-    structure: "c/A/B/A/C/c".split('/'),
+    })('c/A/B/Br/C', [4, 32, 16, 16, 28]),
+    structure: "c/A/B/Br/A/C/c".split('/'),
     scale: 'maj',
     funcs: {
       'A': "1,8/4,8/1,4 2,4/1,8".split('/'),
-      'B': "4,8/6,8/2,4 5,4/5,8".split('/'),
+      'B': "4,8/6,8".split('/'),
+      'Br': "2,4 5,4/5,8".split('/'),
       'C': "3,4 1,4/2,4 5,4/1,4 2,4/2,4".split('/'),
       'c': "5,4"
     },
+    seeds: {
+      's1': {
+        dur: 4,
+        choices: '1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map(function(e) {
+          return e.split(/\s+/).map(function(e2) {
+            return parseInt(e2);
+          });
+        }),
+        weights: [2, 3, 3, 5, 1, 3, 2, 1]
+      },
+      's2': {
+        weights: [1, 1, 2, 5, 12, 6, 8, 4, 7, 12, 8, 3, 1, 0, 1],
+        choices: (function() {
+          return Array(15).fill().map(function(e, i) {
+            return i - 7;
+          });
+        })()
+      }
+    },
     melody: {
-      'c': sample_rand_mode,
+      'c': {
+        mode: 'random',
+        options: {
+          rhythm: {
+            seed: 's1'
+          },
+          interval: {
+            chromatic: false,
+            seed: 's2'
+          }
+        }
+      },
       'A': {
         mode: 'random',
-        options: {}
+        options: {
+          rhythm: {
+            seed: 's1'
+          },
+          interval: {
+            chromatic: false,
+            seed: 's2'
+          }
+        }
       },
       'B': {
         mode: 'transpose',
-        options: {}
+        options: {
+          src: "A",
+          offset: 0,
+          scale: 'maj',
+          interval: 4
+        }
+      },
+      'Br': {
+        mode: 'reverse',
+        options: {
+          src: 'B',
+          deep: 'false'
+        }
       },
       'C': {
         mode: 'chord',
-        options: {}
+        options: {
+          chords: "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
+          rhythm: {
+            seed: 's1'
+          },
+          interval: {
+            chromatic: false,
+            seed: 's2'
+          }
+        }
       }
-    },
-    harmony: {
-      'A': "Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4".split('/'),
-      'B': "Dmin,8/F7,8/F#min7,4 B7,4/E7,8".split('/'),
-      'C': "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
-      'c': ""
     }
   };
-
-  this.schema_summer.melody.A = this.sample_rand_mode;
-
-  this.schema_summer.melody.B = this.sample_transpose_mode;
-
-  this.schema_summer.melody.C = this.sample_chord_mode;
 
 }).call(this);
 
@@ -484,13 +517,22 @@
   MG = (ref = this.MG) != null ? ref : {};
 
   this.Generator = (function() {
-    function Generator(schema) {
-      var ref1;
+    function Generator(settings, schema) {
+      var base, base1;
+      this.settings = settings;
       this.schema = schema;
-      this.keyref = MIDI.keyToNote[this.schema.key_sig + '4'];
-      this.scale = (ref1 = this.schema.scale) != null ? ref1 : 'maj';
-      this.pitchSimple = MG.scaleToPitch(this.scale, this.schema.key_sig);
+      if ((base = this.settings).key_sig == null) {
+        base.key_sig = 'C';
+      }
+      if ((base1 = this.settings).scale == null) {
+        base1.scale = 'maj';
+      }
+      this.keyref = MG.keyToPitch[this.settings.key_sig + '4'];
+      this.scale = MG.scale_class[this.settings.scale];
+      this.seeds = this.schema.seeds;
       this.res = {};
+      this.toPitch = MG.scaleToPitch(this.settings.scale, this.settings.key_sig);
+      this.toScale = MG.pitchToScale(this.settings.scale, this.settings.key_sig);
     }
 
     Generator.prototype.generate = function() {
@@ -508,31 +550,46 @@
             break;
           case 'chord':
             this.res[i] = this.gen_chord(dur, mode.options);
+            break;
+          case 'reverse':
+            this.res[i] = this.gen_reverse(mode.options);
         }
       }
+      console.log(this.res, 'res');
       return this.res;
     };
 
     Generator.prototype.gen_transpose = function(dur, options) {
-      var refd, res, src, tmp, tmp2, transpose;
+      var cur_i, interval, refd, res, src, tmp, tmp2, transpose;
       res = {
         dur: [],
         pitch: []
       };
-      transpose = MG.transposer(options.scale, this.schema.key_sig);
+      transpose = MG.transposer(options.scale, this.settings.key_sig);
       src = this.res[options.src];
+      interval = options.interval;
+      if (typeof interval === 'number') {
+        interval = [interval];
+      }
       refd = 0;
+      cur_i = 0;
       while (dur > 0) {
+        console.log(refd, src.dur.length);
+        if (refd >= src.dur.length) {
+          refd -= src.dur.length;
+          cur_i = (cur_i + 1) % interval.length;
+          console.log('shift to next interval');
+        }
         tmp = [];
         tmp2 = [];
-        src.dur[refd].map(function(e, i) {
+        src.dur[refd].forEach(function(e, i) {
           if (dur - e >= 0) {
             tmp.push(e);
-            tmp2.push(transpose(src.pitch[refd][i], options.interval));
+            tmp2.push(transpose(src.pitch[refd][i], interval[cur_i]));
             dur -= e;
           } else if (dur > 0) {
             tmp.push(dur);
-            tmp2.push(transpose(src.pitch[refd][i], options.interval));
+            tmp2.push(transpose(src.pitch[refd][i], interval[cur_i]));
             dur = 0;
           }
         });
@@ -543,18 +600,62 @@
       return res;
     };
 
-    Generator.prototype.gen_random = function(dur, options) {
-      var i, j, n, pre, rc1, rc2, res, scale_len, tmp, toPitch;
-      toPitch = MG.scaleToPitch(this.scale, this.schema.key_sig);
-      scale_len = MG.scale_class[this.scale].length;
+    Generator.prototype.gen_reverse = function(options) {
+      var res, src;
       res = {
         dur: [],
         pitch: []
       };
-      n = dur / options.rhythm[0] >>> 0;
-      rc1 = this.rndPicker(options.rhythm[1], options.rhythm[2]);
-      console.log(options.rhythm);
-      rc2 = this.rndPicker(options.interval.choices, options.interval.weights);
+      src = this.res[options.src];
+      if ((options.deep != null) && options.deep === true) {
+        res.dur = src.dur.slice().reverse().map(function(arr) {
+          return arr.slice().reverse();
+        });
+        res.pitch = src.pitch.slice().reverse().map(function(arr) {
+          return arr.slice().reverse();
+        });
+      } else {
+        res.dur = src.dur.slice().reverse();
+        res.pitch = src.pitch.slice().reverse();
+      }
+      console.log(res, 'reverse ' + options.src);
+      return res;
+    };
+
+    Generator.prototype.gen_exact = function(options) {
+      var res;
+      return res = {
+        dur: options.dur,
+        pitch: options.pitch
+      };
+    };
+
+    Generator.prototype.gen_random = function(dur, options) {
+      var i, j, n, pre, rc1, rc2, res, scale_len, seed, seed2, tmp, toPitch;
+      toPitch = this.toPitch;
+      scale_len = this.scale.length;
+      res = {
+        dur: [],
+        pitch: []
+      };
+      seed = {};
+      if ((options.rhythm.seed != null) && (this.seeds != null)) {
+        seed = this.seeds[options.rhythm.seed];
+      } else {
+        seed.dur = options.rhythm[0];
+        seed.choices = options.rhythm[1];
+        seed.weights = options.rhythm[2];
+      }
+      seed2 = {};
+      if ((options.interval.seed != null) && (this.seeds != null)) {
+        seed2 = this.seeds[options.interval.seed];
+      } else {
+        seed2 = options.interval;
+      }
+      n = dur / seed.dur >>> 0;
+      rc1 = this.rndPicker(seed.choices, seed.weights);
+      console.log(seed);
+      rc2 = this.rndPicker(seed2.choices, seed2.weights);
       pre = scale_len * 4;
       i = 0;
       while (i < n) {
@@ -562,7 +663,7 @@
         tmp = [];
         j = 0;
         while (j < res.dur[i].length) {
-          pre += rc2.gen();
+          pre += rc2.gen() % scale_len;
           if (pre < 0) {
             pre = 0;
           }
@@ -579,21 +680,34 @@
     };
 
     Generator.prototype.gen_chord = function(dur, options) {
-      var chords, fix, i, ii, j, n, new_pre, pre, pre2, r, rc1, rc2, refc, refdur, res, scale_len, tmp, toPitch, toScale;
-      toPitch = MG.scaleToPitch(this.scale, this.schema.key_sig);
-      toScale = MG.pitchToScale(this.scale, this.schema.key_sig);
-      chords = _.flatten(ScoreObj.prototype.parseHarmony(options.chords, 1), true);
-      scale_len = MG.scale_class[this.scale].length;
-      console.log('chords', chords, 'scale len', scale_len);
+      var chords, fix, i, ii, j, n, new_pre, pre, pre2, r, rc1, rc2, refc, refdur, res, scale_len, seed, seed2, tmp, toPitch, toScale;
+      toPitch = this.toPitch;
+      toScale = this.toScale;
+      chords = _.flatten(ScoreObj.prototype.parseHarmony(options.chords), true);
+      scale_len = this.scale.length;
       refc = 0;
       refdur = chords[refc][0];
       res = {
         dur: [],
         pitch: []
       };
-      n = dur / options.rhythm[0] >>> 0;
-      rc1 = this.rndPicker(options.rhythm[1], options.rhythm[2]);
-      rc2 = this.rndPicker(options.interval.choices, options.interval.weights);
+      seed = {};
+      if ((options.rhythm.seed != null) && (this.seeds != null)) {
+        seed = this.seeds[options.rhythm.seed];
+      } else {
+        seed.dur = options.rhythm[0];
+        seed.choices = options.rhythm[1];
+        seed.weights = options.rhythm[2];
+      }
+      seed2 = {};
+      if ((options.interval.seed != null) && (this.seeds != null)) {
+        seed2 = this.seeds[options.interval.seed];
+      } else {
+        seed2 = options.interval;
+      }
+      n = dur / seed.dur >>> 0;
+      rc1 = this.rndPicker(seed.choices, seed.weights);
+      rc2 = this.rndPicker(seed2.choices, seed2.weights);
       pre = scale_len * 4;
       pre2 = pre;
       i = 0;
@@ -678,9 +792,8 @@
       if (res === {}) {
         this.generate();
       }
-      sec = this.schema.ctrl_per_beat * this.schema.time_sig[0];
+      sec = this.settings.ctrl_per_beat * this.settings.time_sig[0];
       res = {};
-      console.log('to Score obj');
       ref1 = this.res;
       for (e0 in ref1) {
         b = ref1[e0];
@@ -689,14 +802,8 @@
       res = this.schema.structure.map(function(e) {
         return res[e];
       });
-      obj = new ScoreObj({
-        ctrl_per_beat: this.schema.ctrl_per_beat,
-        tempo: this.schema.tempo,
-        time_sig: this.schema.time_sig,
-        key_sig: this.schema.key_sig,
-        scale: this.schema.scale
-      });
-      obj.melody = _.flatten(res, true);
+      obj = new ScoreObj(this.settings);
+      obj.setMelody(_.flatten(res, true), true);
       return obj;
     };
 
@@ -800,11 +907,11 @@
   MG = (ref1 = this.MG) != null ? ref1 : {};
 
   this.ScoreObj = (function() {
-    function ScoreObj(options) {
+    function ScoreObj(options, contents) {
       if (options == null) {
         options = {};
       }
-      this.tempo = options.tempo, this.time_sig = options.time_sig, this.key_sig = options.key_sig, this.ctrl_per_beat = options.ctrl_per_beat, this.scale = options.scale;
+      this.tempo = options.tempo, this.time_sig = options.time_sig, this.key_sig = options.key_sig, this.ctrl_per_beat = options.ctrl_per_beat, this.scale = options.scale, this.volumes = options.volumes;
       if (this.tempo == null) {
         this.tempo = 120;
       }
@@ -820,23 +927,50 @@
       if (this.scale == null) {
         this.scale = 'maj';
       }
-      this.init_ref = MG.key_class[this.key_sig] + 60;
+      if (this.volumes == null) {
+        this.volumes = [110, 80];
+      }
+      this.init_ref = MG.scaleToPitch(this.scale, this.key_sig)(4 * MG.scale_class[this.scale].length);
       this.init_ctrlTicks = (60000.0 / this.tempo / this.ctrl_per_beat) >>> 0;
       this.tracks = [];
-      this.options = options;
-      this.parse(options);
+      this.harmony = [];
+      if (contents != null) {
+        this.parse(contents);
+      }
     }
 
-    ScoreObj.prototype.parse = function(options) {
-      if (options == null) {
-        options = this.options;
+    ScoreObj.prototype.getSettings = function() {
+      return {
+        tempo: this.tempo,
+        time_sig: this.time_sig,
+        key_sig: this.key_sig,
+        ctrl_per_beat: this.ctrl_per_beat,
+        scale: this.scale,
+        volumes: this.volumes
+      };
+    };
+
+    ScoreObj.prototype.setMelody = function(melody, parsed) {
+      return this.tracks[0] = (parsed != null) && parsed === true ? melody : this.parseMelody(melody, MG.scale_class[this.scale], this.init_ref);
+    };
+
+    ScoreObj.prototype.setTexture = function(texture, harmony, parsed) {
+      if ((parsed != null) && parsed === true) {
+        this.harmony = harmony;
+        return this.tracks[1] = texture;
+      } else {
+        this.harmony = this.parseHarmony(harmony);
+        return this.tracks[1] = this.parseTexture(texture, this.harmony);
       }
-      this.measures = _.zip(options.melody, options.harmony, options.texture);
-      this.melody = this.parseMelody(options.melody, MG.scale_class[this.scale], this.init_ref);
-      this.tracks.push(this.melody);
-      this.harmony = this.parseHarmony(options.harmony);
-      this.texture = this.parseTexture(options.texture, this.harmony);
-      return this.tracks.push(this.texture);
+    };
+
+    ScoreObj.prototype.parse = function(options) {
+      if (options.melody != null) {
+        this.setMelody(options.melody, false);
+      }
+      if ((options.harmony != null) && options.texture) {
+        return this.setTexture(options.texture, options.harmony);
+      }
     };
 
     ScoreObj.prototype.pre_processing = function(text) {
@@ -853,7 +987,6 @@
       if (scale == null) {
         scale = MG.scale_class['maj'];
       }
-      console.log(scale, init_ref);
       if (init_ref == null) {
         init_ref = 60;
       }
@@ -897,7 +1030,7 @@
                   case '8':
                   case '9':
                     if (e3 > scale.length) {
-                      console.log('Eceed scale length ' + e3);
+                      console.log('Exceed scale length ' + e3);
                       e3 = scale.length;
                     }
                     pitches.push(ref + scale[e3 - '1']);
@@ -1047,15 +1180,19 @@
       return res;
     };
 
-    ScoreObj.prototype.toText = function() {
+    ScoreObj.prototype.toText = function(m) {
       var ref_oct, res, toScale;
       console.log('to score text');
-      if (this.melody === null) {
+      if (m == null) {
+        m = this.tracks[0];
+      }
+      if (m == null) {
+        console.log('null melody');
         return;
       }
       toScale = MG.pitchToScale(this.scale, this.key_sig);
       ref_oct = 4;
-      res = this.melody.map(function(e) {
+      res = m.map(function(e) {
         var ret;
         ret = [];
         e.forEach(function(e1) {
@@ -1065,22 +1202,34 @@
             e1[1] = [e1[1]];
           }
           e1[1].forEach(function(e2) {
-            var tmp;
+            var diff, tmp;
             if (e2 < 21 || e2 > 108) {
               return o += '0';
             } else {
               tmp = toScale(e2);
+              diff = tmp[1] - ref_oct;
+              if (diff < -1 || diff > 1) {
+                o += ':';
+                while (diff < -1) {
+                  o += '-';
+                  ref_oct--;
+                  diff++;
+                }
+                while (diff > 1) {
+                  o += '+';
+                  ref_oct++;
+                  diff--;
+                }
+                o += ' ';
+              }
               o += 1 + tmp[0];
               o += {
-                '-2': '--',
                 '-1': '-',
-                1: '+',
-                2: '++'
-              }[tmp[1] - ref_oct] || '';
+                1: '+'
+              }[diff] || '';
               return o += {
                 1: '#',
-                2: '##',
-                3: '###'
+                2: '##'
               }[tmp[2]] || '';
             }
           });
@@ -1101,11 +1250,11 @@
       var ctrlTicks, delta, dur, e, i, l, m, q, t, vol;
       console.log('to midi');
       ctrlTicks = this.init_ctrlTicks;
-      q = _.flatten(this.melody, true);
-      t = this.texture ? _.flatten(this.texture, true) : null;
+      q = _.flatten(this.tracks[0], true);
+      t = this.tracks[1] ? _.flatten(this.tracks[1], true) : null;
       m = new simpMidi();
       delta = 0;
-      vol = 110;
+      vol = this.volumes[0];
       i = 0;
       while (i < q.length) {
         e = q[i];
@@ -1128,7 +1277,7 @@
         m.finish();
         return m;
       }
-      vol = 80;
+      vol = this.volumes[1];
       l = m.addTrack() - 1;
       m.addEvent(l, 0, 'programChange', l - 1, 0);
       t.forEach(function(e) {
@@ -1271,24 +1420,25 @@
       return this.UI.page_num.html(num + 1);
     };
 
-    ScoreRenderer.prototype.render = function(score) {
-      var beams, dur_tot, formatter, i, l, notes, num_beats, raw_w, ref, s, sharp, stave, toScale, voice, w;
+    ScoreRenderer.prototype.render = function(score, contents) {
+      var beams, dur_tot, formatter, i, l, melody, notes, num_beats, raw_w, ref, s, sharp, stave, toScale, voice, w;
       raw_w = Math.floor((this.geo.system_width - this.geo.reserved_width) / this.layout.measure_per_system);
-      s = this.s = new ScoreObj(score);
+      s = this.s = new ScoreObj(score, contents);
       sharp = MG.key_sig[score.key_sig] >= 0;
       toScale = MG.pitchToScale(score.scale, s.key_sig);
       this.measures = [];
-      for (i = l = 0, ref = s.melody.length; l < ref; i = l += 1) {
-        stave = this.newStave(i, score.key_sig);
+      melody = s.tracks[0];
+      for (i = l = 0, ref = melody.length; l < ref; i = l += 1) {
+        stave = this.newStave(i, s.key_sig);
         if (i === 0) {
-          stave.addTimeSignature(score.time_sig.join('/'));
+          stave.addTimeSignature(s.time_sig.join('/'));
         }
         dur_tot = 0;
-        notes = s.melody[i].map((function(_this) {
+        notes = melody[i].map((function(_this) {
           return function(e) {
             var duration, keys, res;
             dur_tot += e[0];
-            duration = _this.dur_map(e[0] / score.ctrl_per_beat);
+            duration = _this.dur_map(e[0] / s.ctrl_per_beat);
             keys = [];
             if (typeof e[1] === 'number') {
               e[1] = [e[1]];
@@ -1299,7 +1449,7 @@
                 return;
               }
               tmp = toScale(e1);
-              key = MG.scale_keys[score.key_sig][tmp[0]];
+              key = MG.scale_keys[s.key_sig][tmp[0]];
               key += '/' + ((Math.floor(e1 / 12)) - 1 + ({
                 'Cb': 1,
                 'B#': -1
@@ -1336,7 +1486,7 @@
           resolution: Vex.Flow.RESOLUTION
         });
         voice.addTickables(notes);
-        Vex.Flow.Accidental.applyAccidentals([voice], this.s.key_sig);
+        Vex.Flow.Accidental.applyAccidentals([voice], s.key_sig);
         beams = Vex.Flow.Beam.applyAndGetBeams(voice);
         w = raw_w;
         if (i % this.layout.measure_per_system === 0) {
@@ -1487,12 +1637,12 @@ var seqPlayer = {
 
 	},
 	onend:function(){},
-    fromScore:function (src) {
-        var obj = new ScoreObj(src);
+    fromScore:function (src, contents) {
+        var obj = new ScoreObj(src,contents);
 		var ctrlTicks = obj.init_ctrlTicks;
 		// TODO: add volume control
-		var q = this.toQ(obj.melody, ctrlTicks, 110);
-		var t = this.toQ(obj.texture, ctrlTicks, 60);
+		var q = this.toQ(obj.tracks[0], ctrlTicks, src.volumes[0]);
+		var t = this.toQ(obj.tracks[1], ctrlTicks, src.volumes[1]);
 		this.tracks = [];
 		this.tracks.push(q, t);
 		this.playing = [false, false];
@@ -1513,25 +1663,7 @@ var seqPlayer = {
 
 var TEST = TEST || {};
 
-TEST.testSeqPlayer = function (){
-	//var q = seqPlayer.parseQ(score_summer);
-	//console.log(q);
-	var arr = white_key_num.map(function(v){
-		return [200,60+v,127];
-	});
-	seqPlayer.setQ(arr);
-	seqPlayer.play();
-	return true;
-};
 
-
-
-TEST.testGen = function(){
-	var res = new Generator(cur_schema);
-	res.generate();
-	cur_score.melody = res.toScoreObj().melody
-	return true;
-};
 
 TEST.analysis = function(data, ctrl_per_beat){
 	var ctrl_per_beat = ctrl_per_beat || 4;

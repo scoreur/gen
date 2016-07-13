@@ -1,11 +1,16 @@
 MG = @MG ? {}
 
 class @Generator
-  constructor: (@schema) ->
-    @keyref = MIDI.keyToNote[@schema.key_sig+'4'];
-    @scale = @schema.scale ? 'maj'
-    @pitchSimple = MG.scaleToPitch(@scale, @schema.key_sig)
+  constructor: (@settings, @schema) ->
+    @settings.key_sig ?= 'C'
+    @settings.scale ?= 'maj'
+    @keyref = MG.keyToPitch[@settings.key_sig+'4'];
+    @scale = MG.scale_class[@settings.scale]
+    @seeds = @schema.seeds
     @res = {}
+
+    @toPitch = MG.scaleToPitch(@settings.scale, @settings.key_sig)
+    @toScale = MG.pitchToScale(@settings.scale, @settings.key_sig)
 
   generate: ->
     for i,dur of @schema.blocks
@@ -17,45 +22,95 @@ class @Generator
           @res[i] = @gen_transpose(dur, mode.options)
         when 'chord'
           @res[i] = @gen_chord(dur, mode.options)
+        when 'reverse'
+          @res[i] = @gen_reverse(mode.options)
+    console.log @res, 'res'
     return @res
 
   gen_transpose: (dur, options) ->
     res =
       dur: []
       pitch: []
-    transpose = MG.transposer(options.scale, @schema.key_sig)
+    transpose = MG.transposer(options.scale, @settings.key_sig)
     src = @res[options.src]
+    interval = options.interval
+    if typeof interval == 'number'
+      interval = [interval]
     # TODO: handle offset
     refd = 0
+    cur_i = 0
     while dur > 0
+      console.log refd, src.dur.length
+      if refd >= src.dur.length
+        refd -= src.dur.length
+        cur_i = (cur_i+1)%interval.length
+        console.log 'shift to next interval'
       tmp = []
       tmp2 = []
       # pitch
-      src.dur[refd].map (e, i) ->
+      src.dur[refd].forEach (e, i) ->
         if dur - e >= 0
           tmp.push e
-          tmp2.push transpose(src.pitch[refd][i], options.interval)
+          tmp2.push transpose(src.pitch[refd][i], interval[cur_i])
           dur -= e
         else if dur > 0
           tmp.push dur
-          tmp2.push transpose(src.pitch[refd][i], options.interval)
+          tmp2.push transpose(src.pitch[refd][i], interval[cur_i])
           dur = 0
         return
       refd++
       res.dur.push tmp
       res.pitch.push tmp2
     res
-
-  gen_random:  (dur, options) ->
-    toPitch = MG.scaleToPitch(@scale, @schema.key_sig)
-    scale_len = MG.scale_class[@scale].length
+  gen_reverse: (options) ->
     res =
       dur: []
       pitch: []
-    n = dur / options.rhythm[0] >>> 0
-    rc1 = @rndPicker(options.rhythm[1], options.rhythm[2])
-    console.log options.rhythm
-    rc2 = @rndPicker(options.interval.choices, options.interval.weights)
+    src = @res[options.src]
+    # shallow version options.deep = false
+    if options.deep? && options.deep == true
+      res.dur = src.dur.slice().reverse().map (arr)->
+        return arr.slice().reverse()
+      res.pitch = src.pitch.slice().reverse().map (arr)->
+        return arr.slice().reverse()
+    else
+      res.dur = src.dur.slice().reverse()
+      res.pitch = src.pitch.slice().reverse()
+    console.log res, 'reverse ' + options.src
+    return res
+
+
+
+  gen_exact: (options)->
+    res =
+      dur: options.dur
+      pitch: options.pitch
+
+  gen_random:  (dur, options) ->
+    toPitch = @toPitch
+    scale_len =@scale.length
+    res =
+      dur: []
+      pitch: []
+
+    seed = {}
+    if options.rhythm.seed? && @seeds?
+      seed = @seeds[options.rhythm.seed]
+    else
+      seed.dur = options.rhythm[0]
+      seed.choices = options.rhythm[1]
+      seed.weights = options.rhythm[2]
+
+    seed2 = {}
+    if options.interval.seed? && @seeds?
+      seed2 = @seeds[options.interval.seed]
+    else
+      seed2 = options.interval
+
+    n = dur / seed.dur >>> 0
+    rc1 = @rndPicker(seed.choices, seed.weights)
+    console.log seed
+    rc2 = @rndPicker(seed2.choices, seed2.weights)
     pre = scale_len * 4
     i = 0
     while i < n
@@ -63,7 +118,7 @@ class @Generator
       tmp = []
       j = 0
       while j < res.dur[i].length
-        pre += rc2.gen()
+        pre += rc2.gen() % scale_len
         if pre < 0
           pre = 0
         if pre > scale_len * 8
@@ -76,11 +131,10 @@ class @Generator
     res
 
   gen_chord: (dur, options) ->
-    toPitch = MG.scaleToPitch(@scale, @schema.key_sig)
-    toScale = MG.pitchToScale(@scale, @schema.key_sig)
-    chords = _.flatten(ScoreObj::parseHarmony(options.chords, 1), true)
-    scale_len = MG.scale_class[@scale].length
-    console.log 'chords', chords, 'scale len', scale_len
+    toPitch = @toPitch
+    toScale = @toScale
+    chords = _.flatten(ScoreObj::parseHarmony(options.chords), true)
+    scale_len = @scale.length
     refc = 0
     refdur = chords[refc][0]
     # obtain chords pitch
@@ -88,9 +142,22 @@ class @Generator
     res =
       dur: []
       pitch: []
-    n = dur / options.rhythm[0] >>> 0
-    rc1 = @rndPicker(options.rhythm[1], options.rhythm[2])
-    rc2 = @rndPicker(options.interval.choices, options.interval.weights)
+    seed = {}
+    if options.rhythm.seed? && @seeds?
+      seed = @seeds[options.rhythm.seed]
+    else
+      seed.dur = options.rhythm[0]
+      seed.choices = options.rhythm[1]
+      seed.weights = options.rhythm[2]
+    seed2 = {}
+    if options.interval.seed? && @seeds?
+      seed2 = @seeds[options.interval.seed]
+    else
+      seed2 = options.interval
+
+    n = dur / seed.dur >>> 0
+    rc1 = @rndPicker(seed.choices, seed.weights)
+    rc2 = @rndPicker(seed2.choices, seed2.weights)
     pre = scale_len * 4
     pre2 = pre
     i = 0
@@ -161,22 +228,16 @@ class @Generator
   toScoreObj: ->
     if res == {}
       @generate()
-    sec = @schema.ctrl_per_beat * @schema.time_sig[0] # separate bar
+    sec = @settings.ctrl_per_beat * @settings.time_sig[0] # separate bar
     res = {}
-    console.log 'to Score obj'
     for e0, b of @res
       res[e0] = @b2score(b, sec)
     res = @schema.structure.map (e)-> res[e]
 
-    obj = new ScoreObj({
-      ctrl_per_beat:@schema.ctrl_per_beat,
-      tempo: @schema.tempo,
-      time_sig: @schema.time_sig,
-      key_sig: @schema.key_sig,
-      scale: @schema.scale
-    })
 
-    obj.melody = _.flatten res, true
+    obj = new ScoreObj(@settings)
+
+    obj.setMelody  _.flatten(res, true), true
     return obj
 
   rndPicker: (choices, weights) ->

@@ -1,34 +1,52 @@
 MG = @MG ? {}
 
 class @ScoreObj
-  constructor: (options) ->
+  constructor: (options, contents) ->
     options ?= {}
-    {@tempo, @time_sig, @key_sig, @ctrl_per_beat, @scale} = options
+    {@tempo, @time_sig, @key_sig, @ctrl_per_beat, @scale, @volumes} = options
     @tempo ?= 120
     @time_sig ?= [4,4]
     @key_sig ?='C'
     @ctrl_per_beat ?= 4
     @scale ?= 'maj'
+    @volumes ?= [110,80]
 
-    @init_ref = MG.key_class[@key_sig] + 60 # C4 ~ B4
+    @init_ref = MG.scaleToPitch(@scale, @key_sig)(4 * MG.scale_class[@scale].length)
     @init_ctrlTicks = (60000.0/@tempo/@ctrl_per_beat) >>>0
 
     @tracks = []
+    @harmony = []
 
-    # remove this
-    @options = options
-    @parse(options)
+    if contents?
+      @parse(contents)
 
+  getSettings: ()->
+    return{
+      tempo: @tempo,
+      time_sig: @time_sig,
+      key_sig: @key_sig,
+      ctrl_per_beat: @ctrl_per_beat,
+      scale: @scale,
+      volumes: @volumes
+    }
+
+  setMelody: (melody, parsed)->
+    @tracks[0] = if parsed? && parsed==true then melody else @parseMelody(melody,  MG.scale_class[@scale], @init_ref)
+  setTexture: (texture, harmony, parsed)->
+    if parsed? && parsed == true
+      @harmony = harmony
+      @tracks[1] = texture
+    else
+      @harmony = @parseHarmony(harmony)
+      @tracks[1] = @parseTexture(texture, @harmony)
 
 
   parse: (options) ->
-    options ?= @options
-    @measures = _.zip(options.melody, options.harmony, options.texture)
-    @melody = @parseMelody(options.melody,  MG.scale_class[@scale], @init_ref)
-    @tracks.push(@melody)
-    @harmony = @parseHarmony(options.harmony)
-    @texture = @parseTexture(options.texture, @harmony)
-    @tracks.push(@texture)
+    #@measures = _.zip(options.melody, options.harmony, options.texture)
+    if options.melody?
+      @setMelody(options.melody, false)
+    if options.harmony? && options.texture
+      @setTexture(options.texture, options.harmony)
 
   # leave out comment, separate into measures
   pre_processing: (text) ->
@@ -40,7 +58,7 @@ class @ScoreObj
       console.log 'empty melody'
       return
     scale ?= MG.scale_class['maj']
-    console.log scale, init_ref
+    #console.log scale, init_ref
     init_ref ?= 60 # C4
     ref = init_ref
     res = m.map (e)=>
@@ -65,7 +83,7 @@ class @ScoreObj
                 pitches.push(0) # rest
               when '1','2','3','4','5','6','7','8','9'
                 if e3>scale.length
-                  console.log 'Eceed scale length ' + e3
+                  console.log 'Exceed scale length ' + e3
                   e3 = scale.length
                 pitches.push ref+scale[e3 - '1']
               when 'x','y','z'
@@ -158,13 +176,15 @@ class @ScoreObj
       return measure
     return res
 
-  toText: ->
+  toText: (m)->
     console.log 'to score text'
-    if @melody == null
+    m ?= @tracks[0] # melody
+    if ! m?
+      console.log 'null melody'
       return
     toScale = MG.pitchToScale(@scale,@key_sig)
     ref_oct = 4
-    res = @melody.map (e)->
+    res = m.map (e)->
       ret = []
       e.forEach (e1)->
         o = ''
@@ -175,9 +195,22 @@ class @ScoreObj
             o += '0'
           else
             tmp = toScale(e2)
+            diff = tmp[1]-ref_oct
+            if diff < -1 || diff > 1
+              o += ':'
+              while diff < -1
+                o += '-'
+                ref_oct--
+                diff++
+              while diff > 1
+                o += '+'
+                ref_oct++
+                diff--
+              o += ' '
+
             o += 1 + tmp[0]
-            o += {'-2':'--','-1':'-',1:'+',2:'++'}[tmp[1]-ref_oct] || ''
-            o += {1:'#',2:'##',3:'###'}[tmp[2]] || ''
+            o += {'-1':'-',1:'+'}[diff] || ''
+            o += {1:'#',2:'##'}[tmp[2]] || ''
         if e1[2] == true
           o += '^'
         if e1[0] > 1
@@ -191,11 +224,11 @@ class @ScoreObj
   toMidi: ->
     console.log('to midi')
     ctrlTicks = @init_ctrlTicks
-    q = _.flatten(@melody, true)
-    t = if @texture then _.flatten(@texture, true) else null
+    q = _.flatten(@tracks[0], true)
+    t = if @tracks[1] then _.flatten(@tracks[1], true) else null
     m = new simpMidi()
     delta = 0
-    vol = 110
+    vol = @volumes[0]
     i = 0
     while i < q.length
       e = q[i]
@@ -216,7 +249,7 @@ class @ScoreObj
     if t == null
       m.finish()
       return m
-    vol = 80
+    vol = @volumes[1]
     l = m.addTrack() - 1
     m.addEvent l, 0, 'programChange', l-1, 0
     t.forEach (e) ->

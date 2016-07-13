@@ -99,22 +99,23 @@ class @ScoreRenderer
     @UI.page_num.html(num+1)
 
 
-  render: (score)->
+  render: (score,contents)->
     raw_w = (@geo.system_width - @geo.reserved_width) // @layout.measure_per_system
-    s = @s = new ScoreObj(score)
+    s = @s = new ScoreObj(score,contents)
     sharp = MG.key_sig[score.key_sig] >= 0
     toScale = MG.pitchToScale(score.scale, s.key_sig)
     #console.log(s)
     @measures = []
-    for  i in [0...s.melody.length] by 1
-      stave = this.newStave(i, score.key_sig)
+    melody = s.tracks[0]
+    for  i in [0...melody.length] by 1
+      stave = this.newStave(i, s.key_sig)
       if i==0
-        stave.addTimeSignature(score.time_sig.join('/'))
+        stave.addTimeSignature(s.time_sig.join('/'))
       dur_tot = 0
-      notes = s.melody[i].map (e)=>
+      notes = melody[i].map (e)=>
 
         dur_tot += e[0]
-        duration =  @dur_map(e[0]/score.ctrl_per_beat)
+        duration =  @dur_map(e[0]/s.ctrl_per_beat)
         keys = []
         if typeof e[1] == 'number'
           e[1] = [e[1]]
@@ -123,7 +124,7 @@ class @ScoreRenderer
           if e1<21 || e1>108
             return
           tmp = toScale(e1)
-          key = MG.scale_keys[score.key_sig][tmp[0]]
+          key = MG.scale_keys[s.key_sig][tmp[0]]
           # adjust
           key += '/' + ( (e1//12) - 1 + ({'Cb':1, 'B#':-1}[key] || 0))
           if tmp[2] != 0
@@ -155,7 +156,7 @@ class @ScoreRenderer
       # Add notes to voice
       voice.addTickables(notes)
       # Add accidental
-      Vex.Flow.Accidental.applyAccidentals([voice], @s.key_sig)
+      Vex.Flow.Accidental.applyAccidentals([voice], s.key_sig)
       # Add beams
       beams = Vex.Flow.Beam.applyAndGetBeams(voice)
 

@@ -42,25 +42,26 @@ var eds = {};
 var mds = new ScoreRenderer('midi_score', undefined,  'midi_pointer');
 
 var cur_schema = Object.assign({},schema_summer);
-var cur_score = Object.assign({},score_summer);
+var cur_settings = Object.assign({},score_summer.settings);
+var cur_contents = Object.assign({},score_summer.contents);
 
 
 
 var click_event_list = {
 	'parse': function(){
 		try{
-			cur_score = JSON.parse(eds.score.getValue());
+			cur_settings = JSON.parse(eds.score.getValue());//settings
 		}catch(e){
 			$.notify('Bad score format!', 'warning');
 		}
 
-		//eds.score.setValue(JSON.stringify(cur_score, null, 2), -1);
+		//eds.score.setValue(JSON.stringify(cur_settings, null, 2), -1);
 		['melody','harmony','texture'].forEach(function(e){
 			//console.log(e);
-			cur_score[e] = eds[e].getValue().split(/[/\n]+/);
+			cur_contents[e] = eds[e].getValue().split(/[/\n]+/);
 
 		});
-		seqPlayer.fromScore(cur_score);
+		seqPlayer.fromScore(cur_settings, cur_contents);
 		MIDI.Player.loadFile('base64,'+btoa(seqPlayer.raw_midi),function(){
 			$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
 			$.notify('MIDI loaded!', 'success');
@@ -74,8 +75,9 @@ var click_event_list = {
 			if(typeof obj != 'object'){
 				$.notify('wrong JSON!', 'warning');
 			}
-			cur_score = obj.score;
+			cur_settings = obj.settings;
 			cur_schema = obj.schema;
+			cur_contents = obj.contents;
 			updateEditor();
 			$.notify('sample JSON loaded!', 'success');
 		});
@@ -135,29 +137,25 @@ var click_event_list = {
 	},
 	'gen': function(){
 		cur_schema = JSON.parse(eds.schema.getValue());
-        var generator = new Generator(cur_schema);
+        var generator = new Generator(cur_settings, cur_schema);
         generator.generate();
 		var score = generator.toScoreObj()
 		console.log('to Text')
-	    cur_score.melody = score.toText();
-		cur_score.key_sig = score.key_sig;
-		cur_score.ctrl_per_beat = score.ctrl_per_beat;
-		cur_score.time_sig = score.time_sig;
-		cur_score.scale = score.scale;
-		cur_score.tempo = score.tempo;
+	    cur_contents.melody = score.toText();
+		cur_settings = score.getSettings()
 	    updateEditor();
-		$.notify('Music generated!', 'success');
+		$.notify('Melody generated!', 'success');
 
 	},
 	'render':function(){
-		mds.render(cur_score);
+		mds.render(cur_settings, cur_contents);
 		$('li[data-target="#midi_viewer"]').click();
 	},
 	'console_eval': function(){
 		$('#console_result').html(eval($('#console_panel').val()));
 	},
 	'export': function(){
-		var ext = JSON.stringify({score:cur_score,schema:cur_schema});
+		var ext = JSON.stringify({settings:cur_settings,contents:cur_contents, schema:cur_schema});
 		var file = new File([ext],'sample.json',{type:"application/json"});
 		saveAs(file);
 		$.notify('JSON exported!', 'success');
@@ -177,7 +175,8 @@ var click_event_list = {
 	},
 	'reset_editor': function(){
 		cur_schema = Object.assign({},schema_summer);
-		cur_score = Object.assign({},score_summer);
+		cur_settings = Object.assign({},score_summer.settings);
+		cur_contents = Object.assign(score_summer.contents)
 		updateEditor();
 	},
 	'inc_ctrl': function(){
@@ -246,7 +245,8 @@ var file_open_handlers = {
     },
     'open_json': function(evt){
 	    load_json(evt.target.files[0], function(res){
-		    cur_score = res.score;
+		    cur_settings = res.settings;
+			cur_contents = res.contents;
 	        cur_schema = res.schema;
 			updateEditor();
 	    });
@@ -322,15 +322,11 @@ function registerEvents(){
 function updateEditor(){
 
 	['melody','harmony','texture'].forEach(function(e){
-		eds[e].setValue(cur_score[e].join('\n'), -1);
+		eds[e].setValue(cur_contents[e].join('\n'), -1);
 	});
-	var tmp1 = cur_score.melody, tmp2 = cur_score.harmony, tmp3 = cur_score.texture;
-	cur_score.melody = cur_score.harmony = cur_score.texture = undefined;
-	eds.score.setValue(JSON.stringify(cur_score, null, 2), -1);
+	eds.score.setValue(JSON.stringify(cur_settings, null, 2), -1);
 	eds.schema.setValue(JSON.stringify(cur_schema, null, 2), -1);
-	cur_score.melody = tmp1;
-	cur_score.harmony = tmp2;
-	cur_score.texture = tmp3;
+
 }
 function use_local_store(){
 	return location.origin=="file://" || location.href.indexOf('http://localhost')>-1;

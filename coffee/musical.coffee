@@ -112,6 +112,21 @@ MG.pitchToScale = (mode, tonic) ->
         return [i, oct, pitch - scale[i]]
     return [0, oct, pitch-scale[0]]
 
+MG.testPitchScaleConversion = ()->
+  for scale, mode of MG.scale_class
+    flag = true
+    for tonic of MG.key_class
+      toPitch = MG.scaleToPitch(scale, tonic)
+      toScale = MG.pitchToScale(scale, tonic)
+      for i in [21..108]
+        tmp = toScale(i)
+        j = toPitch(tmp[0]+mode.length*tmp[1]) + tmp[2]
+        if j != i
+          flag = false
+          console.log tonic, scale, i, tmp, j
+    if flag
+      console.log scale, 'success'
+  return
 
 MG.keyToPitch = (key) ->
   key_class = /[CDEFGAB][#b]{0,2}/.exec(key)[0]
@@ -120,6 +135,29 @@ MG.keyToPitch = (key) ->
   oct = /[0-9]/.exec(key)[0]
   oct = parseInt(oct) ? 4
   return 12 + ref + oct * 12
+
+
+
+MG.pitchToKey = (pitch, sharp, nooct) ->
+  if pitch < 21 || pitch > 108
+    return undefined
+  kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+  if sharp == true
+    kn = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+  ref = pitch % 12
+  return if nooct? then kn[ref] else [kn[ref],pitch // 12 -1]
+
+MG.testPitchKeyConversion = ()->
+  flag = true
+  for i in [21..108]
+    tmp = MG.pitchToKey(i,true)
+    j = MG.keyToPitch(tmp[0]+tmp[1])
+    if j != i
+      flag = false
+      console.log i, tmp, j
+  if flag
+    console.log 'success'
+  return
 
 # transpose pitch in scale degree
 MG.transposer = (scale_name, key_sig) ->
@@ -145,15 +183,6 @@ MG.getChords = (chord_str, oct)->
   chord_pitches = MG.chords[chord_name] || MG.chords['maj'] # default maj
   return [root_pitch, chord_pitches]
 
-
-MG.pitchToKey = (pitch, sharp, nooct) ->
-  if pitch < 21 || pitch > 108
-    return undefined
-  kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
-  if sharp == true
-    kn = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-  ref = pitch % 12
-  return if nooct? then kn[ref] else [kn[ref],pitch // 12 -1]
 
 MG.key_sig_rev = {}
 MG.key_sig = (()->
@@ -220,69 +249,23 @@ MG.scale_keys = (()->
 @MG = MG
 
 @score_summer =
-  tempo: 120,
-  time_sig: [4,4],
-  key_sig: 'C',
-  scale: 'maj',
-  ctrl_per_beat: 2,
-  incomplete_measure: true,
-  melody: ':+ 3,2 1,2/3^,8/3,2 2 1 2 3 1,2/:- 6,4 3^,4/3,4 :+ 3,2 1,2/2 2^,7/2,2 1 6-,1 1 6-,1 1,2/:- 7^,8/7,4 0 :+ 3,2 1/3 3,2 3^,1 3^,4/3,2 2 1 2 3 1,2/:- 6,4 3^,4/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6^,8/6,4 :+ 3,2 1,2'.split('/'),
-  harmony: "E7,4/Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4/Dmin,8/F7,8/F#min7,4 B7,4/E7,8/Am,8/Bb7,8/Am,8/D7,8/C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4 E7,4".split('/'),
-  texture: ":-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:iii-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4".split('/')
-
-
-@gen_modes = ['random', 'transpose', 'chord'];
-
-@sample_rand_mode =
-  mode:'random',
-  options:
-    rhythm: [
-      4,
-      ('1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map (e)->
-        e.split(/\s+/).map (e2)-> parseInt(e2)
-      ),
-      [2,3,3,5,1,3,2,1]
-    ],
-
-    interval:
-      chromatic: false,
-      weights: [1,1,2,5,12,6,8,  4,7,12,8,3,1,0,1],
-      choices: (->
-        Array(15).fill().map (e,i)->
-          i-7
-      )()
-
-
-
-@sample_transpose_mode =
-  mode:'transpose',
-  options:
-    src: "A",
-    offset: 0,
+  settings:
+    tempo: 120,
+    time_sig: [4,4],
+    key_sig: 'C',
     scale: 'maj',
-    interval: 4
+    ctrl_per_beat: 2,
+    incomplete_measure: true,
+    volumes: [110,80],
+  contents:
+    melody: ':+ 3,2 1,2/3^,8/3,2 2 1 2 3 1,2/:- 6,4 3^,4/3,4 :+ 3,2 1,2/2 2^,7/2,2 1 6-,1 1 6-,1 1,2/:- 7^,8/7,4 0 :+ 3,2 1/3 3,2 3^,1 3^,4/3,2 2 1 2 3 1,2/:- 6,4 3^,4/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6^,8/6,4 :+ 3,2 1,2'.split('/'),
+    harmony: "E7,4/Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4/Dmin,8/F7,8/F#min7,4 B7,4/E7,8/Am,8/Bb7,8/Am,8/D7,8/C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4 E7,4".split('/'),
+    texture: ":-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:iii-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-00-21+ 01,2 2,2 3,2 2,2/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4/:-012 012,4 :-012 012,4".split('/')
 
 
+@gen_modes = ['random', 'transpose', 'chord', 'reverse', 'sequence'];
 
-@sample_chord_mode =
-  mode: 'chord',
-  options:
-    chords: "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
-    rhythm: [
-      4,
-      ('1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map (e)->
-        e.split(/\s+/).map (e2)-> parseInt(e2)
-      ),
-      [2,3,3,5,1,3,2,1]
-    ],
 
-    interval:
-      chromatic: false,
-      weights: [1,1,2,5,12,6,8,  4,7,12,8,3,1,0,1],
-      choices: (->
-        Array(15).fill().map (e,i)->
-          i-7
-      )()
 
 
 
@@ -290,46 +273,79 @@ MG.scale_keys = (()->
 
 
 @schema_summer =
-  tempo: 120,
-  ctrl_per_beat: 2,
-  time_sig: [4,4],
-  key_sig: 'C',
-  scale: 'maj',
   blocks: ((a,b)->
     res = {}
-    a.split('').forEach (e,i)->
+    a.split('/').forEach (e,i)->
       res[e] = b[i]
     return res
-  )('cABC',[4,32,32,28]),
-  structure: "c/A/B/A/C/c".split('/'),
+  )('c/A/B/Br/C',[4,32,16,16,28]),
+  structure: "c/A/B/Br/A/C/c".split('/'),
   scale:'maj',
   funcs:
     'A': "1,8/4,8/1,4 2,4/1,8".split('/'),
-    'B':"4,8/6,8/2,4 5,4/5,8".split('/'),
+    'B':"4,8/6,8".split('/'),
+    'Br':"2,4 5,4/5,8".split('/'),
     'C':"3,4 1,4/2,4 5,4/1,4 2,4/2,4".split('/'),
     'c':"5,4"
   ,
+  seeds:
+    's1':
+      dur: 4,
+      choices:
+        ('1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map (e)->
+          e.split(/\s+/).map (e2)-> parseInt(e2)
+        )
+      weights:
+        [2,3,3,5,1,3,2,1]
+    's2':
+      weights: [1,1,2,5,12,6,8,  4,7,12,8,3,1,0,1],
+      choices: (->
+        Array(15).fill().map (e,i)->
+          i-7
+      )()
+
+
   melody:
-    'c': sample_rand_mode,
+    'c':
+      mode: 'random'
+      options:
+        rhythm:
+          seed: 's1'
+
+        interval:
+          chromatic: false
+          seed: 's2'
     'A':
-      mode:'random',
-      options:{}
-    ,
+      mode:'random'
+      options:
+        rhythm:
+          seed: 's1'
+
+        interval:
+          chromatic: false
+          seed: 's2'
+
     'B':
-      mode:'transpose',
-      options:{}
-    ,
+      mode:'transpose'
+      options:
+        src: "A",
+        offset: 0,
+        scale: 'maj',
+        interval: 4
+    'Br':
+      mode:'reverse',
+      options:
+        src: 'B',
+        deep: 'false'
+
     'C':
-      mode:'chord',
-      options:{}
-  ,
-  harmony:
-    'A':"Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4".split('/'),
-    'B':"Dmin,8/F7,8/F#min7,4 B7,4/E7,8".split('/'),
-    'C':"C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
-    'c':""
+      mode: 'chord',
+      options:
+        chords: "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
+        rhythm:
+          seed: 's1'
+        interval:
+          chromatic: false,
+          seed: 's2'
 
 
-@schema_summer.melody.A =  @sample_rand_mode
-@schema_summer.melody.B = @sample_transpose_mode
-@schema_summer.melody.C = @sample_chord_mode

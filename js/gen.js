@@ -114,12 +114,12 @@ var seqPlayer = {
 
 	},
 	onend:function(){},
-    fromScore:function (src) {
-        var obj = new ScoreObj(src);
+    fromScore:function (src, contents) {
+        var obj = new ScoreObj(src,contents);
 		var ctrlTicks = obj.init_ctrlTicks;
 		// TODO: add volume control
-		var q = this.toQ(obj.melody, ctrlTicks, 110);
-		var t = this.toQ(obj.texture, ctrlTicks, 60);
+		var q = this.toQ(obj.tracks[0], ctrlTicks, src.volumes[0]);
+		var t = this.toQ(obj.tracks[1], ctrlTicks, src.volumes[1]);
 		this.tracks = [];
 		this.tracks.push(q, t);
 		this.playing = [false, false];
@@ -140,25 +140,7 @@ var seqPlayer = {
 
 var TEST = TEST || {};
 
-TEST.testSeqPlayer = function (){
-	//var q = seqPlayer.parseQ(score_summer);
-	//console.log(q);
-	var arr = white_key_num.map(function(v){
-		return [200,60+v,127];
-	});
-	seqPlayer.setQ(arr);
-	seqPlayer.play();
-	return true;
-};
 
-
-
-TEST.testGen = function(){
-	var res = new Generator(cur_schema);
-	res.generate();
-	cur_score.melody = res.toScoreObj().melody
-	return true;
-};
 
 TEST.analysis = function(data, ctrl_per_beat){
 	var ctrl_per_beat = ctrl_per_beat || 4;
