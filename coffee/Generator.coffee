@@ -19,6 +19,119 @@ class @Generator
           @res[i] = @gen_chord(dur, mode.options)
     return @res
 
+  gen_transpose: (dur, options) ->
+    res =
+      dur: []
+      pitch: []
+    transpose = MG.transposer(options.scale, @schema.key_sig)
+    src = @res[options.src]
+    # TODO: handle offset
+    refd = 0
+    while dur > 0
+      tmp = []
+      tmp2 = []
+      # pitch
+      src.dur[refd].map (e, i) ->
+        if dur - e >= 0
+          tmp.push e
+          tmp2.push transpose(src.pitch[refd][i], options.interval)
+          dur -= e
+        else if dur > 0
+          tmp.push dur
+          tmp2.push transpose(src.pitch[refd][i], options.interval)
+          dur = 0
+        return
+      refd++
+      res.dur.push tmp
+      res.pitch.push tmp2
+    res
+
+  gen_random:  (dur, options) ->
+    toPitch = MG.scaleToPitch(@scale, @schema.key_sig)
+    scale_len = MG.scale_class[@scale].length
+    res =
+      dur: []
+      pitch: []
+    n = dur / options.rhythm[0] >>> 0
+    rc1 = @rndPicker(options.rhythm[1], options.rhythm[2])
+    console.log options.rhythm
+    rc2 = @rndPicker(options.interval.choices, options.interval.weights)
+    pre = scale_len * 4
+    i = 0
+    while i < n
+      res.dur.push rc1.gen()
+      tmp = []
+      j = 0
+      while j < res.dur[i].length
+        pre += rc2.gen()
+        if pre < 0
+          pre = 0
+        if pre > scale_len * 8
+          pre = scale_len * 8
+        #console.log(pre, toPitch(pre));
+        tmp.push toPitch(pre)
+        ++j
+      res.pitch.push tmp
+      ++i
+    res
+
+  gen_chord: (dur, options) ->
+    toPitch = MG.scaleToPitch(@scale, @schema.key_sig)
+    toScale = MG.pitchToScale(@scale, @schema.key_sig)
+    chords = _.flatten(ScoreObj::parseHarmony(options.chords, 1), true)
+    scale_len = MG.scale_class[@scale].length
+    console.log 'chords', chords, 'scale len', scale_len
+    refc = 0
+    refdur = chords[refc][0]
+    # obtain chords pitch
+    # not chromatic
+    res =
+      dur: []
+      pitch: []
+    n = dur / options.rhythm[0] >>> 0
+    rc1 = @rndPicker(options.rhythm[1], options.rhythm[2])
+    rc2 = @rndPicker(options.interval.choices, options.interval.weights)
+    pre = scale_len * 4
+    pre2 = pre
+    i = 0
+    while i < n
+      res.dur.push rc1.gen()
+      tmp = []
+      j = 0
+      while j < res.dur[i].length
+        if Math.random() > 0.6
+          pre += rc2.gen()
+          if pre < 0
+            pre = 0
+          if pre > scale_len * 8
+            pre = scale_len * 8
+          tmp.push toPitch(pre)
+        else
+          r = Math.random() * 9 >> 0
+          ii = r % 3
+          if refc + 1 < chords.length and refdur < 0
+            refdur += chords[++refc][0]
+          pre = toPitch(pre)
+          new_pre = chords[refc][1] + chords[refc][2][ii] + 12 * (Math.floor(r / 3) - 1)
+          while new_pre - pre > 12
+            new_pre -= 12
+          while pre - new_pre > 12
+            new_pre += 12
+          if new_pre < 21
+            new_pre = 21
+          if new_pre > 108
+            new_pre = 108
+          tmp.push new_pre
+          fix = toScale(new_pre)
+          pre = fix[0] + fix[1] * scale_len
+        #console.log(pre, chords[refc])
+        refdur -= options.rhythm[0]
+        ++j
+      res.pitch.push tmp
+      ++i
+    res
+
+
   b2score: (b, sec, flat) ->
     dur = if flat then b.dur else _.flatten(b.dur, true);
     pitch = if flat then else _.flatten(b.pitch, true);
@@ -104,36 +217,30 @@ class @Generator
       res.push(val)
     return res
 
-    sample_start:
-      state: 'start',
-      pos: 0,
-      val:
-        dur: 2
-        val: 60 # 'number' or 'object array' for terminal, otherwise subtree
-        weight: [] # optional
+  sample_start:
+    state: 'start',
+    pos: 0,
+    val:
+      dur: 2
+      val: 60 # 'number' or 'object array' for terminal, otherwise subtree
+      weight: [] # optional
 
-    sample_states:
-      transition: (pos, val)->
+  sample_states:
+    transition: (pos, val)->
 
-      'start':
-        choices: (pos, val)->
-
-
-      'middle':
-        choices: (pos, val)->
-
-      'other':
-        choices: (pos, val)->
+    'start':
+      choices: (pos, val)->
 
 
+    'middle':
+      choices: (pos, val)->
 
+    'other':
+      choices: (pos, val)->
 
-
-
-
-    sample_constraint: (pos, preval, val)->
-      weights = [4,2,4,6,6,8, 1,8,6,6,2,2]
-      return weights[(val.val-preval.val)%%12]
+  sample_constraint: (pos, preval, val)->
+    weights = [4,2,4,6,6,8, 1,8,6,6,2,2]
+    return weights[(val.val-preval.val)%%12]
 
 
 

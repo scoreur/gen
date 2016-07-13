@@ -170,8 +170,9 @@
         "mode": "transpose",
         "options": {
           "src": "A",
+          "scale": "maj",
           "offset": 0,
-          "interval": 5
+          "interval": 3
         }
       },
       "C": {

@@ -57,12 +57,22 @@ class @ScoreObj
           tied = false
           terms = e2.split(',')
           pitches = []
-          Array.prototype.forEach.call terms[0], (e3)->
-
+          e3 = ''
+          Array.prototype.forEach.call terms[0], (to)->
+            e3 += to
             switch e3
               when '0'
                 pitches.push(0) # rest
-              when '1','2','3','4','5','6','7'
+              when '1','2','3','4','5','6','7','8','9'
+                if e3>scale.length
+                  console.log 'Eceed scale length ' + e3
+                  e3 = scale.length
+                pitches.push ref+scale[e3 - '1']
+              when 'x','y','z'
+                e3 = {'x':10,'y':11,'z':12}[e3]
+                if e3>scale.length
+                  console.log 'Exceed scale length ' + e3
+                  e3 = scale.length
                 pitches.push ref+scale[e3 - '1']
               when '+','-','#','b'
                 pitches[pitches.length-1] += {
@@ -72,6 +82,7 @@ class @ScoreObj
                 tied = true
               else
                 console.log 'skip invalid flag ' + e3
+            e3 = ''
           dur = if terms.length>=2 then (parseInt(terms[1]) ? 1) else 1
           if tied
             measure.push [dur, pitches, true]

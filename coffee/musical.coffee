@@ -78,10 +78,16 @@ MG.scale_class =
   'min': [0,2,3,5,7,8,10],
   'min_harmonic': [0,2,3,5,7,8,11],
   'min_melodic': [0,2,3,5,7,9,11], # up, down = min
+  'chromatic': [0,1,2,3,4,5,6,7,8,9,10,11], # use a-e for 10-15
+  'octatonic': [0,1,3,4,6,7,9,10],
+  'whole': [0,2,4,6,8,10],
   # add [Dorian, Phrygian, Lydian, Mixolydian]
+  'dorian': [0,2,3,5,7,9,10],
+  'lydian': [0,2,4,6,7,9,11],
   'pent': [0,2,4,7,9], # Gong
   # add [Gong, Shang, Jue, Zhi, Yu]
   'pent_min': [0,3,5,7,10], # Yu
+  'zhi': [0,2,5,7,9],
   'blues': [0,3,5,6,7,10]
 
 @white_key_num = [0,2,4,5,7,9,11]
@@ -114,6 +120,19 @@ MG.keyToPitch = (key) ->
   oct = /[0-9]/.exec(key)[0]
   oct = parseInt(oct) ? 4
   return 12 + ref + oct * 12
+
+# transpose pitch in scale degree
+MG.transposer = (scale_name, key_sig) ->
+  scale_name ?= 'chromatic'
+  console.log scale_name, 'transposer'
+  key_sig ?= 'C'
+  scale_len = MG.scale_class[scale_name].length # default chromatic
+  toScale = MG.pitchToScale(scale_name, key_sig)
+  toPitch = MG.scaleToPitch(scale_name, key_sig)
+  return (pitch, diff)->
+    tmp = toScale(pitch)
+    return toPitch(tmp[0]+tmp[1]*scale_len+diff) + tmp[2]
+
 
 ex = /[ABCDEFG][b#]{0,2}/
 alias = {'7':'dom7','':'maj','M':'maj','m':'min','mi':'min','m7':'min7'}
@@ -240,7 +259,8 @@ MG.scale_keys = (()->
   options:
     src: "A",
     offset: 0,
-    interval: 7
+    scale: 'maj',
+    interval: 4
 
 
 

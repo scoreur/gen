@@ -101,8 +101,14 @@
     'min': [0, 2, 3, 5, 7, 8, 10],
     'min_harmonic': [0, 2, 3, 5, 7, 8, 11],
     'min_melodic': [0, 2, 3, 5, 7, 9, 11],
+    'chromatic': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    'octatonic': [0, 1, 3, 4, 6, 7, 9, 10],
+    'whole': [0, 2, 4, 6, 8, 10],
+    'dorian': [0, 2, 3, 5, 7, 9, 10],
+    'lydian': [0, 2, 4, 6, 7, 9, 11],
     'pent': [0, 2, 4, 7, 9],
     'pent_min': [0, 3, 5, 7, 10],
+    'zhi': [0, 2, 5, 7, 9],
     'blues': [0, 3, 5, 6, 7, 10]
   };
 
@@ -147,6 +153,25 @@
     oct = /[0-9]/.exec(key)[0];
     oct = (ref3 = parseInt(oct)) != null ? ref3 : 4;
     return 12 + ref + oct * 12;
+  };
+
+  MG.transposer = function(scale_name, key_sig) {
+    var scale_len, toPitch, toScale;
+    if (scale_name == null) {
+      scale_name = 'chromatic';
+    }
+    console.log(scale_name, 'transposer');
+    if (key_sig == null) {
+      key_sig = 'C';
+    }
+    scale_len = MG.scale_class[scale_name].length;
+    toScale = MG.pitchToScale(scale_name, key_sig);
+    toPitch = MG.scaleToPitch(scale_name, key_sig);
+    return function(pitch, diff) {
+      var tmp;
+      tmp = toScale(pitch);
+      return toPitch(tmp[0] + tmp[1] * scale_len + diff) + tmp[2];
+    };
   };
 
   ex = /[ABCDEFG][b#]{0,2}/;
@@ -314,7 +339,8 @@
     options: {
       src: "A",
       offset: 0,
-      interval: 7
+      scale: 'maj',
+      interval: 4
     }
   };
 
@@ -487,6 +513,137 @@
       return this.res;
     };
 
+    Generator.prototype.gen_transpose = function(dur, options) {
+      var refd, res, src, tmp, tmp2, transpose;
+      res = {
+        dur: [],
+        pitch: []
+      };
+      transpose = MG.transposer(options.scale, this.schema.key_sig);
+      src = this.res[options.src];
+      refd = 0;
+      while (dur > 0) {
+        tmp = [];
+        tmp2 = [];
+        src.dur[refd].map(function(e, i) {
+          if (dur - e >= 0) {
+            tmp.push(e);
+            tmp2.push(transpose(src.pitch[refd][i], options.interval));
+            dur -= e;
+          } else if (dur > 0) {
+            tmp.push(dur);
+            tmp2.push(transpose(src.pitch[refd][i], options.interval));
+            dur = 0;
+          }
+        });
+        refd++;
+        res.dur.push(tmp);
+        res.pitch.push(tmp2);
+      }
+      return res;
+    };
+
+    Generator.prototype.gen_random = function(dur, options) {
+      var i, j, n, pre, rc1, rc2, res, scale_len, tmp, toPitch;
+      toPitch = MG.scaleToPitch(this.scale, this.schema.key_sig);
+      scale_len = MG.scale_class[this.scale].length;
+      res = {
+        dur: [],
+        pitch: []
+      };
+      n = dur / options.rhythm[0] >>> 0;
+      rc1 = this.rndPicker(options.rhythm[1], options.rhythm[2]);
+      console.log(options.rhythm);
+      rc2 = this.rndPicker(options.interval.choices, options.interval.weights);
+      pre = scale_len * 4;
+      i = 0;
+      while (i < n) {
+        res.dur.push(rc1.gen());
+        tmp = [];
+        j = 0;
+        while (j < res.dur[i].length) {
+          pre += rc2.gen();
+          if (pre < 0) {
+            pre = 0;
+          }
+          if (pre > scale_len * 8) {
+            pre = scale_len * 8;
+          }
+          tmp.push(toPitch(pre));
+          ++j;
+        }
+        res.pitch.push(tmp);
+        ++i;
+      }
+      return res;
+    };
+
+    Generator.prototype.gen_chord = function(dur, options) {
+      var chords, fix, i, ii, j, n, new_pre, pre, pre2, r, rc1, rc2, refc, refdur, res, scale_len, tmp, toPitch, toScale;
+      toPitch = MG.scaleToPitch(this.scale, this.schema.key_sig);
+      toScale = MG.pitchToScale(this.scale, this.schema.key_sig);
+      chords = _.flatten(ScoreObj.prototype.parseHarmony(options.chords, 1), true);
+      scale_len = MG.scale_class[this.scale].length;
+      console.log('chords', chords, 'scale len', scale_len);
+      refc = 0;
+      refdur = chords[refc][0];
+      res = {
+        dur: [],
+        pitch: []
+      };
+      n = dur / options.rhythm[0] >>> 0;
+      rc1 = this.rndPicker(options.rhythm[1], options.rhythm[2]);
+      rc2 = this.rndPicker(options.interval.choices, options.interval.weights);
+      pre = scale_len * 4;
+      pre2 = pre;
+      i = 0;
+      while (i < n) {
+        res.dur.push(rc1.gen());
+        tmp = [];
+        j = 0;
+        while (j < res.dur[i].length) {
+          if (Math.random() > 0.6) {
+            pre += rc2.gen();
+            if (pre < 0) {
+              pre = 0;
+            }
+            if (pre > scale_len * 8) {
+              pre = scale_len * 8;
+            }
+            tmp.push(toPitch(pre));
+          } else {
+            r = Math.random() * 9 >> 0;
+            ii = r % 3;
+            if (refc + 1 < chords.length && refdur < 0) {
+              refdur += chords[++refc][0];
+            }
+            pre = toPitch(pre);
+            new_pre = chords[refc][1] + chords[refc][2][ii] + 12 * (Math.floor(r / 3) - 1);
+            while (new_pre - pre > 12) {
+              new_pre -= 12;
+            }
+            while (pre - new_pre > 12) {
+              new_pre += 12;
+            }
+            if (new_pre < 21) {
+              new_pre = 21;
+            }
+            if (new_pre > 108) {
+              new_pre = 108;
+            }
+            tmp.push(new_pre);
+            fix = toScale(new_pre);
+            pre = fix[0] + fix[1] * scale_len;
+          }
+          refdur -= options.rhythm[0];
+          ++j;
+        }
+        res.pitch.push(tmp);
+        ++i;
+      }
+      return res;
+    };
+
     Generator.prototype.b2score = function(b, sec, flat) {
       var delta, dur, pitch, ret, tmp;
       dur = flat ? b.dur : _.flatten(b.dur, true);
@@ -598,34 +755,35 @@
         res.push(val);
       }
       return res;
-      return {
-        sample_start: {
-          state: 'start',
-          pos: 0,
-          val: {
-            dur: 2,
-            val: 60,
-            weight: []
-          }
-        },
-        sample_states: {
-          transition: function(pos, val) {},
-          'start': {
-            choices: function(pos, val) {}
-          },
-          'middle': {
-            choices: function(pos, val) {}
-          },
-          'other': {
-            choices: function(pos, val) {}
-          }
-        },
-        sample_constraint: function(pos, preval, val) {
-          var weights;
-          weights = [4, 2, 4, 6, 6, 8, 1, 8, 6, 6, 2, 2];
-          return weights[modulo(val.val - preval.val, 12)];
-        }
-      };
+    };
+
+    Generator.prototype.sample_start = {
+      state: 'start',
+      pos: 0,
+      val: {
+        dur: 2,
+        val: 60,
+        weight: []
+      }
+    };
+
+    Generator.prototype.sample_states = {
+      transition: function(pos, val) {},
+      'start': {
+        choices: function(pos, val) {}
+      },
+      'middle': {
+        choices: function(pos, val) {}
+      },
+      'other': {
+        choices: function(pos, val) {}
+      }
+    };
+
+    Generator.prototype.sample_constraint = function(pos, preval, val) {
+      var weights;
+      weights = [4, 2, 4, 6, 6, 8, 1, 8, 6, 6, 2, 2];
+      return weights[modulo(val.val - preval.val, 12)];
     };
 
     return Generator;
@@ -706,7 +864,7 @@
           notes = e.trim().split(/\s+/);
           measure = [];
           notes.forEach(function(e2) {
-            var dur, pitches, ref2, terms, tied;
+            var dur, e3, pitches, ref2, terms, tied;
             if (e2[0] === ':') {
               switch (e2[1]) {
                 case '+':
@@ -722,10 +880,13 @@
               tied = false;
               terms = e2.split(',');
               pitches = [];
-              Array.prototype.forEach.call(terms[0], function(e3) {
+              e3 = '';
+              Array.prototype.forEach.call(terms[0], function(to) {
+                e3 += to;
                 switch (e3) {
                   case '0':
-                    return pitches.push(0);
+                    pitches.push(0);
+                    break;
                   case '1':
                   case '2':
                   case '3':
@@ -733,22 +894,46 @@
                   case '5':
                   case '6':
                   case '7':
-                    return pitches.push(ref + scale[e3 - '1']);
+                  case '8':
+                  case '9':
+                    if (e3 > scale.length) {
+                      console.log('Eceed scale length ' + e3);
+                      e3 = scale.length;
+                    }
+                    pitches.push(ref + scale[e3 - '1']);
+                    break;
+                  case 'x':
+                  case 'y':
+                  case 'z':
+                    e3 = {
+                      'x': 10,
+                      'y': 11,
+                      'z': 12
+                    }[e3];
+                    if (e3 > scale.length) {
+                      console.log('Exceed scale length ' + e3);
+                      e3 = scale.length;
+                    }
+                    pitches.push(ref + scale[e3 - '1']);
+                    break;
                   case '+':
                   case '-':
                   case '#':
                   case 'b':
-                    return pitches[pitches.length - 1] += {
+                    pitches[pitches.length - 1] += {
                       '+': 12,
                       '-': -12,
                       '#': 1,
                       'b': -1
                     }[e3];
+                    break;
                   case '^':
-                    return tied = true;
+                    tied = true;
+                    break;
                   default:
-                    return console.log('skip invalid flag ' + e3);
+                    console.log('skip invalid flag ' + e3);
                 }
+                return e3 = '';
               });
               dur = terms.length >= 2 ? (ref2 = parseInt(terms[1])) != null ? ref2 : 1 : 1;
               if (tied) {
@@ -1340,115 +1525,6 @@ TEST.testSeqPlayer = function (){
 };
 
 
-// TODO: migrate to Generator.coffee
-Generator.prototype.gen_transpose = function(dur, options){
-	var res = {dur:[],pitch:[]};
-	var src = this.res[options.src];
-	// TODO: handle offset
-	var refd = 0, refp = 0;
-	while(dur>0){
-		var tmp = [];
-		var tmp2 = []; // pitch
-		src.dur[refd].map(function(e,i){
-			if(dur-e>=0){
-				tmp.push(e);
-				tmp2.push(options.interval + src.pitch[refd][i]);
-				dur -= e;
-			}else if(dur>0){
-				tmp.push(dur);
-				tmp2.push(options.interval + src.pitch[refd][i]);
-				dur = 0;
-			}
-		});
-		refd++;
-		res.dur.push(tmp);
-		res.pitch.push(tmp2);
-	}
-	return res;
-};
-Generator.prototype.gen_random = function(dur, options){
-	var toPitch = this.pitchSimple;
-	var scale_len = MG.scale_class[this.scale].length;
-	var res = {dur:[],pitch:[]};
-	var n = dur/options.rhythm[0] >>>0;
-
-	var rc1 = this.rndPicker(options.rhythm[1], options.rhythm[2]);
-	console.log(options.rhythm);
-	var rc2 = this.rndPicker(options.interval.choices,options.interval.weights);
-	var pre = scale_len * 4;
-	for(var i=0;i<n;++i){
-		res.dur.push(rc1.gen());
-		var tmp = [];
-		for(var j=0;j<res.dur[i].length;++j){
-			pre += rc2.gen();
-			if(pre < 0) pre = 0;
-			if(pre > scale_len*8) pre = scale_len*8;
-			//console.log(pre, toPitch(pre));
-			tmp.push(toPitch(pre));
-		}
-		res.pitch.push(tmp);
-	}
-	return res;
-}
-
-Generator.prototype.gen_chord = function(dur, options){
-	var toPitch = MG.scaleToPitch(this.scale, this.schema.key_sig);
-	var toScale = MG.pitchToScale(this.scale, this.schema.key_sig);
-	var chords = _.flatten(ScoreObj.prototype.parseHarmony(options.chords, 1),true);
-	var scale_len = MG.scale_class[this.scale].length;
-	console.log('chords', chords, 'scale len', scale_len);
-	var refc = 0;
-	var refdur = chords[refc][0];
-
-	// obtain chords pitch
-
-	// not chromatic
-	var res = {dur:[],pitch:[]};
-	var n = dur/options.rhythm[0] >>>0;
-
-	var rc1 = this.rndPicker(options.rhythm[1], options.rhythm[2]);
-	var rc2 = this.rndPicker(options.interval.choices,options.interval.weights);
-	var pre = scale_len * 4, pre2 = pre;
-	for(var i=0;i<n;++i){
-		res.dur.push(rc1.gen());
-		var tmp = [];
-		for(var j=0;j<res.dur[i].length;++j){
-			if(Math.random()>0.6){
-				pre += rc2.gen();
-				if(pre < 0) pre = 0;
-				if(pre > scale_len*8) pre = scale_len * 8;
-
-				tmp.push(toPitch(pre));
-			}else{
-				var r = (Math.random()*9)>>0;
-				var ii = r % 3;
-				if(refc+1<chords.length && refdur<0){
-					refdur += chords[++refc][0];
-				}
-				pre = toPitch(pre);
-				var new_pre = chords[refc][1] + chords[refc][2][ii] + 12*(Math.floor(r/3)-1);
-				while(new_pre - pre > 12) new_pre -= 12;
-				while(pre - new_pre > 12) new_pre += 12;
-
-				if(new_pre<21) new_pre = 21;
-				if(new_pre>108) new_pre = 108;
-				tmp.push(new_pre);
-				var fix = toScale(new_pre);
-				pre = fix[0] + fix[1]*scale_len;
-
-				//console.log(pre, chords[refc])
-			}
-			refdur -= options.rhythm[0];
-
-
-		}
-		res.pitch.push(tmp);
-	}
-	return res;
-
-}
-
-
 
 TEST.testGen = function(){
 	var res = new Generator(cur_schema);
@@ -1490,7 +1566,7 @@ TEST.analysis = function(data, ctrl_per_beat){
 	var info =  tracks.map(function(e){
 		return midi_statistics(e);
 	});
-	
+
 	return true;
 };
 
