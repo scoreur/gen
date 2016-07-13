@@ -231,10 +231,10 @@ Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord
             <div id="canvas-wrapper">
               <canvas id="the-canvas" style="border:1px solid black"></canvas>
             </div>
-            <ul class="pager">
-              <li><a id="prev">Previous</a></li>
-              <li><a id="next">Next</a> &nbsp; &nbsp;</li>
-              <li>Page:<span id="page_num">1</span> /<span id="page_count">14</span></li>
+            <ul id="pdf_pager" class="pager">
+              <li><a class="prev">Previous</a></li>
+              <li><a class="next">Next</a> &nbsp; &nbsp;</li>
+              <li>Page:<span class="page_num">1</span> /<span class="page_count">1</span></li>
             </ul>
           </div>
           <div id="midi_viewer" class="tab-pane">
@@ -242,6 +242,11 @@ Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord
               <!-- canvas#midi_pointer(style='width: 100%; height:100%;left: 0; top: 0; z-index:0;')-->
               <canvas id="midi_score" style="width: 100%;left: 0; top: 0; z-index: 1;border:1px solid black;"></canvas>
             </div>
+            <ul id="midi_pager" class="pager">
+              <li><a class="prev">Previous</a></li>
+              <li><a class="next">Next</a> &nbsp; &nbsp;</li>
+              <li>Page:<span class="page_num">1</span> /<span class="page_count">1</span></li>
+            </ul>
           </div>
         </div>
         <div class="nav col-sr-1 col-xs-3">
@@ -301,7 +306,7 @@ Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord
         <div class="sr-only col-sr-2"></div>
         <div class="col-md-6 col-sr-10">
           <ul class="nav nav-tabs nav-justified nav-pills">
-            <li data-toggle="tab" data-target="#score_wrapper" class="active"><a href="#score_wrapper">Score</a></li>
+            <li data-toggle="tab" data-target="#score_wrapper" class="active"><a href="#score_wrapper">Score Settings</a></li>
             <li data-toggle="tab" data-target="#schema_wrapper"><a href="#schema_wrapper">Schema</a></li>
             <li class="xs-only"></li>
           </ul>

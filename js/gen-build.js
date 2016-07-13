@@ -966,21 +966,53 @@
     var dur_mapper;
 
     function ScoreRenderer(c, p) {
+      var pager;
       this.c = document.getElementById(c);
-      this.r = new Vex.Flow.Renderer(this.c, Vex.Flow.Renderer.Backends.CANVAS);
+      this.real_ctx = this.c.getContext('2d');
+      this.hidden_canvas = document.createElement('canvas');
+      this.r = new Vex.Flow.Renderer(this.hidden_canvas, Vex.Flow.Renderer.Backends.CANVAS);
       this.ctx = this.r.getContext();
       this.geo = {
-        system_width: 820,
+        system_width: 900,
         system_height: 80,
         system_interval: 30,
         left_padding: 25,
-        top_padding: 10,
-        reserved_width: 48
+        top_padding: 20,
+        reserved_width: 55
       };
       this.layout = {
-        measure_per_system: 4
+        measure_per_system: 4,
+        system_per_page: 6
       };
-      this.r.resize(1000, 800);
+      this.numPage = 1;
+      this.currentPage = 1;
+      this.measures = [];
+      this.pages = [];
+      pager = $('#midi_pager');
+      this.UI = {
+        prev: pager.find('.prev'),
+        next: pager.find('.next'),
+        page_num: pager.find('.page_num'),
+        page_count: pager.find('.page_count')
+      };
+      this.UI.prev.on('click', (function(_this) {
+        return function() {
+          if (_this.currentPage <= 1) {
+            return;
+          }
+          _this.currentPage--;
+          return _this.renderPage(_this.currentPage - 1);
+        };
+      })(this));
+      this.UI.next.on('click', (function(_this) {
+        return function() {
+          if (_this.currentPage >= _this.numPage) {
+            return;
+          }
+          _this.currentPage++;
+          return _this.renderPage(_this.currentPage - 1);
+        };
+      })(this));
       if (p != null) {
         this.p = new fabric.StaticCanvas(p, {
           width: $('.canvas-wrapper').width(),
@@ -993,7 +1025,7 @@
     ScoreRenderer.prototype.newStave = function(m, k) {
       var i, j, w, x, y;
       i = m % this.layout.measure_per_system;
-      j = Math.floor(m / this.layout.measure_per_system);
+      j = (Math.floor(m / this.layout.measure_per_system)) % this.layout.system_per_page;
       w = Math.floor((this.geo.system_width - this.geo.reserved_width) / this.layout.measure_per_system);
       x = this.geo.left_padding + i * w;
       y = this.geo.top_padding + j * (this.geo.system_height + this.geo.system_interval);
@@ -1012,15 +1044,55 @@
       return dur_mapper[dur - 1];
     };
 
-    ScoreRenderer.prototype.render = function(score) {
-      var beams, ctx, dur_tot, formatter, i, l, notes, num_beats, raw_w, ref, s, sharp, stave, toScale, voice, w;
+    ScoreRenderer.prototype.renderPage = function(num) {
+      var c, ctx, e, i, l, last, ref, ref1, start;
+      if (num < 0 || num >= this.numPage) {
+        return;
+      }
+      if (this.pages[num] != null) {
+        this.real_ctx.clearRect(0, 0, this.c.width, this.c.height);
+        this.real_ctx.drawImage(this.pages[num], 0, 0);
+        this.UI.page_num.html(num + 1);
+        return;
+      }
+      console.log('render page', num + 1);
       this.r.resize(1000, 800);
+      this.c.width = 1000;
+      this.c.height = 800;
+      start = this.layout.measure_per_system * this.layout.system_per_page;
+      last = (num + 1) * start;
+      start = last - start;
+      if (last >= this.measures.length) {
+        last = this.measures.length;
+      }
+      ctx = this.ctx;
+      for (i = l = ref = start, ref1 = last; l < ref1; i = l += 1) {
+        e = this.measures[i];
+        e.stave.setContext(ctx).draw();
+        e.voices.forEach(function(v) {
+          return v.draw(ctx, e.stave);
+        });
+        e.beams.forEach(function(v) {
+          return v.setContext(ctx).draw();
+        });
+      }
+      c = document.createElement('canvas');
+      c.width = 1000;
+      c.height = 800;
+      c.getContext('2d').drawImage(this.hidden_canvas, 0, 0);
+      this.pages[num] = c;
+      this.real_ctx.clearRect(0, 0, this.c.width, this.c.height);
+      this.real_ctx.drawImage(this.pages[num], 0, 0);
+      return this.UI.page_num.html(num + 1);
+    };
+
+    ScoreRenderer.prototype.render = function(score) {
+      var beams, dur_tot, formatter, i, l, notes, num_beats, raw_w, ref, s, sharp, stave, toScale, voice, w;
       raw_w = Math.floor((this.geo.system_width - this.geo.reserved_width) / this.layout.measure_per_system);
       s = this.s = new ScoreObj(score);
       sharp = MG.key_sig[score.key_sig] >= 0;
       toScale = MG.pitchToScale(score.scale, s.key_sig);
-      console.log(s);
-      this.sys = [];
+      this.measures = [];
       for (i = l = 0, ref = s.melody.length; l < ref; i = l += 1) {
         stave = this.newStave(i, score.key_sig);
         if (i === 0) {
@@ -1083,28 +1155,28 @@
         beams = Vex.Flow.Beam.applyAndGetBeams(voice);
         w = raw_w;
         if (i % this.layout.measure_per_system === 0) {
-          w -= 30;
+          w -= this.geo.reserved_width;
         }
         if (i === 0) {
           w -= 10;
         }
         formatter = new Vex.Flow.Formatter().joinVoices([voice]).format([voice], w - 10);
-        this.sys.push({
+        this.measures.push({
           voices: [voice],
           stave: stave,
           beams: beams
         });
       }
-      ctx = this.ctx;
-      return this.sys.forEach(function(e) {
-        e.stave.setContext(ctx).draw();
-        e.voices.forEach(function(v) {
-          return v.draw(ctx, e.stave);
-        });
-        return e.beams.forEach(function(v) {
-          return v.setContext(ctx).draw();
-        });
-      });
+      this.numPage = Math.ceil(this.measures.length / this.layout.measure_per_system / this.layout.system_per_page);
+      this.UI.page_count.html(this.numPage);
+      this.currentPage = 1;
+      this.pages.forEach((function(_this) {
+        return function(c, i) {
+          return delete _this.pages[i];
+        };
+      })(this));
+      this.pages = [];
+      return this.renderPage(this.currentPage - 1);
     };
 
     return ScoreRenderer;

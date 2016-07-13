@@ -55,20 +55,30 @@ html
           .tab-pane#pdf_viewer
             #canvas-wrapper
               canvas#the-canvas(style='border:1px solid black')
-            ul.pager
+            ul.pager#pdf_pager
               li
-                a#prev Previous
+                a.prev Previous
               li
-                a#next Next
+                a.next Next
                 |  &nbsp; &nbsp;
               li Page:
-                span#page_num 1
+                span.page_num 1
                 |  /
-                span#page_count 14
+                span.page_count 1
           .tab-pane#midi_viewer
             .canvas-wrapper(style='height: 600;')
               // canvas#midi_pointer(style='width: 100%; height:100%;left: 0; top: 0; z-index:0;')
               canvas#midi_score(style='width: 100%;left: 0; top: 0; z-index: 1;border:1px solid black;')
+            ul.pager#midi_pager
+              li
+                a.prev Previous
+              li
+                a.next Next
+                |  &nbsp; &nbsp;
+              li Page:
+                span.page_num 1
+                |  /
+                span.page_count 1
         .nav.col-sr-1.col-xs-3
           ul.list-group
             li.list-group-item
@@ -124,7 +134,7 @@ html
         .col-md-6.col-sr-10
           ul.nav.nav-tabs.nav-justified.nav-pills
             li.active(data-toggle='tab', data-target='#score_wrapper')
-              a(href='#score_wrapper') Score
+              a(href='#score_wrapper') Score Settings
             li(data-toggle='tab', data-target='#schema_wrapper')
               a(href='#schema_wrapper') Schema
             li.xs-only
