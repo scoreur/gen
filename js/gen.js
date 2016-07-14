@@ -8,7 +8,7 @@ function dataURLtoBlob(dataurl) {
 }
 var seqPlayer = {
 	channel:0,
-	src: {q:[],c:[],t:[]},
+	harmony:[],
 	tracks: [],
 	playing:[],
 	cur_i:[],
@@ -124,7 +124,7 @@ var seqPlayer = {
 		this.tracks.push(q, t);
 		this.playing = [false, false];
 		this.cur_i = [0,0];
-        this.src = {c: obj.harmony, t: t, q: q};
+        this.harmony = obj.harmony;
         this.midi = obj.toMidi();
         this.raw_midi = MidiWriter(this.midi);
 

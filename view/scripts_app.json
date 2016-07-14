@@ -3,7 +3,8 @@
     "musical",
     "ScoreObj",
     "Generator",
-    "ScoreRenderer"
+    "ScoreRenderer",
+    "appMG"
   ],
   "_js": [
     "gen",

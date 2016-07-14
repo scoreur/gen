@@ -37,31 +37,25 @@ function load_json(file, onsuccess){
 }
 
 // store all editors
+
+
 var eds = {};
-
 var mds = new ScoreRenderer('midi_score', undefined,  'midi_pointer');
+var appUI = {
+	editor: eds,
+	renderer: mds,
+	player: seqPlayer,
+	playbtns:[$('#play_melody>span.glyphicon'), $('#play_harmony>span.glyphicon')]
+};
 
-var cur_schema = Object.assign({},schema_summer);
-var cur_settings = Object.assign({},score_summer.settings);
-var cur_contents = Object.assign({},score_summer.contents);
+var app = new AppMG(appUI);
 
 
 
 var click_event_list = {
 	'parse': function(){
-		try{
-			cur_settings = JSON.parse(eds.score.getValue());//settings
-		}catch(e){
-			$.notify('Bad score format!', 'warning');
-		}
+        app.parse()
 
-		//eds.score.setValue(JSON.stringify(cur_settings, null, 2), -1);
-		['melody','harmony','texture'].forEach(function(e){
-			//console.log(e);
-			cur_contents[e] = eds[e].getValue().split(/[/\n]+/);
-
-		});
-		seqPlayer.fromScore(cur_settings, cur_contents);
 		MIDI.Player.loadFile('base64,'+btoa(seqPlayer.raw_midi),function(){
 			$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
 			$.notify('MIDI loaded!', 'success');
@@ -75,10 +69,8 @@ var click_event_list = {
 			if(typeof obj != 'object'){
 				$.notify('wrong JSON!', 'warning');
 			}
-			cur_settings = obj.settings;
-			cur_schema = obj.schema;
-			cur_contents = obj.contents;
-			updateEditor();
+			app = new AppMG(appUI,obj)
+			app.updateEditor();
 			$.notify('sample JSON loaded!', 'success');
 		});
 
@@ -107,21 +99,10 @@ var click_event_list = {
 
 	},
 	'play_melody': function(){
-		if(!seqPlayer.playing[0]){
-            seqPlayer.play(0);
-		}else{
-			seqPlayer.pause(0);
-		}
-		$('#play_melody>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
+		app.play(0)
 	},
 	'play_harmony': function(){
-		if(!seqPlayer.playing[1]){
-			seqPlayer.play(1);
-		}else{
-			seqPlayer.pause(1);
-		}
-		$('#play_harmony>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
-
+		app.play(1)
 	},
 	'save_midi': function(){
 		seqPlayer.saveMidi();
@@ -136,26 +117,26 @@ var click_event_list = {
 		});//default image/png
 	},
 	'gen': function(){
-		cur_schema = JSON.parse(eds.schema.getValue());
-        var generator = new Generator(cur_settings, cur_schema);
+		app.schema = JSON.parse(eds.schema.getValue());
+        var generator = new Generator(app.settings, app.schema);
         generator.generate();
 		var score = generator.toScoreObj()
 		console.log('to Text')
-	    cur_contents.melody = score.toText();
-		cur_settings = score.getSettings()
-	    updateEditor();
+	    app.contents.melody = score.toText();
+		app.settings = score.getSettings()
+	    app.updateEditor();
 		$.notify('Melody generated!', 'success');
 
 	},
 	'render':function(){
-		mds.render(cur_settings, cur_contents);
+		app.renderer.render(app.settings, app.contents);
 		$('li[data-target="#midi_viewer"]').click();
 	},
 	'console_eval': function(){
 		$('#console_result').html(eval($('#console_panel').val()));
 	},
 	'export': function(){
-		var ext = JSON.stringify({settings:cur_settings,contents:cur_contents, schema:cur_schema});
+		var ext = JSON.stringify(app.export());
 		var file = new File([ext],'sample.json',{type:"application/json"});
 		saveAs(file);
 		$.notify('JSON exported!', 'success');
@@ -174,9 +155,7 @@ var click_event_list = {
 
 	},
 	'reset_editor': function(){
-		cur_schema = Object.assign({},schema_summer);
-		cur_settings = Object.assign({},score_summer.settings);
-		cur_contents = Object.assign(score_summer.contents)
+		app = new AppMG(appUI);
 		updateEditor();
 	},
 	'inc_ctrl': function(){
@@ -245,9 +224,7 @@ var file_open_handlers = {
     },
     'open_json': function(evt){
 	    load_json(evt.target.files[0], function(res){
-		    cur_settings = res.settings;
-			cur_contents = res.contents;
-	        cur_schema = res.schema;
+			app = new AppMG(appUI, res);
 			updateEditor();
 	    });
 	},
@@ -319,15 +296,7 @@ function registerEvents(){
 	  .on("mouseout", handlePianoKeyRelease)
 	  .on("mouseup", handlePianoKeyRelease);
 }
-function updateEditor(){
 
-	['melody','harmony','texture'].forEach(function(e){
-		eds[e].setValue(cur_contents[e].join('\n'), -1);
-	});
-	eds.score.setValue(JSON.stringify(cur_settings, null, 2), -1);
-	eds.schema.setValue(JSON.stringify(cur_schema, null, 2), -1);
-
-}
 function use_local_store(){
 	return location.origin=="file://" || location.href.indexOf('http://localhost')>-1;
 }
@@ -352,7 +321,7 @@ function initUI(){
 		eds[id] = editor;
 		return editor;
 	});
-	updateEditor();
+	app.updateEditor();
 
 	$('#score_img').attr('src','./score/summertime.png');
 }

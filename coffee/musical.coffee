@@ -247,9 +247,7 @@ MG.scale_keys = (()->
   "aug7": "Augmented seventh chord",
   "dim7": "Diminished seventh chord",
 
-@MG = MG
-
-@score_summer =
+@score_summer = MG.score_summer =
   settings:
     tempo: 120,
     time_sig: [4,4],
@@ -273,7 +271,7 @@ MG.scale_keys = (()->
 
 
 
-@schema_summer =
+@schema_summer = MG.schema_summer =
   blocks: ((a,b)->
     res = {}
     a.split('/').forEach (e,i)->
@@ -354,6 +352,8 @@ MG.scale_keys = (()->
         interval:
           chromatic: false,
           seed: 's2'
+
+@MG = MG
 
 if module?
   module.exports = MG
