@@ -1,3 +1,6 @@
+
+# namespace for Music Generator
+
 MG = @MG ? {}
 MG.instrs =
   'Piano': ['1 Acoustic Grand Piano', '2 Bright Acoustic Piano', '3 Electric Grand Piano', '4 Honky-tonk Piano', '5 Electric Piano 1', '6 Electric Piano 2', '7 Harpsichord', '8 Clavinet'],
@@ -30,22 +33,20 @@ MG.instrs =
   "dim7":[0,3,6,9],
 
 MG.inverted = (arr,n) ->
-  n = if typeof n=='undefined' then 1 else n % arr.length
-  if n < 0
-    n += arr.length
+  n ?= 1
+  n = n %% arr.length
   ret = new Array(arr.length);
   for i in [0...arr.length] by 1
     ret[i] = (arr[(n+i)%arr.length]-arr[n]) %% 12
   return ret
 
-@chords_inv = MG.chords = ( ->
+MG.chords = ( ->
   res = {}
   for c,v of MG.chord_class
     ci = c + ''
     for i in [0...v.length] by 1
       res[ci] = MG.inverted(v,i)
       ci += 'i'
-  res.inv = MG.inverted;
   # TODO: alias
   return res;
 )()
@@ -318,6 +319,12 @@ MG.scale_keys = (()->
     'A':
       mode:'random'
       options:
+        chords: [
+          "Amin,8",
+          "Bb7,8",
+          "Amin,4 E7,4",
+          "Amin,4 A7,4"
+        ]
         rhythm:
           seed: 's1'
 

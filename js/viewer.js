@@ -56,7 +56,6 @@ function getOutputScale(ctx) {
       ctx = the_canvas.getContext('2d');
   var pdf_canvas_buffers = [];
   the_canvas.style.width = "100%"; //(ratio * 100) + "%";
-  the_canvas.style.height = "100%"; //(ratio * 100) + "%";
 
   /**
    * Get page info from document, resize canvas accordingly, and render page.

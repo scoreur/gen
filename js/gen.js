@@ -143,6 +143,7 @@ var TEST = TEST || {};
 
 
 TEST.analysis = function(data, ctrl_per_beat){
+	var data = data || MIDI.Player.currentData;
 	var ctrl_per_beat = ctrl_per_beat || 4;
 	var m = MidiFile(data);
 	var q = simpMidi.prototype.quantize.call(m, ctrl_per_beat);
@@ -176,7 +177,7 @@ TEST.analysis = function(data, ctrl_per_beat){
 		return midi_statistics(e);
 	});
 
-	return true;
+	return info;
 };
 
 function midi_statistics(obj){
