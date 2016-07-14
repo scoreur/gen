@@ -355,4 +355,5 @@ MG.scale_keys = (()->
           chromatic: false,
           seed: 's2'
 
-
+if module?
+  module.exports = MG

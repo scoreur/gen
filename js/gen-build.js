@@ -38,10 +38,10 @@
 
   MG.inverted = function(arr, n) {
     var i, m, ref2, ret;
-    n = typeof n === 'undefined' ? 1 : n % arr.length;
-    if (n < 0) {
-      n += arr.length;
+    if (n == null) {
+      n = 1;
     }
+    n = modulo(n, arr.length);
     ret = new Array(arr.length);
     for (i = m = 0, ref2 = arr.length; m < ref2; i = m += 1) {
       ret[i] = modulo(arr[(n + i) % arr.length] - arr[n], 12);
@@ -49,7 +49,7 @@
     return ret;
   };
 
-  this.chords_inv = MG.chords = (function() {
+  MG.chords = (function() {
     var c, ci, i, m, ref2, ref3, res, v;
     res = {};
     ref2 = MG.chord_class;
@@ -61,7 +61,6 @@
         ci += 'i';
       }
     }
-    res.inv = MG.inverted;
     return res;
   })();
 
@@ -410,6 +409,7 @@
       'A': {
         mode: 'random',
         options: {
+          chords: ["Amin,8", "Bb7,8", "Amin,4 E7,4", "Amin,4 A7,4"],
           rhythm: {
             seed: 's1'
           },
@@ -450,6 +450,10 @@
       }
     }
   };
+
+  if (typeof module !== "undefined" && module !== null) {
+    module.exports = MG;
+  }
 
 }).call(this);
 
@@ -1666,6 +1670,7 @@ var TEST = TEST || {};
 
 
 TEST.analysis = function(data, ctrl_per_beat){
+	var data = data || MIDI.Player.currentData;
 	var ctrl_per_beat = ctrl_per_beat || 4;
 	var m = MidiFile(data);
 	var q = simpMidi.prototype.quantize.call(m, ctrl_per_beat);
@@ -1699,7 +1704,7 @@ TEST.analysis = function(data, ctrl_per_beat){
 		return midi_statistics(e);
 	});
 
-	return true;
+	return info;
 };
 
 function midi_statistics(obj){
