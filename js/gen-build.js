@@ -517,7 +517,7 @@
 (function() {
   var MG;
 
-  MG = (module && require && require('./musical')) || this.MG;
+  MG = ((typeof module !== "undefined" && module !== null) && (typeof require !== "undefined" && require !== null) && require('./musical')) || this.MG;
 
   this.AppMG = (function() {
     function AppMG(ui, options) {

@@ -1,4 +1,4 @@
-MG = (module && require && require('./musical')) || @MG
+MG = (module? && require? && require('./musical')) || @MG
 
 class @AppMG
   constructor: (ui, options) ->
