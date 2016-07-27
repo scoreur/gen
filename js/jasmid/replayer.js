@@ -1,17 +1,12 @@
-var clone = function (o) {
-	if (typeof o != 'object') return (o);
-	if (o == null) return (o);
-	var ret = (typeof o.length == 'number') ? [] : {};
-	for (var key in o) ret[key] = clone(o[key]);
-	return ret;
-};
+
 
 function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 	var trackStates = [];
-	var beatsPerMinute = bpm ? bpm : 120;
+	var ticksPerBeat = midiFile.header.ticksPerBeat;
+	var beatsPerMinute = bpm || Math.floor(60000 / ticksPerBeat); //bpm ? bpm : 120;
 	var bpmOverride = bpm ? true : false;
 
-	var ticksPerBeat = midiFile.header.ticksPerBeat;
+
 	
 	for (var i = 0; i < midiFile.tracks.length; i++) {
 		trackStates[i] = {
@@ -24,8 +19,8 @@ function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 		};
 	}
 
-	var nextEventInfo;
-	var samplesToNextEvent = 0;
+	//var nextEventInfo;
+	//var samplesToNextEvent = 0;
 	
 	function getNextEvent() {
 		var ticksToNextEvent = null;
@@ -92,6 +87,13 @@ function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 		if (midiEvent = getNextEvent()) {
 			while(midiEvent) processNext(true);
 		}
+	};
+	function clone(o) {
+		if (typeof o != 'object') return (o);
+		if (o == null) return (o);
+		var ret = (typeof o.length == 'number') ? [] : {};
+		for (var key in o) ret[key] = clone(o[key]);
+		return ret;
 	};
 	processEvents();
 	return {

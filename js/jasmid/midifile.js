@@ -230,7 +230,7 @@ function MidiFile(data) {
 		}
 	}
 	
-	stream = Stream(data);
+	var stream = Stream(data);
 	var headerChunk = readChunk(stream);
 	if (headerChunk.id != 'MThd' || headerChunk.length != 6) {
 		throw "Bad .mid file - header not found";
@@ -480,6 +480,11 @@ function simpMidi(){
 	this.tracks = tracks;
 
 }
+
+simpMidi.prototype.setDefaultTempo = function(tempo){
+	tempo = tempo || 120;
+	this.header.ticksPerBeat = Math.floor(60000/tempo);
+};
 
 simpMidi.prototype.getMeta = function(subtype){
 	var res = null;

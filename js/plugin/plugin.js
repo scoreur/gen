@@ -11,7 +11,7 @@
 	window.Audio && (function() {
 		var midi = MIDI.AudioTag = { api: 'audiotag' };
 		var noteToKey = {};
-		var volume = 127; // floating point 
+		var volumeCh = Array(16).fill(127); // floating point
 		var buffer_nid = -1; // current channel
 		var audioBuffers = []; // the audio channels
 		var notesOn = []; // instrumentId + noteId that is currently playing in each 'channel', for routing noteOff/chordOff calls
@@ -35,7 +35,7 @@
 					return;
 				}
 				audio.src = MIDI.Soundfont[instrumentId][note.id];
-				audio.volume = volume / 127;
+				audio.volume = volumeCh[channel] / 127;
 				audio.play();
 				buffer_nid = nid;
 			}
@@ -66,7 +66,7 @@
 		midi.send = function(data, delay) { };
 		midi.setController = function(channel, type, value, delay) { };
 		midi.setVolume = function(channel, n) {
-			volume = n; //- should be channel specific volume
+			volumeCh[channel] = n; //- should be channel specific volume
 		};
 
 		midi.pitchBend = function(channel, program, delay) { };
@@ -167,7 +167,7 @@
 		var ctx; // audio context
 		var sources = {};
 		var effects = {};
-		var masterVolume = 127;
+		var volumeCh = Array(16).fill(127);
 		var audioBuffers = {};
 		///
 		midi.audioBuffers = audioBuffers;
@@ -184,10 +184,10 @@
 		midi.setVolume = function(channelId, volume, delay) {
 			if (delay) {
 				setTimeout(function() {
-					masterVolume = volume;
+					volumeCh[channelId] = volume;
 				}, delay * 1000);
 			} else {
-				masterVolume = volume;
+				volumeCh[channelId] = volume;
 			}
 		};
 
@@ -236,7 +236,7 @@
 				}
 
 				/// add gain + pitchShift
-				var gain = (velocity / 127) * (masterVolume / 127) * 2 - 1;
+				var gain = (velocity / 127) * (volumeCh[channelId] / 127) * 2 - 1;
 				source.connect(ctx.destination);
 				source.playbackRate.value = 1; // pitch shift 
 				source.gainNode = ctx.createGain(); // gain

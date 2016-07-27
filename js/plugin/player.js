@@ -109,7 +109,7 @@ midi.setAnimation = function(callback) {
 
 midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 	try {
-		midi.replayer = new Replayer(MidiFile(midi.currentData), midi.timeWarp, null, midi.BPM);
+		midi.replayer = new Replayer(MidiFile(midi.currentData), midi.timeWarp, null);//, midi.BPM);// not override
 		midi.data = midi.replayer.getData();
 		midi.endTime = getLength();
 		///

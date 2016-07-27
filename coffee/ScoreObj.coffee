@@ -245,6 +245,7 @@ class @ScoreObj
     m.setTimeSignature @time_sig...
     m.setKeySignature MG.key_sig[@key_sig], 'maj'
     m.setTempo @tempo
+    m.setDefaultTempo @tempo
 
     if t == null
       m.finish()
