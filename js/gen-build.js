@@ -1348,6 +1348,7 @@
       m.setTimeSignature.apply(m, this.time_sig);
       m.setKeySignature(MG.key_sig[this.key_sig], 'maj');
       m.setTempo(this.tempo);
+      m.setDefaultTempo(this.tempo);
       if (t === null) {
         m.finish();
         return m;
