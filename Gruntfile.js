@@ -26,7 +26,7 @@ module.exports = function(grunt){
                 separator: ';'
             },
             dist: {
-                src: ['coffee/musical.js', 'coffee/*.js', 'js/gen.js'],
+                src: ['coffee/musical.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js'],
                 dest: 'js/gen-build.js'
             }
         }
