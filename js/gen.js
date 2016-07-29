@@ -263,7 +263,7 @@ function midi2wav(midifile, sampleps){
 	// currently ignore setTempo
 	var rep = new Replayer(midifile, 1, null);
 	var data = rep.getData();
-	var endTime = 500.0; // extra 500ms
+	var endTime = 500.0 * 2; // extra 500ms *2
 	data.forEach(function(e){
 		endTime += e[1];
 	});
@@ -272,7 +272,7 @@ function midi2wav(midifile, sampleps){
 	var len = Math.floor(sampleps/1000 * endTime);
 	console.log('length', len);
 	var chL = new Float32Array(len), chR = new Float32Array(len);
-	var curTime = 0.0; // in miliseconds
+	var curTime = 500.0; // in miliseconds
 	var sources = {};
 	function noteOn(channelId, noteId, velocity){
 		var channel = MIDI.channels[channelId];
