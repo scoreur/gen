@@ -35,10 +35,45 @@ function load_json(file, onsuccess){
 	reader.readAsText(file);
 	return true;
 }
+var lame_worker;
+function saveMp3(floatData,boot,blockSize,onprocess){
+	if(typeof Worker == 'undefined'){
+		$.notify('Worder not support, use inline encoder may block the UI', 'warning');
+		return; // TODO: add inline worker
+	}else{
+		if(lame_worker == null){
+			lame_worker = new Worker('js/lame-worker.js');
+			lame_worker.onmessage = function(res){
+				switch(res.data.type){
+					case 'mp3':
+					    $.notify('mp3 encoded!', 'success');
+						lame_worker.pending = false;
+					    saveAs(res.data.blob, 'sample.mp3');
+						break;
+					case 'percent':
+						onprocess && onprocess(res.data.percent);
+						break;
+					default:
+						console.log('unknown message type: ', res.data.type);
+				}
+			}
+
+		}else if(lame_worker.pending){
+			$.notify('mp3 encoding in process, try later!', 'info');
+			return;
+		}
+		lame_worker.postMessage({type:'wav',floatData:floatData, boot:boot, blockSize:blockSize, onprocess:typeof onprocess != 'undefined'});
+		lame_worker.pending = true;
+		return;
+	}
+}
+function testSaveMp3(){
+	var a = MIDI.audioBuffers['0x60'];
+	saveMp3([a.getChannelData(0), a.getChannelData(1)]);
+}
+
 
 // store all editors
-
-
 var eds = {};
 var mds = new ScoreRenderer('midi_score', undefined,  'midi_pointer');
 var appUI = {
@@ -105,8 +140,30 @@ var click_event_list = {
 		app.play(1)
 	},
 	'save_midi': function(){
-		seqPlayer.saveMidi();
+		app.player.saveMidi();
 		$.notify('MIDI saved!', 'success');
+	},
+	'save_wav': function(){
+		var f = MidiFile(MIDI.Player.currentData);
+	    var res = midi2wav(f);
+	    $.notify('wav file generated', 'info');
+	    // do not block, should change to web worker
+		saveAs(wavFile(res), 'sample.wav');
+        $.notify('wav file saved', 'success');
+
+	},
+	'save_mp3': function(){
+		var f = MidiFile(MIDI.Player.currentData);
+		setTimeout(function(){
+			var res = midi2wav(f);
+			$.notify('wav file generated, start encoding mp3', 'info');
+			// do not block, should change to web worker
+			saveMp3(res, null, 2304);
+
+		}, 0);
+
+
+
 	},
 	'save_score': function(){
 		$('#midi_score')[0].toBlob(function(blob){

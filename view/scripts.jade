@@ -1,3 +1,4 @@
+- var pre = "./js" // 'https://scoreur.github.io/gen/js'
 // jQuery
 script(src='https://code.jquery.com/jquery-2.2.4.min.js', integrity='sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=', crossorigin='anonymous')
 script(src='https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min.js', type='text/javascript')
@@ -11,7 +12,6 @@ link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css
 // Latest compiled and minified JavaScript
 script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js', integrity='sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS', crossorigin='anonymous')
 // script(src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.0.0/jszip.min.js", type='text/javascript')
-- var pre = "./js" // 'https://scoreur.github.io/gen/js'
 // shims
 script(src='#{pre}/shim/Base64.js', type='text/javascript')
 script(src='#{pre}/shim/Base64binary.js', type='text/javascript')
@@ -26,6 +26,8 @@ script(src='#{pre}/plugin/gm.js', type='text/javascript')
 script(src='#{pre}/plugin/plugin.js', type='text/javascript')
 script(src='#{pre}/plugin/loader.js', type='text/javascript')
 script(src='#{pre}/plugin/player.js', type='text/javascript')
+// mp3lame
+script(src='#{pre}/lib/lame.min.js', type='text/javascript')
 // utils
 script(src='#{pre}/util/dom_request_xhr.js', type='text/javascript')
 script(src='#{pre}/util/dom_request_script.js', type='text/javascript')

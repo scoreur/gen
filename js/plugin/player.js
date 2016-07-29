@@ -157,11 +157,12 @@ midi.loadFile = function(file, onsuccess, onprogress, onerror) {
 	}
 };
 
-midi.getFileInstruments = function() {
+midi.getFileInstruments = function(data) {
+	data = data || midi.data;
 	var instruments = {};
 	var programs = {};
-	for (var n = 0; n < midi.data.length; n++) {
-		var event = midi.data[n][0].event;
+	for (var n = 0; n < data.length; n++) {
+		var event = data[n][0].event;
 		if (event.type !== 'channel') {
 			continue;
 		}
