@@ -27,7 +27,8 @@
     "grunt": "1.0.1",
     "grunt-contrib-concat": "1.0.1",
     "grunt-contrib-jade": "1.0.0",
-    "grunt-contrib-uglify": "1.0.1"
+    "grunt-contrib-uglify": "1.0.1",
+    "grunt-jison": "1.3.3"
   },
   "dependencies": {}
 }

@@ -107,6 +107,7 @@ class @ScoreRenderer
     #console.log(s)
     @measures = []
     melody = s.tracks[0]
+    #console.log melody
     for  i in [0...melody.length] by 1
       stave = this.newStave(i, s.key_sig)
       if i==0

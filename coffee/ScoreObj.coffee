@@ -1,5 +1,5 @@
 MG = @MG ? {}
-
+parser = @parser ? require('./js/parser.js')
 class @ScoreObj
   constructor: (options, contents) ->
     options ?= {}
@@ -48,67 +48,70 @@ class @ScoreObj
     if options.harmony? && options.texture
       @setTexture(options.texture, options.harmony)
 
-  # leave out comment, separate into measures
-  pre_processing: (text) ->
-     ex = /\/\/[^\n][\n]+|[\/\n]]/
 
-
-  parseMelody: (m, scale, init_ref) ->
-    if typeof m == 'undefined'
-      console.log 'empty melody'
-      return
+  parseMelody: (m, scale, init_ref)->
+    # obj.mode = 'melody'
+    # 1 set up states
+    try
+      obj = parser.parse(m.join('\n')+'\n')
+      #console.log obj
+      return res
+    catch e
+      console.log e.message
     scale ?= MG.scale_class['maj']
-    #console.log scale, init_ref
     init_ref ?= 60 # C4
     ref = init_ref
-    res = m.map (e)=>
-      notes = e.trim().split(/\s+/);
+
+    ornamental = (pitch)->
+      p = if typeof pitch is 'number' then pitch else pitch.original
+      if p > scale.length
+        console.log 'exceed scale length'
+        p = scale.length
+      else if p == 0
+        # rest
+        return 0
+      p = ref + scale[p-1]
+      if typeof pitch is 'number'
+        pitch.ornament.forEach (e)->
+          if typeof e == 'number'
+            p += e
+      return p
+
+    # 2 iterate obj.data
+    res = obj.data.map (m)=>
+      #console.log m
       measure = []
-      notes.forEach (e2) =>
-        if e2[0]==':'
-          switch e2[1]
-            when '+' then ref += 12
-            when '-' then ref -= 12
-            else ref = init_ref
-          return
+      m.forEach (e)->
+        if e.ctrl?
+          # set options
+          switch e.ctrl
+            when 'reset'
+              ref = init_ref
+            when 'normal','repeat_start'
+              for k,v of e
+                switch k
+                  when 't' then 1 # set time_sig
+                  when 's' then scale = MG.scale_class[v]
+                  when 'k' then 1 # set key_sig
+                  when 'r' then 1 # set tempo
+                  when 'v' then 1 # set volume
+                  when 'p' then ref += v
+
         else
-          tied = false
-          terms = e2.split(',')
+          # add notes
           pitches = []
-          e3 = ''
-          Array.prototype.forEach.call terms[0], (to)->
-            e3 += to
-            switch e3
-              when '0'
-                pitches.push(0) # rest
-              when '1','2','3','4','5','6','7','8','9'
-                if e3>scale.length
-                  console.log 'Exceed scale length ' + e3
-                  e3 = scale.length
-                pitches.push ref+scale[e3 - '1']
-              when 'x','y','z'
-                e3 = {'x':10,'y':11,'z':12}[e3]
-                if e3>scale.length
-                  console.log 'Exceed scale length ' + e3
-                  e3 = scale.length
-                pitches.push ref+scale[e3 - '1']
-              when '+','-','#','b'
-                pitches[pitches.length-1] += {
-                  '+': 12, '-': -12, '#': 1, 'b': -1
-                }[e3]
-              when '^'
-                tied = true
-              else
-                console.log 'skip invalid flag ' + e3
-            e3 = ''
-          dur = if terms.length>=2 then (parseInt(terms[1]) ? 1) else 1
-          if tied
-            measure.push [dur, pitches, true]
+          e.pitch.forEach (p)->
+            if typeof p == 'string'
+              # handle barline
+            else
+              pitches.push(ornamental(p))
+          #console.log 'add pitch', pitches
+          if typeof e.dur == 'number'
+            measure.push([e.dur, pitches])
           else
-            measure.push [dur, pitches]
-          return
+            measure.push([e.dur.original, pitches, true]);
       return measure
-    return res
+    return res  
 
   parseHarmony: (measures) ->
     if typeof measures == 'undefined'
