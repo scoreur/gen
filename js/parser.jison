@@ -1,69 +1,62 @@
 %{
-  if(typeof MG == 'undefined' && typeof module !== 'undefined' && typeof require !== 'undefined'){
-    MG = require("../coffee/musical");
-    console.log('MG loaded');
-  }
-  var MG = MG || {};
-  var scope = {
-    key_sig: 'C',
-    time_sig: [4,4],
-    tempo: 120,
-    ctrl_per_beat: 4
-  }
 	
 %}
 
 %lex
-DIGIT		=	([0-9])
-SIMPLE		=	(","|";"|"{"|"}"|"+"|"-"|"#"|"/"|"^"	)
-NEWLINE		=	(\r|\n|\r\n)
-SPACE		=	([ |\t|\f|\v])
-COMMENT		=	("%"[^\r\n]*{NEWLINE})
-KEY 		=	([A-GR][#b]{0,2})
-Op_unary	=	("rate"|"volume"|"ctrls"|[r|c|v])
-Op			=	("key_sig"|"time_sig"|"scale"|[k|t|s])
-MODE 		=	("melody"|"harmony")
+DIGIT           =	([0-9])
+SIMPLE          =	(","|";"|"{"|"}"|"+"|"-"|"#"|"/"|"^")
+NEWLINE         =	(\r|\n|\r\n)
+SPACE           =	([ |\t|\f|\v])
+COMMENT         =	("%"[^\r\n]*{NEWLINE})
+KEY             =	([A-GR][#b]{0,2})
+Op_unary        =	("rate"|"volume"|"ctrls"|[r|c|v])
+Op_string       =   ("out"|"scale"|[o|s])
+Op              =	("key_sig"|"time_sig"|"instrument"|[k|t|i])
+MODE            =	("melody"|"harmony")
 
-%s CTRL NOTE NOTE_DUR
+%s CTRL NOTE NOTE_DUR CHORD
 
 %%
 
-<INITIAL>{MODE}					{return yytext;}
-<INITIAL>{DIGIT}+				{this.begin('NOTE'); return 'DIGIT';}
-<NOTE,NOTE_DUR,CTRL>{NEWLINE}	{this.begin('INITIAL'); return 'BAR';}
-"|:"							{this.begin('CTRL'); return 'REPEAT_START';}
-"|"								{this.begin('INITIAL'); return 'BAR';}
-":|"							{this.begin('INITIAL'); return 'REPEAT_END';}
+<INITIAL>{MODE}                         {return yytext;}
+<INITIAL>{DIGIT}+                       {this.begin('NOTE'); return 'DIGIT';}
+<NOTE,NOTE_DUR,CTRL>{NEWLINE}           {this.begin('INITIAL'); return 'BAR';}
+"|:"							        {this.begin('CTRL'); return 'REPEAT_START';}
+"|"								        {this.begin('INITIAL'); return 'BAR';}
+":|"						        	{this.begin('INITIAL'); return 'REPEAT_END';}
 
-":"								{this.begin('CTRL'); return 'CTRL_START';}
+":"						           		{this.begin('CTRL'); return 'CTRL_START';}
+"@"                                     {this.begin('CHORD'); return 'CHORD_START';}
 
-{KEY}							{return 'KEY';}
-
-<INITIAL>\s+					/* skip */
-<INITIAL>{COMMENT}				/* skip */
+{KEY}				        			{return 'KEY';}
+<CTRL,CHORD,NOTE,NOTE_DUR>{SPACE}+		{this.begin('NOTE'); return 'M_SEP';}
+<INITIAL>\s+			        		/* skip */
+<INITIAL>{COMMENT}		        		/* skip */
 
 
 /* Control */
 
-<CTRL>{Op}						{return yytext[0];}
-<CTRL>{Op_unary}				{return 'Op_unary';}
-<CTRL>{SPACE}+					{this.begin('NOTE'); return 'M_SEP';}
-<CTRL,NOTE_DUR>{DIGIT}+			{return 'DIGIT';}
-<CTRL>"{"[a-z_]+"}"				{return 'STRING';}
+<CTRL>{Op}					       	    {return yytext[0];}
+<CTRL>{Op_unary}                        {return 'Op_unary';}
+<CTRL>{Op_string}                       {return 'Op_string';}
+<CTRL,NOTE_DUR>{DIGIT}+		        	{return 'DIGIT';}
+<CTRL>"{"[a-z_]+"}"			        	{return 'STRING';}
+
+<CHORD>[i]                              {return 'i';}
 
 
 /* Note */
 
-<NOTE,NOTE_DUR>{SPACE}+			{this.begin('NOTE'); return 'M_SEP';}
-<NOTE>{DIGIT}					{return 'DIGIT';}
-<NOTE>"{"{DIGIT}+"}"			{return 'DIGITS';}
-<NOTE>","						{this.begin('NOTE_DUR'); return ',';}
-<NOTE>[n]						return 'NATURAL'
-<NOTE>[b]						return 'FLAT'
 
-{SIMPLE}						{return yytext;}
-<<EOF>>							{return 'EOF';}
-.								{console.log('Unrecognized token: ', yytext);}
+<NOTE,CHORD>{DIGIT}				        {return 'DIGIT';}
+<NOTE>"{"{DIGIT}+"}"		        	{return 'DIGITS';}
+<NOTE>","					        	{this.begin('NOTE_DUR'); return ',';}
+<NOTE>[n]				        		{return 'NATURAL';}
+<NOTE>[b]				        		{return 'FLAT';}
+
+{SIMPLE}		        				{return yytext;}
+<<EOF>>				        			{return 'EOF';}
+.					        			{console.log('Unrecognized token: ', yytext);}
 
 
 /lex
@@ -196,7 +189,7 @@ C1 :
   {
     $$ = [$1, $2];
   }
-  | 's' STRING
+  | Op_string STRING
   {
     $$ = [$1, $2.substr(1, $2.length-2)];
   }
@@ -229,6 +222,10 @@ C :
 
 Ctrl :
   C
+  {
+    $$ = $1;
+  }
+  | Chord
   {
     $$ = $1;
   }
@@ -287,6 +284,34 @@ Pitches :
   {
     $1.push($2);
     $$ = $1;
+  }
+  ;
+
+Chord :
+  CHORD_START Inverse Pitches
+  {
+    $$ = {};
+    $$.ctrl = 'chord';
+    $$.transpose = $2.transpose;
+    $$.inv = $2.inv;
+    $$.pitch = $3;
+  }
+  ;
+
+Inverse :
+  Inverse 'i'
+  {
+    $1.inv += 1;
+    $$ = $1;
+  }
+  | Inverse P1
+  {
+    $1.transpose += $2;
+    $$ = $1;
+  }
+  |
+  {
+    $$ = {inv: 0, transpose: 0};
   }
   ;
 

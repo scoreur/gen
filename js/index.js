@@ -86,16 +86,30 @@ var appUI = {
 var app = new AppMG(appUI);
 
 
-
 var click_event_list = {
 	'parse': function(){
-        app.parse()
-
+        app.parse();
 		MIDI.Player.loadFile('base64,'+btoa(seqPlayer.raw_midi),function(){
 			$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
 			$.notify('MIDI loaded!', 'success');
 			$('#play_slider').val(''+0);
+			app.renderer.render(app.settings, app.contents);
+			$('li[data-target="#midi_viewer"]').click();
 		});
+
+	},
+	'gen': function(){
+		app.schema = JSON.parse(eds.schema.getValue());
+		var generator = new Generator(app.settings, app.schema);
+		generator.generate();
+		var score = generator.toScoreObj()
+		console.log('to Text')
+		app.contents.melody = score.toText();
+		app.settings = score.getSettings()
+		app.updateEditor();
+		$.notify('Melody generated!', 'success');
+		click_event_list.parse();
+
 	},
 	'eg_load_json':function(){
 		$.ajax('score/sample.json').done(function(res){
@@ -107,6 +121,7 @@ var click_event_list = {
 			app = new AppMG(appUI,obj)
 			app.updateEditor();
 			$.notify('sample JSON loaded!', 'success');
+			click_event_list.parse();
 		});
 
 	},
@@ -172,22 +187,6 @@ var click_event_list = {
 			$.notify('Score Image Saved!', 'success');
 
 		});//default image/png
-	},
-	'gen': function(){
-		app.schema = JSON.parse(eds.schema.getValue());
-        var generator = new Generator(app.settings, app.schema);
-        generator.generate();
-		var score = generator.toScoreObj()
-		console.log('to Text')
-	    app.contents.melody = score.toText();
-		app.settings = score.getSettings()
-	    app.updateEditor();
-		$.notify('Melody generated!', 'success');
-
-	},
-	'render':function(){
-		app.renderer.render(app.settings, app.contents);
-		$('li[data-target="#midi_viewer"]').click();
 	},
 	'console_eval': function(){
 		$('#console_result').html(eval($('#console_panel').val()));

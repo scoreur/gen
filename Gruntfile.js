@@ -42,7 +42,7 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-contrib-jade');
     grunt.loadNpmTasks('grunt-jison');
     //grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.registerTask('default', ['jade:app', 'jison']);
+    grunt.registerTask('default', ['jison']);
     grunt.registerTask('web', ['jade:web', 'concat']);
     grunt.registerTask('app', ['jade:app']);
 

@@ -21,25 +21,24 @@ var MyNewHighlightRules = function() {
             " A B C E E F G" +
             " EQ NE LT LE GT GE NOT AND OR XOR IN LIKE BETWEEN",
         "constant.language": 
-            "TRUE FALSE NULL SPACE",
+            "t i v s k c",
         "support.type": 
-            "n i p ii iii string xstring decfloat16 decfloat34",
+            "n i p ii iii string",
         "keyword.operator":
             "abs sign ceil floor trunc frac acos asin atan cos sin tan" +
-            " abapOperator cosh sinh tanh exp log log10 sqrt" +
-            " strlen xstrlen charlen numofchar dbmaxlen lines" 
+            " cosh sinh tanh exp log log10 sqrt"
     }, "text", true, " ");
 
     // regexp must not have capturing parentheses. Use (?:) instead.
     // regexps are ordered -> the first match is used
    this.$rules = {
         "start" : [ 
-            { token : "text", regex : "<\\!\\[CDATA\\[", next : "cdata"} ,
+            {token : "text", regex : "<\\!\\[CDATA\\[", next : "cdata"} ,
             {token : "string", regex : "`", next  : "string"},
             {token : "string", regex : "'", next  : "qstring"},
             {token : "variable.parameter", regex : /\w+-\w+(?:-\w+)*/},
-            {token : "comment",  regex : /".+$/},
-            {token : "keyword", regex : /:i*[+-]*|[ABCDEFG][#b]?/},
+            {token : "comment",  regex : /%.+$/},
+            {token : "keyword", regex : /@i*[+-]*|[ABCDEFG][#b]?/},
             {token : "keyword.operator", regex: /\W[\-+\%=<>*]\W|\*\*|[~:,\.&$]|->*?|=>/},
             {token : "paren.lparen", regex : "[\\[({]"},
             {token : "paren.rparen", regex : "[\\])}]"},

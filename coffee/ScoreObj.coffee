@@ -31,14 +31,18 @@ class @ScoreObj
     }
 
   setMelody: (melody, parsed)->
-    @tracks[0] = if parsed? && parsed==true then melody else @parseMelody(melody,  MG.scale_class[@scale], @init_ref)
+     if parsed? && parsed==true
+       @tracks[0] = melody
+     else
+       @tracks[0] = @parseMelody(melody, {scale: MG.scale_class[@scale],init_ref: @init_ref})
+
   setTexture: (texture, harmony, parsed)->
     if parsed? && parsed == true
       @harmony = harmony
       @tracks[1] = texture
     else
       @harmony = @parseHarmony(harmony)
-      @tracks[1] = @parseTexture(texture, @harmony)
+      @tracks[1] = @parseMelody(texture, {harmony: @harmony})
 
 
   parse: (options) ->
@@ -49,20 +53,13 @@ class @ScoreObj
       @setTexture(options.texture, options.harmony)
 
 
-  parseMelody: (m, scale, init_ref)->
-    # obj.mode = 'melody'
-    # 1 set up states
+  parseMelody: (m, options)->
     try
       obj = parser.parse(m.join('\n')+'\n')
-      #console.log obj
-      return res
     catch e
       console.log e.message
-    scale ?= MG.scale_class['maj']
-    init_ref ?= 60 # C4
-    ref = init_ref
-
-    ornamental = (pitch)->
+      return
+    ornamental = (pitch, ref, scale)->
       p = if typeof pitch is 'number' then pitch else pitch.original
       if p > scale.length
         console.log 'exceed scale length'
@@ -71,12 +68,49 @@ class @ScoreObj
         # rest
         return 0
       p = ref + scale[p-1]
-      if typeof pitch is 'number'
-        pitch.ornament.forEach (e)->
-          if typeof e == 'number'
-            p += e
+      if typeof pitch isnt   'number'
+          pitch.ornament.forEach (e)->
+            if typeof e == 'number'
+              p += e
       return p
 
+    switch obj.mode
+      when 'melody'
+        {scale, init_ref, harmony} = options
+      when 'harmony'
+        harmony = options.harmony
+    refc = null
+    chorder = (()->
+      c = if harmony?  then _.flatten(harmony, true) else []
+      refi = -1
+      delta = 0
+      bass = (inv)->
+        return (c[refi][1] + c[refi][2][inv]) % 12
+      incr = ()->
+        return delta -= c[++refi][0]
+
+      chord = (inv) ->
+        return MG.inverted(c[refi][2],inv)
+      forward = (d)->
+        delta += d
+
+      process = ()->
+        while refi < c.length && delta >= 0
+          incr()
+
+      return {
+      bass: bass,
+      chord: chord,
+      process: process,
+      forward: forward
+      }
+
+    )()
+    # do something
+    # 1 set up states
+    scale ?= MG.scale_class['maj']
+    init_ref ?= 60 # C4
+    ref = init_ref
     # 2 iterate obj.data
     res = obj.data.map (m)=>
       #console.log m
@@ -95,23 +129,40 @@ class @ScoreObj
                   when 'k' then 1 # set key_sig
                   when 'r' then 1 # set tempo
                   when 'v' then 1 # set volume
+                  when 'o' then 1 # set output instrument
+                  when 'i' then 1 # inverse chord
                   when 'p' then ref += v
+            when 'chord'
+              ref = MG.keyToPitch('C3') # 48
+              chorder.process()
+              bass = chorder.bass(e.inv)
+              chord = chorder.chord(e.inv)
 
+              ref += e.transpose
+              bass += ref
+              refc = e.pitch.map (p)->
+                return ornamental(p,bass,chord)
         else
           # add notes
           pitches = []
           e.pitch.forEach (p)->
+
             if typeof p == 'string'
               # handle barline
+            else if refc?
+              if refc[p-1]?
+                pitches.push(refc[p-1])
             else
-              pitches.push(ornamental(p))
+              pitches.push(ornamental(p, ref, scale))
           #console.log 'add pitch', pitches
           if typeof e.dur == 'number'
             measure.push([e.dur, pitches])
+            chorder.forward(e.dur)
           else
             measure.push([e.dur.original, pitches, true]);
+            chorder.forward(e.dur.original)
       return measure
-    return res  
+    return res
 
   parseHarmony: (measures) ->
     if typeof measures == 'undefined'
@@ -123,61 +174,6 @@ class @ScoreObj
         chord_info = MG.getChords(terms[0],3)
         dur =  if terms.length>=2 then parseInt(terms[1]) else 1
         [dur,chord_info[0],chord_info[1]]
-
-
-
-  parseTexture: (measures, harmony) ->
-    if typeof measures == 'undefined' || typeof harmony == 'undefined'
-      console.log 'empty texture'
-      return
-    c = _.flatten(harmony, true)
-
-    delta = 0
-    refc = []
-    refi = -1
-    res = measures.map (e) ->
-      measure = []
-      arrange = e.trim().split(/\s+/)
-      arrange.forEach (e2) ->
-        if e2[0] == ':'
-          refk = MG.keyToPitch('C3') # 48
-
-          while refi < c.length && delta >= 0
-            delta -= c[++refi][0]
-          inv = /:i*/.exec(e2)[0].length - 1
-          bass = (c[refi][1]+c[refi][2][inv])%12
-          chord = MG.inverted(c[refi][2], inv)
-          inv += 1;
-          while e2[inv] in ['+','-']
-            refk += {'+':12, '-':-12}[e2[inv++]]
-          bass += refk
-          refc = []
-          for j in [inv...e2.length] by 1
-            switch s = e2[j]
-              when '0','1','2','3'
-                refc.push(bass+chord[parseInt(s)])
-              when '+', '-', '#', 'b'
-                refc[refc.length-1] += {
-                  '+': 12, '-': -12, '#': 1, 'b':-1
-                }[s]
-              else console.log('skip unknown config '+s);
-        else
-          tied = false
-          terms = e2.split(',')
-          dur = if terms.length>=2? then parseInt(terms[1]) else 1
-          tmp = []
-          for j in [0...terms[0].length] by 1
-            e3 = terms[0][j]
-            if  e3 == '^'
-              tied = true
-            else if refc[e3]
-              tmp.push(refc[e3])
-            else
-              console.log 'invalid texture ' + e3
-          measure.push(if tied then [dur, tmp, true] else [dur, tmp])
-          delta += dur
-      return measure
-    return res
 
   toText: (m)->
     console.log 'to score text'
