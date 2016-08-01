@@ -3,13 +3,14 @@ parser = @parser ? require('./js/parser.js')
 class @ScoreObj
   constructor: (options, contents) ->
     options ?= {}
-    {@tempo, @time_sig, @key_sig, @ctrl_per_beat, @scale, @volumes} = options
+    {@tempo, @time_sig, @key_sig, @ctrl_per_beat, @scale, @volumes, @instrs} = options
     @tempo ?= 120
     @time_sig ?= [4,4]
     @key_sig ?='C'
     @ctrl_per_beat ?= 4
     @scale ?= 'maj'
     @volumes ?= [110,80]
+    @instrs ?= [1,1]
 
     @init_ref = MG.scaleToPitch(@scale, @key_sig)(4 * MG.scale_class[@scale].length)
     @init_ctrlTicks = (60000.0/@tempo/@ctrl_per_beat) >>>0
@@ -245,13 +246,17 @@ class @ScoreObj
     m.setKeySignature MG.key_sig[@key_sig], 'maj'
     m.setTempo @tempo
     m.setDefaultTempo @tempo
+    m.setInstr(@instrs[0])
+    MIDI.programChange(0,@instrs[0]-1)
 
     if t == null
       m.finish()
       return m
-    vol = @volumes[1]
+
     l = m.addTrack() - 1
-    m.addEvent l, 0, 'programChange', l-1, 0
+    vol = @volumes[l-1]
+    m.addEvent l, 0, 'programChange', l-1, @instrs[l-1]-1
+    MIDI.programChange(l-1,@instrs[l-1]-1)
     t.forEach (e) ->
       m.addNotes l, e[0]*ctrlTicks, e[1], vol
     m.finish()

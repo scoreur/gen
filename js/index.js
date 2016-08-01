@@ -36,27 +36,35 @@ function load_json(file, onsuccess){
 	return true;
 }
 var lame_worker;
+function init_worker(){
+	lame_worker = new Worker('js/lame-worker.js');
+	lame_worker.onmessage = function(res){
+		switch(res.data.type){
+			case 'mp3':
+				$.notify('mp3 encoded!', 'success');
+				lame_worker.pending = false;
+				saveAs(res.data.blob, 'sample.mp3');
+				break;
+			case 'wav':
+				$.notify('wav encoded!', 'success');
+				saveAs(res.data.blob, 'sample.wav');
+				break;
+			case 'percent':
+				onprocess && onprocess(res.data.percent);
+				break;
+			default:
+				console.log('unknown message type: ', res.data.type);
+		}
+	}
+
+}
 function saveMp3(floatData,boot,blockSize,onprocess){
 	if(typeof Worker == 'undefined'){
 		$.notify('Worder not support, use inline encoder may block the UI', 'warning');
 		return; // TODO: add inline worker
 	}else{
 		if(lame_worker == null){
-			lame_worker = new Worker('js/lame-worker.js');
-			lame_worker.onmessage = function(res){
-				switch(res.data.type){
-					case 'mp3':
-					    $.notify('mp3 encoded!', 'success');
-						lame_worker.pending = false;
-					    saveAs(res.data.blob, 'sample.mp3');
-						break;
-					case 'percent':
-						onprocess && onprocess(res.data.percent);
-						break;
-					default:
-						console.log('unknown message type: ', res.data.type);
-				}
-			}
+			init_worker();
 
 		}else if(lame_worker.pending){
 			$.notify('mp3 encoding in process, try later!', 'info');
@@ -67,10 +75,20 @@ function saveMp3(floatData,boot,blockSize,onprocess){
 		return;
 	}
 }
-function testSaveMp3(){
-	var a = MIDI.audioBuffers['0x60'];
-	saveMp3([a.getChannelData(0), a.getChannelData(1)]);
+function saveWav(data){
+	if(typeof Worker == 'undefined'){
+		$.notify('Worder not support, use inline encoder may block the UI', 'warning');
+		return; // TODO: add inline worker
+	}else{
+		if(lame_worker == null){
+			init_worker();
+		}
+		lame_worker.postMessage({type:'raw', data:data});
+		return;
+	}
+
 }
+
 
 
 // store all editors
@@ -160,11 +178,11 @@ var click_event_list = {
 	},
 	'save_wav': function(){
 		var f = MidiFile(MIDI.Player.currentData);
-	    var res = midi2wav(f);
-	    $.notify('wav file generated', 'info');
-	    // do not block, should change to web worker
-		saveAs(wavFile(res), 'sample.wav');
-        $.notify('wav file saved', 'success');
+		setTimeout(function(){
+			var res = midi2wav(f);
+			$.notify('wav file generated', 'info');
+			saveWav(res);
+		});
 
 	},
 	'save_mp3': function(){

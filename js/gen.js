@@ -9,6 +9,7 @@ function dataURLtoBlob(dataurl) {
 var seqPlayer = {
 	channel:0,
 	harmony:[],
+	instrs: [],
 	tracks: [],
 	playing:[],
 	cur_i:[],
@@ -25,7 +26,7 @@ var seqPlayer = {
 
 		var cur = q[nexti];
 		nexti++;
-		var channel = this.channel;
+		var channel = n;
 
 		function loop(){
 			if(cur[0]>0){ // not tied
@@ -121,6 +122,7 @@ var seqPlayer = {
 		var q = this.toQ(obj.tracks[0], ctrlTicks, src.volumes[0]);
 		var t = this.toQ(obj.tracks[1], ctrlTicks, src.volumes[1]);
 		this.tracks = [];
+		this.instrs = obj.instrs;
 		this.tracks.push(q, t);
 		this.playing = [false, false];
 		this.cur_i = [0,0];

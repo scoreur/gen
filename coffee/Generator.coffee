@@ -4,6 +4,7 @@ class @Generator
   constructor: (@settings, @schema) ->
     @settings.key_sig ?= 'C'
     @settings.scale ?= 'maj'
+    @settings.instrs ?= [1,1]
     @keyref = MG.keyToPitch[@settings.key_sig+'4'];
     @scale = MG.scale_class[@settings.scale]
     @seeds = @schema.seeds

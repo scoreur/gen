@@ -526,6 +526,9 @@ simpMidi.prototype.setKeySignature = function(k,m){
 simpMidi.prototype.setTempo = function(t){
 	this.tempo.microsecondsPerBeat = 60000000/t >>> 0;
 }
+simpMidi.prototype.setInstr = function(i){
+	this.instr.programNumber = i-1;
+}
 simpMidi.prototype.addEvent = function(){
 	if(this.tracks.length == 2){
 		this.tracks[1].push(simpEvent(...arguments));

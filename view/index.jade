@@ -39,6 +39,26 @@ html
           .modal-body
             include:marked syntax.md
           .modal-footer
+    #instr.modal.fade(tabindex='-2', role='dialog', aira-hidden='true')
+      .modal-dialog.modl-lg(role='document')
+        .modal-content
+          .modal-header
+            h4.modal-title Instrument Code
+          .modal-body#instr_code
+            #accordion.panel-group
+              each e, i in _instr
+                .panel.panel-default
+                  .panel-heading
+                    h5.panel-title
+                      a(data-toggle='collapse', data-parent='#accordion', href='#collapse_'+ i.replace(' ', '-')) #{i}
+                  panel-collapse.collapse(id='collapse_'+ i.replace(' ', '-'))
+                    .panel-body
+                      ul
+                        each item in e
+                          li #{item}
+
+          .modal.footer
+
     // Ctrl
     #ctrl.modal.fade(tabindex='-2', role='dialog', aria-hidden='true')
       .modal-dialog.modal-sm(role='')
