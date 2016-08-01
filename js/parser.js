@@ -72,12 +72,12 @@
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,15],$V1=[1,16],$V2=[1,13],$V3=[1,14],$V4=[1,4,10,11,19,20],$V5=[1,21],$V6=[1,22],$V7=[1,23],$V8=[4,13,14,15],$V9=[1,33],$Va=[1,34],$Vb=[1,35],$Vc=[1,36],$Vd=[1,37],$Ve=[4,10,11,13,14,15,39],$Vf=[4,13,14,15,22,24,26,28,32,33,34,35,36],$Vg=[4,10,11,13,14,15,32,33,34,35,36,39],$Vh=[4,10,11,13,14,15,22,23,24,26,28,32,33,34,35,36,39,40],$Vi=[4,10,11,13,14,15,22,24,26,28,32,33,34,35,36,39];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,17],$V1=[1,18],$V2=[1,15],$V3=[1,16],$V4=[1,13],$V5=[1,4,10,11,19,20,39],$V6=[1,23],$V7=[1,24],$V8=[1,25],$V9=[4,13,14,15],$Va=[1,35],$Vb=[1,36],$Vc=[1,37],$Vd=[1,38],$Ve=[1,39],$Vf=[4,10,11,13,14,15,43],$Vg=[4,13,14,15,22,24,26,28,33,34,35,36,37],$Vh=[10,11,33,34,35,36,37,41],$Vi=[4,10,11,13,14,15,33,34,35,36,37,43],$Vj=[4,10,11,13,14,15,22,23,24,26,28,33,34,35,36,37,43,44],$Vk=[4,10,11,13,14,15,22,24,26,28,33,34,35,36,37,41,43];
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"e":3,"EOF":4,"M":5,"Measure":6,"melody":7,"harmony":8,"NUMBER":9,"DIGIT":10,"DIGITS":11,"M_end":12,"M_SEP":13,"BAR":14,"REPEAT_END":15,"Note":16,"Ctrl":17,"C0":18,"CTRL_START":19,"REPEAT_START":20,"C1":21,"t":22,"/":23,"k":24,"KEY":25,"s":26,"STRING":27,"Op_unary":28,"P1":29,"C":30,"P":31,"#":32,"FLAT":33,"+":34,"-":35,"NATURAL":36,"Pitches":37,"DUR":38,",":39,"^":40,"$accept":0,"$end":1},
-terminals_: {2:"error",4:"EOF",7:"melody",8:"harmony",10:"DIGIT",11:"DIGITS",13:"M_SEP",14:"BAR",15:"REPEAT_END",19:"CTRL_START",20:"REPEAT_START",22:"t",23:"/",24:"k",25:"KEY",26:"s",27:"STRING",28:"Op_unary",32:"#",33:"FLAT",34:"+",35:"-",36:"NATURAL",39:",",40:"^"},
-productions_: [0,[3,2],[3,3],[3,2],[3,1],[3,1],[3,1],[9,1],[9,1],[6,2],[6,3],[12,1],[12,1],[5,1],[5,1],[5,3],[5,3],[18,1],[18,1],[21,4],[21,2],[21,2],[21,2],[21,1],[30,1],[30,2],[17,1],[31,1],[31,2],[29,1],[29,1],[29,1],[29,1],[29,1],[37,1],[37,2],[16,2],[38,2],[38,3],[38,0]],
+symbols_: {"error":2,"e":3,"EOF":4,"M":5,"Measure":6,"melody":7,"harmony":8,"NUMBER":9,"DIGIT":10,"DIGITS":11,"M_end":12,"M_SEP":13,"BAR":14,"REPEAT_END":15,"Note":16,"Ctrl":17,"C0":18,"CTRL_START":19,"REPEAT_START":20,"C1":21,"t":22,"/":23,"k":24,"KEY":25,"Op_string":26,"STRING":27,"Op_unary":28,"P1":29,"C":30,"Chord":31,"P":32,"#":33,"FLAT":34,"+":35,"-":36,"NATURAL":37,"Pitches":38,"CHORD_START":39,"Inverse":40,"i":41,"DUR":42,",":43,"^":44,"$accept":0,"$end":1},
+terminals_: {2:"error",4:"EOF",7:"melody",8:"harmony",10:"DIGIT",11:"DIGITS",13:"M_SEP",14:"BAR",15:"REPEAT_END",19:"CTRL_START",20:"REPEAT_START",22:"t",23:"/",24:"k",25:"KEY",26:"Op_string",27:"STRING",28:"Op_unary",33:"#",34:"FLAT",35:"+",36:"-",37:"NATURAL",39:"CHORD_START",41:"i",43:",",44:"^"},
+productions_: [0,[3,2],[3,3],[3,2],[3,1],[3,1],[3,1],[9,1],[9,1],[6,2],[6,3],[12,1],[12,1],[5,1],[5,1],[5,3],[5,3],[18,1],[18,1],[21,4],[21,2],[21,2],[21,2],[21,1],[30,1],[30,2],[17,1],[17,1],[32,1],[32,2],[29,1],[29,1],[29,1],[29,1],[29,1],[38,1],[38,2],[31,3],[40,2],[40,2],[40,0],[16,2],[42,2],[42,3],[42,0]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -137,7 +137,7 @@ case 8:
     console.log('braket number', this.$);
   
 break;
-case 9: case 35:
+case 9: case 36:
 
     $$[$0-1].push($$[$0]);
     this.$ = $$[$0-1];
@@ -163,7 +163,7 @@ case 12:
     };
   
 break;
-case 13: case 14: case 34:
+case 13: case 14: case 35:
 
     this.$ = [$$[$0]];
   
@@ -218,12 +218,12 @@ case 25:
     this.$ = $$[$0-1];
   
 break;
-case 26: case 27:
+case 26: case 27: case 28:
 
     this.$ = $$[$0];
   
 break;
-case 28:
+case 29:
 
     if(typeof $$[$0-1] == 'number'){
       $$[$0-1] = {
@@ -236,32 +236,58 @@ case 28:
     this.$ = $$[$0-1]
   
 break;
-case 29:
+case 30:
 
     this.$ = 1;
   
 break;
-case 30:
+case 31:
 
     this.$ = -1;
   
 break;
-case 31:
+case 32:
 
     this.$ = 12;
   
 break;
-case 32:
+case 33:
 
     this.$ = -12;
   
 break;
-case 33:
+case 34:
 
     this.$ = 0;
   
 break;
-case 36:
+case 37:
+
+    this.$ = {};
+    this.$.ctrl = 'chord';
+    this.$.transpose = $$[$0-1].transpose;
+    this.$.inv = $$[$0-1].inv;
+    this.$.pitch = $$[$0];
+  
+break;
+case 38:
+
+    $$[$0-1].inv += 1;
+    this.$ = $$[$0-1];
+  
+break;
+case 39:
+
+    $$[$0-1].transpose += $$[$0];
+    this.$ = $$[$0-1];
+  
+break;
+case 40:
+
+    this.$ = {inv: 0, transpose: 0};
+  
+break;
+case 41:
 
     this.$ = {
       pitch:$$[$0-1],
@@ -269,13 +295,13 @@ case 36:
       };
   
 break;
-case 37:
+case 42:
 
     this.$ = $$[$0];
 
   
 break;
-case 38:
+case 43:
 
     this.$ = {
       original: $$[$0-1],
@@ -283,12 +309,12 @@ case 38:
     	}
   
 break;
-case 39:
+case 44:
  this.$ = 1
 break;
 }
 },
-table: [{3:1,5:5,6:2,7:[1,3],8:[1,4],9:12,10:$V0,11:$V1,16:6,17:7,18:11,19:$V2,20:$V3,30:9,31:10,37:8},{1:[3],4:[1,17],5:18,6:19,9:12,10:$V0,11:$V1,16:6,17:7,18:11,19:$V2,20:$V3,30:9,31:10,37:8},o($V4,[2,4]),o($V4,[2,5]),o($V4,[2,6]),{12:20,13:$V5,14:$V6,15:$V7},o($V8,[2,13]),o($V8,[2,14]),o($V8,[2,39],{9:12,38:24,31:25,10:$V0,11:$V1,39:[1,26]}),o($V8,[2,26],{21:27,29:32,22:[1,28],24:[1,29],26:[1,30],28:[1,31],32:$V9,33:$Va,34:$Vb,35:$Vc,36:$Vd}),o($Ve,[2,34],{29:38,32:$V9,33:$Va,34:$Vb,35:$Vc,36:$Vd}),o($Vf,[2,24]),o($Vg,[2,27]),o($Vf,[2,17]),o($Vf,[2,18]),o($Vh,[2,7]),o($Vh,[2,8]),o($V4,[2,1]),{4:[1,39],12:20,13:$V5,14:$V6,15:$V7},o($V4,[2,3]),o($V4,[2,9]),{9:12,10:$V0,11:$V1,12:40,14:$V6,15:$V7,16:41,17:42,18:11,19:$V2,20:$V3,30:9,31:10,37:8},o($V4,[2,11]),o($V4,[2,12]),o($V8,[2,36]),o($Ve,[2,35],{29:38,32:$V9,33:$Va,34:$Vb,35:$Vc,36:$Vd}),{9:43,10:$V0,11:$V1},o($Vf,[2,25]),{9:44,10:$V0,11:$V1},{25:[1,45]},{27:[1,46]},{9:47,10:$V0,11:$V1},o($Vf,[2,23]),o($Vi,[2,29]),o($Vi,[2,30]),o($Vi,[2,31]),o($Vi,[2,32]),o($Vi,[2,33]),o($Vg,[2,28]),o($V4,[2,2]),o($V4,[2,10]),o($V8,[2,15]),o($V8,[2,16]),o($V8,[2,37],{40:[1,48]}),{23:[1,49]},o($Vf,[2,20]),o($Vf,[2,21]),o($Vf,[2,22]),o($V8,[2,38]),{9:50,10:$V0,11:$V1},o($Vf,[2,19])],
+table: [{3:1,5:5,6:2,7:[1,3],8:[1,4],9:14,10:$V0,11:$V1,16:6,17:7,18:12,19:$V2,20:$V3,30:9,31:10,32:11,38:8,39:$V4},{1:[3],4:[1,19],5:20,6:21,9:14,10:$V0,11:$V1,16:6,17:7,18:12,19:$V2,20:$V3,30:9,31:10,32:11,38:8,39:$V4},o($V5,[2,4]),o($V5,[2,5]),o($V5,[2,6]),{12:22,13:$V6,14:$V7,15:$V8},o($V9,[2,13]),o($V9,[2,14]),o($V9,[2,44],{9:14,42:26,32:27,10:$V0,11:$V1,43:[1,28]}),o($V9,[2,26],{21:29,29:34,22:[1,30],24:[1,31],26:[1,32],28:[1,33],33:$Va,34:$Vb,35:$Vc,36:$Vd,37:$Ve}),o($V9,[2,27]),o($Vf,[2,35],{29:40,33:$Va,34:$Vb,35:$Vc,36:$Vd,37:$Ve}),o($Vg,[2,24]),o($Vh,[2,40],{40:41}),o($Vi,[2,28]),o($Vg,[2,17]),o($Vg,[2,18]),o($Vj,[2,7]),o($Vj,[2,8]),o($V5,[2,1]),{4:[1,42],12:22,13:$V6,14:$V7,15:$V8},o($V5,[2,3]),o($V5,[2,9]),{9:14,10:$V0,11:$V1,12:43,14:$V7,15:$V8,16:44,17:45,18:12,19:$V2,20:$V3,30:9,31:10,32:11,38:8,39:$V4},o($V5,[2,11]),o($V5,[2,12]),o($V9,[2,41]),o($Vf,[2,36],{29:40,33:$Va,34:$Vb,35:$Vc,36:$Vd,37:$Ve}),{9:46,10:$V0,11:$V1},o($Vg,[2,25]),{9:47,10:$V0,11:$V1},{25:[1,48]},{27:[1,49]},{9:50,10:$V0,11:$V1},o($Vg,[2,23]),o($Vk,[2,30]),o($Vk,[2,31]),o($Vk,[2,32]),o($Vk,[2,33]),o($Vk,[2,34]),o($Vi,[2,29]),{9:14,10:$V0,11:$V1,29:53,32:11,33:$Va,34:$Vb,35:$Vc,36:$Vd,37:$Ve,38:51,41:[1,52]},o($V5,[2,2]),o($V5,[2,10]),o($V9,[2,15]),o($V9,[2,16]),o($V9,[2,42],{44:[1,54]}),{23:[1,55]},o($Vg,[2,20]),o($Vg,[2,21]),o($Vg,[2,22]),o($V9,[2,37],{9:14,32:27,10:$V0,11:$V1}),o($Vh,[2,38]),o($Vh,[2,39]),o($V9,[2,43]),{9:56,10:$V0,11:$V1},o($Vg,[2,19])],
 defaultActions: {},
 parseError: function parseError(str, hash) {
     if (hash.recoverable) {
@@ -441,17 +467,6 @@ parse: function parse(input) {
     return true;
 }};
 
-  if(typeof MG == 'undefined' && typeof module !== 'undefined' && typeof require !== 'undefined'){
-    MG = require("../coffee/musical");
-    console.log('MG loaded');
-  }
-  var MG = MG || {};
-  var scope = {
-    key_sig: 'C',
-    time_sig: [4,4],
-    tempo: 120,
-    ctrl_per_beat: 4
-  }
 	
 /* generated by jison-lex 0.3.4 */
 var lexer = (function(){
@@ -795,44 +810,48 @@ case 5:this.begin('INITIAL'); return 15;
 break;
 case 6:this.begin('CTRL'); return 19;
 break;
-case 7:return 25;
+case 7:this.begin('CHORD'); return 39;
 break;
-case 8:/* skip */
+case 8:return 25;
 break;
-case 9:/* skip */
+case 9:this.begin('NOTE'); return 13;
 break;
-case 10:return yy_.yytext[0];
+case 10:/* skip */
 break;
-case 11:return 28;
+case 11:/* skip */
 break;
-case 12:this.begin('NOTE'); return 13;
+case 12:return yy_.yytext[0];
 break;
-case 13:return 10;
+case 13:return 28;
 break;
-case 14:return 27;
+case 14:return 26;
 break;
-case 15:this.begin('NOTE'); return 13;
+case 15:return 10;
 break;
-case 16:return 10;
+case 16:return 27;
 break;
-case 17:return 11;
+case 17:return 41;
 break;
-case 18:this.begin('NOTE_DUR'); return 39;
+case 18:return 10;
 break;
-case 19:return 36
+case 19:return 11;
 break;
-case 20:return 33
+case 20:this.begin('NOTE_DUR'); return 43;
 break;
-case 21:return yy_.yytext;
+case 21:return 37;
 break;
-case 22:return 4;
+case 22:return 34;
 break;
-case 23:console.log('Unrecognized token: ', yy_.yytext);
+case 23:return yy_.yytext;
+break;
+case 24:return 4;
+break;
+case 25:console.log('Unrecognized token: ', yy_.yytext);
 break;
 }
 },
-rules: [/^(?:((melody|harmony)))/,/^(?:(([0-9]))+)/,/^(?:((\r|\n|\r\n)))/,/^(?:\|:)/,/^(?:\|)/,/^(?::\|)/,/^(?::)/,/^(?:(([A-GR][#b]{0,2})))/,/^(?:\s+)/,/^(?:((%[^\r\n]*((\r|\n|\r\n)))))/,/^(?:((key_sig|time_sig|scale|[k|t|s])))/,/^(?:((rate|volume|ctrls|[r|c|v])))/,/^(?:(([ |\t|\f|\v]))+)/,/^(?:(([0-9]))+)/,/^(?:\{[a-z_]+\})/,/^(?:(([ |\t|\f|\v]))+)/,/^(?:(([0-9])))/,/^(?:\{(([0-9]))+\})/,/^(?:,)/,/^(?:[n])/,/^(?:[b])/,/^(?:((,|;|\{|\}|\+|-|#|\/|\^)))/,/^(?:$)/,/^(?:.)/],
-conditions: {"CTRL":{"rules":[2,3,4,5,6,7,10,11,12,13,14,21,22,23],"inclusive":true},"NOTE":{"rules":[2,3,4,5,6,7,15,16,17,18,19,20,21,22,23],"inclusive":true},"NOTE_DUR":{"rules":[2,3,4,5,6,7,13,15,21,22,23],"inclusive":true},"INITIAL":{"rules":[0,1,3,4,5,6,7,8,9,21,22,23],"inclusive":true}}
+rules: [/^(?:((melody|harmony)))/,/^(?:(([0-9]))+)/,/^(?:((\r|\n|\r\n)))/,/^(?:\|:)/,/^(?:\|)/,/^(?::\|)/,/^(?::)/,/^(?:@)/,/^(?:(([A-GR][#b]{0,2})))/,/^(?:(([ |\t|\f|\v]))+)/,/^(?:\s+)/,/^(?:((%[^\r\n]*((\r|\n|\r\n)))))/,/^(?:((key_sig|time_sig|instrument|[k|t|i])))/,/^(?:((rate|volume|ctrls|[r|c|v])))/,/^(?:((out|scale|[o|s])))/,/^(?:(([0-9]))+)/,/^(?:\{[a-z_]+\})/,/^(?:[i])/,/^(?:(([0-9])))/,/^(?:\{(([0-9]))+\})/,/^(?:,)/,/^(?:[n])/,/^(?:[b])/,/^(?:((,|;|\{|\}|\+|-|#|\/|\^)))/,/^(?:$)/,/^(?:.)/],
+conditions: {"CTRL":{"rules":[2,3,4,5,6,7,8,9,12,13,14,15,16,23,24,25],"inclusive":true},"NOTE":{"rules":[2,3,4,5,6,7,8,9,18,19,20,21,22,23,24,25],"inclusive":true},"NOTE_DUR":{"rules":[2,3,4,5,6,7,8,9,15,23,24,25],"inclusive":true},"CHORD":{"rules":[3,4,5,6,7,8,9,17,18,23,24,25],"inclusive":true},"INITIAL":{"rules":[0,1,3,4,5,6,7,8,10,11,23,24,25],"inclusive":true}}
 });
 return lexer;
 })();
