@@ -53,6 +53,8 @@ MODE            =	("melody"|"harmony")
 <NOTE>","					        	{this.begin('NOTE_DUR'); return ',';}
 <NOTE>[n]				        		{return 'NATURAL';}
 <NOTE>[b]				        		{return 'FLAT';}
+<NOTE>"~!"                              {return 'TRILL_DOWN';}
+<NOTE>"~"                               {return 'TRILL_UP';}
 
 {SIMPLE}		        				{return yytext;}
 <<EOF>>				        			{return 'EOF';}
@@ -273,6 +275,14 @@ P1 :
   {
     $$ = 0;
   }
+  | TRILL_UP
+  {
+    $$ = 'trill_up'
+  }
+  | TRILL_DOWN
+  {
+    $$ = 'trill_down'
+  }
   ;  
 
 Pitches :
@@ -306,7 +316,12 @@ Inverse :
   }
   | Inverse P1
   {
-    $1.transpose += $2;
+    if(typeof $2 == 'number'){
+      $1.transpose += $2;
+    }else{
+      // other ornament
+    }
+
     $$ = $1;
   }
   |

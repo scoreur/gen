@@ -69,7 +69,7 @@ class @ScoreObj
         # rest
         return 0
       p = ref + scale[p-1]
-      if typeof pitch isnt   'number'
+      if typeof pitch isnt  'number'
           pitch.ornament.forEach (e)->
             if typeof e == 'number'
               p += e
