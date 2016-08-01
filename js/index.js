@@ -254,7 +254,6 @@ var mds = new ScoreRenderer('midi_score', undefined,  'midi_pointer');
 var appUI = {
 	editor: eds,
 	renderer: mds,
-	player: seqPlayer,
 	playbtns:[$('#play_melody>span.glyphicon'), $('#play_harmony>span.glyphicon')]
 };
 
@@ -264,7 +263,7 @@ var app = new AppMG(appUI);
 var click_event_list = {
 	'parse': function(){
         app.parse();
-		MIDI.Player.loadFile('base64,'+btoa(seqPlayer.raw_midi),function(){
+		MIDI.Player.loadFile('base64,'+btoa(app.player.raw_midi),function(){
 			$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
 			$.notify('MIDI loaded!', 'success');
 			$('#play_slider').val(''+0);
@@ -476,9 +475,9 @@ function registerEvents(){
 	for(var id in file_open_handlers){
 		openFor(id, file_open_handlers[id]);
 	}
-	seqPlayer.onend = function(n){
-		var i = seqPlayer.cur_i[n];
-		if(i>0 && i<seqPlayer.tracks[n].length)
+	app.player.onend = function(n){
+		var i = app.player.cur_i[n];
+		if(i>0 && i<app.player.tracks[n].length)
 		  return;
 		switch(n){
 			case 0:
