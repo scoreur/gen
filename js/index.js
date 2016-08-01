@@ -99,6 +99,30 @@ var recorder = (function(){
 	}
 })();
 
+var cuer = (function(){
+	var ele;
+	var act;
+	function testFunc(e){
+		console.log(e.key);
+	}
+	function bind(id, f){
+		ele = $(id);
+		act = f || testFunc;
+		ele.on('keydown',act);
+	}
+	function unbind(){
+		if(ele == null){
+			return;
+		}
+		ele.off('keydown', act);
+		ele = null;
+		act = null;
+	}
+	return {
+		bind: bind,
+		unbind: unbind
+	};
+})();
 function init_worker(){
 	lame_worker = new Worker('js/lame-worker.js');
 	lame_worker.onmessage = function(res){
