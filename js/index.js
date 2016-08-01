@@ -123,6 +123,72 @@ var cuer = (function(){
 		unbind: unbind
 	};
 })();
+
+var tapper = (function(dur){
+	var rate = 1;
+	var cur = 0;
+	var ref = null;
+	var buf = null;
+	var dur = dur || 1000;
+	var offset = 0;
+	var cue = function(){
+		if(ref == null){
+			return;
+		}
+		buf.push((Date.now() - ref)/dur);
+		var adjust =  (buf[buf.length - 1] - cur) % 1.0 + 1;
+		if(adjust < 0.5){
+			// should be slower
+			offset = Math.floor(adjust * dur / 2);
+		}else{
+			// should be faster
+			offset = -Math.floor(( 1 - adjust) * dur / 2);
+		}
+		console.log('offset', adjust);
+	};
+	function loop(){
+		console.log('current number ', cur++);
+		MIDI.noteOn(0, 60 + cur % 12, 100);
+
+		ref = Date.now();
+		setTimeout(function(){
+			if(ref == null){
+				MIDI.noteOff(0, 60 + cur % 12);
+			}else{
+				MIDI.noteOff(0, 60 + cur % 12);
+				loop();
+			}
+		}, dur + offset);
+		offset = Math.floor(offset / 4);
+	}
+	function start(){
+		if(ref != null){
+			return;
+		}
+		ref = Date.now();
+		buf = [];
+		cur = 0;
+		cuer.bind('body', cue);
+		setTimeout(loop, 0);
+	}
+	function stop(){
+		if(ref == null){
+			return null;
+		}else{
+			ref = null;
+			var ret = buf.slice();
+			console.log(ret);
+			buf = null;
+			cuer.unbind();
+			return ret;
+		}
+	}
+	return {
+		start: start,
+		stop: stop
+	}
+})();
+
 function init_worker(){
 	lame_worker = new Worker('js/lame-worker.js');
 	lame_worker.onmessage = function(res){

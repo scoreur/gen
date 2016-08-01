@@ -27,6 +27,7 @@ var seqPlayer = {
 		var cur = q[nexti];
 		nexti++;
 		var channel = n;
+		var rate = 1;
 
 		function loop(){
 			if(cur[0]>0){ // not tied
@@ -37,6 +38,8 @@ var seqPlayer = {
 					}
 				});
 			}
+			var dur = cur[0]>=0? cur[0]: -cur[0];
+			dur *= rate;
         	setTimeout(function(){
 				var notes = typeof cur[1] == 'number'? [cur[1]] : cur[1];
         		if(nexti < 0){
@@ -73,7 +76,7 @@ var seqPlayer = {
         		    //log('next',q[nexti]);
         		    loop();
         	    }
-        	},cur[0]>=0? cur[0]: -cur[0]);
+        	},dur);
 				
 
 	    }
@@ -136,7 +139,7 @@ var seqPlayer = {
 		var bf = new Uint8Array(this.raw_midi.split("").map(function(e){return e.charCodeAt(0);}));
 		saveAs(new File([bf], 'sample.mid', {type:"audio/midi"}));
 	}
-}
+};
 
 
 
