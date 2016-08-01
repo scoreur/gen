@@ -1,3 +1,8 @@
+var dataBuf = [];
+
+function rms(real, img){
+    return Math.sqrt(real*real+img*img);
+}
 onmessage = function(e){
     switch(e.data.type){
         case 'wav':
@@ -11,6 +16,26 @@ onmessage = function(e){
             // to wav
             var blob = wavFile(e.data.data);
             postMessage({type:'wav', blob:blob});
+            break;
+        case 'record_start':
+            if(typeof transform == 'undefined'){
+                importScripts('lib/fft.js');
+            }
+            // init
+            break;
+        case 'record_end':
+            // postMessage
+            break;
+        case 'record_process':
+            var reals = new Float32Array(e.data.floatData);
+            var imgs = new Float32Array(e.data.floatData.length);
+            transform(reals, imgs);//transform e.data.floatData
+            var freq = new Float32Array(e.data.floatData.length/2);
+            for(var i=0;i<freq.length;++i){
+                freq[i] = rms(reals[i], imgs[i]);
+            }
+            postMessage({type:'freq', freq:freq});
+
             break;
         default:
             // not recognize

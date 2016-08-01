@@ -36,6 +36,69 @@ function load_json(file, onsuccess){
 	return true;
 }
 var lame_worker;
+
+var recorder = (function(){
+	navigator.getUserMedia = navigator.getUserMedia ||
+			navigator.webkitGetUserMedia ||
+			navigator.mozGetUserMedia ||
+			navigator.msGetUserMedia;
+	var context = new AudioContext();
+	var mic, processor;
+	var dataBuf = [];
+	function begin(stream){
+		mic = context.createMediaStreamSource(stream);
+		processor = context.createScriptProcessor(16384, 1, 1);
+		processor.onaudioprocess = function(e){
+			var arr = e.inputBuffer.getChannelData(0);
+			lame_worker.postMessage({type:'record_process', floatData:arr});
+			console.log('recording', e.inputBuffer.sampleRate, arr.length);
+			dataBuf = dataBuf.concat(arr);
+
+		};
+		mic.connect(processor);
+		processor.connect(context.destination);
+		return function stopRecord(){
+			return dataBuf;
+		}
+	}
+
+
+	function start(){
+
+		if(typeof lame_worker == 'undefined'){
+			init_worker();
+		}
+		lame_worker.postMessage({type:'record_start'});
+		navigator.getUserMedia({audio: true}, function (stream) {
+			// Begin recording and get a function that stops the recording.
+			var stopRecording = begin(stream);
+			recorder.startTime = Date.now();
+
+		}, function(err){
+			console.log(err);
+		});
+	}
+	function stop(){
+		if(typeof lame_worker == 'undefined'){
+			return;
+		}
+		lame_worker.postMessage({type:'record_end'});
+		if (processor && mic) {
+			// Clean up the Web Audio API resources.
+			mic.disconnect();
+			processor.disconnect();
+			processor.onaudioprocess = null;
+			// Return the buffers array. Note that there may be more buffers pending here.
+			return dataBuf;
+		}
+
+	}
+	return {
+		start: start,
+		stop:stop
+	}
+})();
+
 function init_worker(){
 	lame_worker = new Worker('js/lame-worker.js');
 	lame_worker.onmessage = function(res){
@@ -51,6 +114,9 @@ function init_worker(){
 				break;
 			case 'percent':
 				onprocess && onprocess(res.data.percent);
+				break;
+			case 'freq':
+				console.log(res.data.freq);
 				break;
 			default:
 				console.log('unknown message type: ', res.data.type);
@@ -88,6 +154,7 @@ function saveWav(data){
 	}
 
 }
+
 
 
 
