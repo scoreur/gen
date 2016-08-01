@@ -343,7 +343,8 @@
       scale: 'maj',
       ctrl_per_beat: 2,
       incomplete_measure: true,
-      volumes: [110, 80]
+      volumes: [110, 80],
+      instrs: [1, 1]
     },
     contents: {
       melody: ':+ 3,2 1,2/3,8^/3,2 2 1 2 3 1,2/:- 6,4 3,4^/3,4 :+ 3,2 1,2/2 2,7^/2,2 1 6-,1 1 6-,1 1,2/:- 7,8^/7,4 0 :+ 3,2 1/3 3,2 3,1^ 3,4^/3,2 2 1 2 3 1,2/:- 6,4 3,4^/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6,8^/6,4 :+ 3,2 1,2'.split('/'),
@@ -1474,7 +1475,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   this.Generator = (function() {
     function Generator(settings, schema) {
-      var base, base1;
+      var base, base1, base2;
       this.settings = settings;
       this.schema = schema;
       if ((base = this.settings).key_sig == null) {
@@ -1482,6 +1483,9 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
       if ((base1 = this.settings).scale == null) {
         base1.scale = 'maj';
+      }
+      if ((base2 = this.settings).instrs == null) {
+        base2.instrs = [1, 1];
       }
       this.keyref = MG.keyToPitch[this.settings.key_sig + '4'];
       this.scale = MG.scale_class[this.settings.scale];
@@ -1869,7 +1873,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       if (options == null) {
         options = {};
       }
-      this.tempo = options.tempo, this.time_sig = options.time_sig, this.key_sig = options.key_sig, this.ctrl_per_beat = options.ctrl_per_beat, this.scale = options.scale, this.volumes = options.volumes;
+      this.tempo = options.tempo, this.time_sig = options.time_sig, this.key_sig = options.key_sig, this.ctrl_per_beat = options.ctrl_per_beat, this.scale = options.scale, this.volumes = options.volumes, this.instrs = options.instrs;
       if (this.tempo == null) {
         this.tempo = 120;
       }
@@ -1887,6 +1891,9 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
       if (this.volumes == null) {
         this.volumes = [110, 80];
+      }
+      if (this.instrs == null) {
+        this.instrs = [1, 1];
       }
       this.init_ref = MG.scaleToPitch(this.scale, this.key_sig)(4 * MG.scale_class[this.scale].length);
       this.init_ctrlTicks = (60000.0 / this.tempo / this.ctrl_per_beat) >>> 0;
@@ -2210,13 +2217,16 @@ if (typeof module !== 'undefined' && require.main === module) {
       m.setKeySignature(MG.key_sig[this.key_sig], 'maj');
       m.setTempo(this.tempo);
       m.setDefaultTempo(this.tempo);
+      m.setInstr(this.instrs[0]);
+      MIDI.programChange(0, this.instrs[0] - 1);
       if (t === null) {
         m.finish();
         return m;
       }
-      vol = this.volumes[1];
       l = m.addTrack() - 1;
-      m.addEvent(l, 0, 'programChange', l - 1, 0);
+      vol = this.volumes[l - 1];
+      m.addEvent(l, 0, 'programChange', l - 1, this.instrs[l - 1] - 1);
+      MIDI.programChange(l - 1, this.instrs[l - 1] - 1);
       t.forEach(function(e) {
         return m.addNotes(l, e[0] * ctrlTicks, e[1], vol);
       });
@@ -2469,6 +2479,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 var seqPlayer = {
 	channel:0,
 	harmony:[],
+	instrs: [],
 	tracks: [],
 	playing:[],
 	cur_i:[],
@@ -2485,7 +2496,7 @@ var seqPlayer = {
 
 		var cur = q[nexti];
 		nexti++;
-		var channel = this.channel;
+		var channel = n;
 
 		function loop(){
 			if(cur[0]>0){ // not tied
@@ -2581,6 +2592,7 @@ var seqPlayer = {
 		var q = this.toQ(obj.tracks[0], ctrlTicks, src.volumes[0]);
 		var t = this.toQ(obj.tracks[1], ctrlTicks, src.volumes[1]);
 		this.tracks = [];
+		this.instrs = obj.instrs;
 		this.tracks.push(q, t);
 		this.playing = [false, false];
 		this.cur_i = [0,0];

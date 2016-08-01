@@ -178,6 +178,7 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><a data-toggle="modal" data-target="#tutorial" href="#tutorial">Tutorial</a></li>
+            <li><a data-toggle="modal" data-target="#instr" href="#instr">Instrument</a></li>
             <li><a id="win_btn">New Window</a></li>
           </ul>
         </div>
@@ -211,6 +212,324 @@ Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord
 
           </div>
           <div class="modal-footer"></div>
+        </div>
+      </div>
+    </div>
+    <div id="instr" tabindex="-2" role="dialog" aira-hidden="true" class="modal fade">
+      <div role="document" class="modal-dialog modl-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Instrument Code</h4>
+          </div>
+          <div id="instr_code" class="modal-body">
+            <div id="accordion" class="panel-group">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Piano">Piano</a></h5>
+                </div>
+                <panel-collapse id="collapse_Piano" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>1 Acoustic Grand Piano</li>
+                      <li>2 Bright Acoustic Piano</li>
+                      <li>3 Electric Grand Piano</li>
+                      <li>4 Honky-tonk Piano</li>
+                      <li>5 Electric Piano 1</li>
+                      <li>6 Electric Piano 2</li>
+                      <li>7 Harpsichord</li>
+                      <li>8 Clavinet</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Chromatic-Percussion">Chromatic Percussion</a></h5>
+                </div>
+                <panel-collapse id="collapse_Chromatic-Percussion" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>9 Celesta</li>
+                      <li>10 Glockenspiel</li>
+                      <li>11 Music Box</li>
+                      <li>12 Vibraphone</li>
+                      <li>13 Marimba</li>
+                      <li>14 Xylophone</li>
+                      <li>15 Tubular Bells</li>
+                      <li>16 Dulcimer</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Organ">Organ</a></h5>
+                </div>
+                <panel-collapse id="collapse_Organ" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>17 Drawbar Organ</li>
+                      <li>18 Percussive Organ</li>
+                      <li>19 Rock Organ</li>
+                      <li>20 Church Organ</li>
+                      <li>21 Reed Organ</li>
+                      <li>22 Accordion</li>
+                      <li>23 Harmonica</li>
+                      <li>24 Tango Accordion</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Guitar">Guitar</a></h5>
+                </div>
+                <panel-collapse id="collapse_Guitar" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>25 Acoustic Guitar (nylon)</li>
+                      <li>26 Acoustic Guitar (steel)</li>
+                      <li>27 Electric Guitar (jazz)</li>
+                      <li>28 Electric Guitar (clean)</li>
+                      <li>29 Electric Guitar (muted)</li>
+                      <li>30 Overdriven Guitar</li>
+                      <li>31 Distortion Guitar</li>
+                      <li>32 Guitar Harmonics</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Bass">Bass</a></h5>
+                </div>
+                <panel-collapse id="collapse_Bass" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>33 Acoustic Bass</li>
+                      <li>34 Electric Bass (finger)</li>
+                      <li>35 Electric Bass (pick)</li>
+                      <li>36 Fretless Bass</li>
+                      <li>37 Slap Bass 1</li>
+                      <li>38 Slap Bass 2</li>
+                      <li>39 Synth Bass 1</li>
+                      <li>40 Synth Bass 2</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Strings">Strings</a></h5>
+                </div>
+                <panel-collapse id="collapse_Strings" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>41 Violin</li>
+                      <li>42 Viola</li>
+                      <li>43 Cello</li>
+                      <li>44 Contrabass</li>
+                      <li>45 Tremolo Strings</li>
+                      <li>46 Pizzicato Strings</li>
+                      <li>47 Orchestral Harp</li>
+                      <li>48 Timpani</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Ensemble">Ensemble</a></h5>
+                </div>
+                <panel-collapse id="collapse_Ensemble" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>49 String Ensemble 1</li>
+                      <li>50 String Ensemble 2</li>
+                      <li>51 Synth Strings 1</li>
+                      <li>52 Synth Strings 2</li>
+                      <li>53 Choir Aahs</li>
+                      <li>54 Voice Oohs</li>
+                      <li>55 Synth Choir</li>
+                      <li>56 Orchestra Hit</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Brass">Brass</a></h5>
+                </div>
+                <panel-collapse id="collapse_Brass" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>57 Trumpet</li>
+                      <li>58 Trombone</li>
+                      <li>59 Tuba</li>
+                      <li>60 Muted Trumpet</li>
+                      <li>61 French Horn</li>
+                      <li>62 Brass Section</li>
+                      <li>63 Synth Brass 1</li>
+                      <li>64 Synth Brass 2</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Reed">Reed</a></h5>
+                </div>
+                <panel-collapse id="collapse_Reed" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>65 Soprano Sax</li>
+                      <li>66 Alto Sax</li>
+                      <li>67 Tenor Sax</li>
+                      <li>68 Baritone Sax</li>
+                      <li>69 Oboe</li>
+                      <li>70 English Horn</li>
+                      <li>71 Bassoon</li>
+                      <li>72 Clarinet</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Pipe">Pipe</a></h5>
+                </div>
+                <panel-collapse id="collapse_Pipe" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>73 Piccolo</li>
+                      <li>74 Flute</li>
+                      <li>75 Recorder</li>
+                      <li>76 Pan Flute</li>
+                      <li>77 Blown Bottle</li>
+                      <li>78 Shakuhachi</li>
+                      <li>79 Whistle</li>
+                      <li>80 Ocarina</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Synth-Lead">Synth Lead</a></h5>
+                </div>
+                <panel-collapse id="collapse_Synth-Lead" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>81 Lead 1 (square)</li>
+                      <li>82 Lead 2 (sawtooth)</li>
+                      <li>83 Lead 3 (calliope)</li>
+                      <li>84 Lead 4 (chiff)</li>
+                      <li>85 Lead 5 (charang)</li>
+                      <li>86 Lead 6 (voice)</li>
+                      <li>87 Lead 7 (fifths)</li>
+                      <li>88 Lead 8 (bass + lead)</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Synth-Pad">Synth Pad</a></h5>
+                </div>
+                <panel-collapse id="collapse_Synth-Pad" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>89 Pad 1 (new age)</li>
+                      <li>90 Pad 2 (warm)</li>
+                      <li>91 Pad 3 (polysynth)</li>
+                      <li>92 Pad 4 (choir)</li>
+                      <li>93 Pad 5 (bowed)</li>
+                      <li>94 Pad 6 (metallic)</li>
+                      <li>95 Pad 7 (halo)</li>
+                      <li>96 Pad 8 (sweep)</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Synth-Effects">Synth Effects</a></h5>
+                </div>
+                <panel-collapse id="collapse_Synth-Effects" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>97 FX 1 (rain)</li>
+                      <li>98 FX 2 (soundtrack)</li>
+                      <li>99 FX 3 (crystal)</li>
+                      <li>100 FX 4 (atmosphere)</li>
+                      <li>101 FX 5 (brightness)</li>
+                      <li>102 FX 6 (goblins)</li>
+                      <li>103 FX 7 (echoes)</li>
+                      <li>104 FX 8 (sci-fi)</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Ethnic">Ethnic</a></h5>
+                </div>
+                <panel-collapse id="collapse_Ethnic" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>105 Sitar</li>
+                      <li>106 Banjo</li>
+                      <li>107 Shamisen</li>
+                      <li>108 Koto</li>
+                      <li>109 Kalimba</li>
+                      <li>110 Bagpipe</li>
+                      <li>111 Fiddle</li>
+                      <li>112 Shanai</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Percussive">Percussive</a></h5>
+                </div>
+                <panel-collapse id="collapse_Percussive" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>113 Tinkle Bell</li>
+                      <li>114 Agogo</li>
+                      <li>115 Steel Drums</li>
+                      <li>116 Woodblock</li>
+                      <li>117 Taiko Drum</li>
+                      <li>118 Melodic Tom</li>
+                      <li>119 Synth Drum</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Sound-effects">Sound effects</a></h5>
+                </div>
+                <panel-collapse id="collapse_Sound-effects" class="collapse">
+                  <div class="panel-body">
+                    <ul>
+                      <li>120 Reverse Cymbal</li>
+                      <li>121 Guitar Fret Noise</li>
+                      <li>122 Breath Noise</li>
+                      <li>123 Seashore</li>
+                      <li>124 Bird Tweet</li>
+                      <li>125 Telephone Ring</li>
+                      <li>126 Helicopter</li>
+                      <li>127 Applause</li>
+                      <li>128 Gunshot</li>
+                    </ul>
+                  </div>
+                </panel-collapse>
+              </div>
+            </div>
+          </div>
+          <div class="modal footer"></div>
         </div>
       </div>
     </div>
