@@ -78,6 +78,7 @@ MG.scale_class =
   'maj': [0,2,4,5,7,9,11],
   'min': [0,2,3,5,7,8,10],
   'min_harmonic': [0,2,3,5,7,8,11],
+  'maj_harmonic': [0,2,4,5,8,9,11],
   'min_melodic': [0,2,3,5,7,9,11], # up, down = min
   'chromatic': [0,1,2,3,4,5,6,7,8,9,10,11], # use a-e for 10-15
   'octatonic': [0,1,3,4,6,7,9,10],

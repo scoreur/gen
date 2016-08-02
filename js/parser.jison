@@ -19,7 +19,7 @@ MODE            =	("melody"|"harmony")
 %%
 
 <INITIAL>{MODE}                         {return yytext;}
-<INITIAL>{DIGIT}+                       {this.begin('NOTE'); return 'DIGIT';}
+<INITIAL>{DIGIT}                        {this.begin('NOTE'); return 'DIGIT';}
 <NOTE,NOTE_DUR,CTRL>{NEWLINE}           {this.begin('INITIAL'); return 'BAR';}
 "|:"							        {this.begin('CTRL'); return 'REPEAT_START';}
 "|"								        {this.begin('INITIAL'); return 'BAR';}
@@ -49,7 +49,7 @@ MODE            =	("melody"|"harmony")
 
 
 <NOTE,CHORD>{DIGIT}				        {return 'DIGIT';}
-<NOTE>"{"{DIGIT}+"}"		        	{return 'DIGITS';}
+<NOTE,INITIAL>"{"{DIGIT}+"}"		        	{return 'DIGITS';}
 <NOTE>","					        	{this.begin('NOTE_DUR'); return ',';}
 <NOTE>[n]				        		{return 'NATURAL';}
 <NOTE>[b]				        		{return 'FLAT';}

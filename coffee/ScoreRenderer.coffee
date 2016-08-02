@@ -58,10 +58,60 @@ class @ScoreRenderer
       return new Vex.Flow.Stave(x, y, w)
 
   # TODO: fix tie
-  dur_mapper = ["16","8","8d","4","4","4d","4dd","2","2","2","2","2d","2d","2dd","2ddd","1"];
-  dur_map: (dur)->
-    dur = (dur * 4) >>> 0
-    return dur_mapper[dur-1]
+
+  toBit = (i)->
+    res = [];
+    j = 1
+    while i>0
+      #console.log i,j
+      if (j & i) > 0
+        res.unshift(j)
+        i -= j
+      j <<= 1
+    # console.log res
+    return res
+
+  toBit: toBit
+  dur_obj: (sum, dur)->
+    if sum == 0
+      return{
+        sum: dur,
+        dur: toBit(dur)
+      }
+
+    r = toBit(sum + dur)
+
+    p = 0
+    r1 = r.map (e)-> p+= e
+    i = 0
+    while sum > r1[i]
+      i++
+    ret = r.slice(i+1)
+    remain = r1[i] - sum # >0
+    if remain == 0
+      return {
+        sum: sum + dur,
+        dur: ret
+      }
+
+    #pre = sum - (r1[i-1] || 0)
+    # pre + remain == r[i]
+    rs = toBit(sum)
+    rs = rs.slice(i)
+    ret2 = []
+    while remain > 0
+      ret2.push(rs[rs.length-1])
+      remain -= ret2[ret2.length - 1]
+      rs[rs.length-1] *= 2
+      while rs.length > 1 && rs[rs.length - 1] == rs[rs.length - 2]
+        rs.pop()
+        rs[rs.length - 1] *= 2
+    ret = ret2.concat(ret)
+    #console.log 'final remain', remain
+    return {
+      sum: dur + sum,
+      dur: ret
+    }
 
   renderPage: (num)->
 
@@ -88,6 +138,7 @@ class @ScoreRenderer
       e.stave.setContext(ctx).draw()
       e.voices.forEach (v) -> v.draw(ctx, e.stave)
       e.beams.forEach (v)-> v.setContext(ctx).draw()
+      e.ties.forEach (v)-> v.setContext(ctx).draw()
     c = document.createElement('canvas')
     c.width = 1000
     c.height = 800
@@ -112,11 +163,22 @@ class @ScoreRenderer
       stave = this.newStave(i, s.key_sig)
       if i==0
         stave.addTimeSignature(s.time_sig.join('/'))
-      dur_tot = 0
-      notes = melody[i].map (e)=>
+      notes = []
+      ties = []
+      later_tie = []
+      sum = 0
 
-        dur_tot += e[0]
-        duration =  @dur_map(e[0]/s.ctrl_per_beat)
+      melody[i].forEach (e)=>
+        {sum, dur} = @dur_obj(sum, 8 * e[0] / s.ctrl_per_beat)
+        durs = []
+        pd = 0
+        dur.forEach (d)->
+          if d == pd
+            durs[durs.length - 1] += 'd'
+          else
+            durs.push(''+(32/d))
+          pd = d/2
+
         keys = []
         if typeof e[1] == 'number'
           e[1] = [e[1]]
@@ -133,20 +195,54 @@ class @ScoreRenderer
           if key?
             keys.push key
 
+        rest = false
         if keys.length <= 0
+          rest = true
           keys.push 'Bb/4' # rest
-          duration += 'r'
-
-        #console.log(duration, keys, e);
-        res = new Vex.Flow.StaveNote {keys:keys, duration: duration, auto_stem: true}
-        if duration.substr(-1)=='d'
-          res.addDotToAll()
-          if duration.substr(-2,1)=='d'
-            res.addDotToAll()
-        return res
+          durs = durs.map (d)-> d+'r'
 
 
-      num_beats = dur_tot // s.ctrl_per_beat
+        durs.forEach (d)->
+          res = new Vex.Flow.StaveNote {keys:keys, duration: d, auto_stem: true}
+          r = /d+/.exec(d)
+          if r?
+            for iii in [0...r[0].length] by 1
+              res.addDotToAll()
+          notes.push(res)
+        if !rest && durs.length > 1
+          #console.log 'tie'
+          start = notes.length - durs.length
+          indices = Array(keys.length).fill(0).map (ee,index)->
+            return index
+          for ii in [1...durs.length] by 1
+
+            tie = new Vex.Flow.StaveTie({
+              first_note: notes[start + ii - 1]
+              last_note: notes[start + ii]
+              first_indices: indices
+              last_indices: indices
+            })
+            ties.push(tie)
+        if e[2] == true
+          later_tie.push notes.length - 1
+
+
+
+
+      later_tie.forEach (ii)->
+        indices = Array(notes[ii].keys.length).fill(0).map (ee,index)->
+          return index
+        tie = new Vex.Flow.StaveTie({
+          first_note: notes[ii]
+          last_note: notes[ii + 1]
+          first_indices: indices
+          last_indices: indices
+        })
+        ties.push(tie)
+        return
+
+
+      num_beats = sum // 8
       voice = new Vex.Flow.Voice {
         num_beats: num_beats,
         beat_value: s.time_sig[1],
@@ -171,7 +267,7 @@ class @ScoreRenderer
       formatter = new Vex.Flow.Formatter().
         joinVoices([voice]).
         format([voice], w - 10)
-      @measures.push {voices:[voice],stave:stave, beams:beams}
+      @measures.push {voices:[voice],stave:stave, beams:beams, ties:ties}
 
     @numPage = Math.ceil(@measures.length / @layout.measure_per_system / @layout.system_per_page)
     @UI.page_count.html(@numPage)
