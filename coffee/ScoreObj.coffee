@@ -4,6 +4,7 @@ class @ScoreObj
   constructor: (options, contents) ->
     options ?= {}
     {@tempo, @time_sig, @key_sig, @ctrl_per_beat, @scale, @volumes, @instrs} = options
+
     @tempo ?= 120
     @time_sig ?= [4,4]
     @key_sig ?='C'
@@ -17,6 +18,7 @@ class @ScoreObj
 
     @tracks = []
     @harmony = []
+    @harmony_text = []
 
     if contents?
       @parse(contents)
@@ -29,6 +31,7 @@ class @ScoreObj
       ctrl_per_beat: @ctrl_per_beat,
       scale: @scale,
       volumes: @volumes
+      instrs: @instrs
     }
 
   setMelody: (melody, parsed)->
@@ -51,6 +54,7 @@ class @ScoreObj
     if options.melody?
       @setMelody(options.melody, false)
     if options.harmony? && options.texture
+      @harmony_text = options.harmony
       @setTexture(options.texture, options.harmony)
 
 
@@ -169,10 +173,11 @@ class @ScoreObj
     if typeof measures == 'undefined'
       console.log 'empty harmony'
       return
+    key_sig = @key_sig
     measures.map (e) ->
       e.trim().split(/\s+/).map (e2) ->
         terms = e2.split(',')
-        chord_info = MG.getChords(terms[0],3)
+        chord_info = MG.getChords(terms[0],3,key_sig)
         dur =  if terms.length>=2 then parseInt(terms[1]) else 1
         [dur,chord_info[0],chord_info[1]]
 
@@ -220,6 +225,18 @@ class @ScoreObj
 
     return res
 
+  harmony_roman: ->
+    toRoman = MG.keyToRoman(@key_sig)
+    ex = /[A-G][b#]{0,2}/
+    @harmony_text = @harmony_text.map (e,i)->
+      e.split(/\s+/).map (e2)->
+        r = ex.exec(e2)
+        if r == null
+          return e2
+        else
+          return e2.replace(r[0],toRoman(r[0])).replace(/b#/g,'').replace(/#b/g,'')
+      .join(' ')
+    return @harmony_text.join('\n')
 
   toMidi: ->
     console.log('to midi')

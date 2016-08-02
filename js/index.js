@@ -382,7 +382,19 @@ var click_event_list = {
 
 	},
 	'harmony_relative': function(){
-
+		var data = app.editor.harmony.getValue().split(/[/\n]+/);
+		var toRoman = MG.keyToRoman(app.settings.key_sig || 'C');
+		data = data.map(function(e1){
+			return e1.split(/\s+/).map(function(e2){
+				var r = /[A-G][b#]{0,2}/.exec(e2);
+				if(r == null) {
+					return e2;
+				}else {
+					return e2.replace(r[0], toRoman(r[0])).replace(/b#/g, '').replace(/#b/g, '');
+				}
+			}).join(' ');
+		});
+		app.editor.harmony.setValue(data.join('\n'), -1);
 	},
 	'reset_editor': function(){
 		app = new AppMG(appUI);
@@ -404,7 +416,7 @@ var click_event_list = {
 			}
 			var obj = JSON.parse(eds.score.getValue());
 			['melody', 'harmony', 'texture'].forEach(function(e0){
-				var data = eds[e0].getValue().split(/[/\n]+/);
+				var data = app.editor[e0].getValue().split(/[/\n]+/);
 				data = data.map(function(e1){
 					return e1.split(/\s+/).map(function(e2){
 						if(e2[0]==':'){
@@ -421,14 +433,14 @@ var click_event_list = {
 					}).join(' ');
 				});
 				obj[e0] = data;
-				eds[e0].setValue(data.join('\n'), -1);
+				app.editor[e0].setValue(data.join('\n'), -1);
 			});
 
 			obj.ctrl_per_beat *= mul;
-			eds.score.setValue(JSON.stringify(obj, null, 2), -1);
+			app.editor.score.setValue(JSON.stringify(obj, null, 2), -1);
 			obj = JSON.parse(eds.schema.getValue());
 			obj.ctrl_per_beat *= mul;
-			eds.schema.setValue(JSON.stringify(obj, null, 2), -1);
+			app.editor.schema.setValue(JSON.stringify(obj, null, 2), -1);
 			$.notify('Ctrl per beat updated!', 'success');
 		}
 	}

@@ -27,8 +27,11 @@ MG.instrs =
   "dim":[0,3,6],
   "aug":[0,4,8],
   "dom7":[0,4,7,10],
+  "dom7b5":[0,4,6,10],
   "maj7":[0,4,7,11],
+  "maj7b5":[0,4,6,11],
   "min7":[0,3,7,10],
+  "min7b5":[0,3,6,10],
   "aug7":[0,4,8,10],
   "dim7":[0,3,6,9],
 
@@ -60,6 +63,8 @@ MG.interval_class =
   'm6': 8, 'M6': 9,
   'm7': 10, 'M7': 11,
   'o8': 12
+MG.consonant_interval = ['u1','p4','p5','m6','M6','o8']
+MG.dissonant_interval = ['m2','M2','a4','d5','m7','M7']
 
 MG.key_class = ( ->
   kn1 = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
@@ -131,7 +136,7 @@ MG.testPitchScaleConversion = ()->
   return
 
 MG.keyToPitch = (key) ->
-  key_class = /[CDEFGAB][#b]{0,2}/.exec(key)[0]
+  key_class = /[A-G][#b]{0,2}/.exec(key)[0]
   key_class ?= 'C'
   ref = MG.key_class[key_class] ? 0
   oct = /[0-9]/.exec(key)[0]
@@ -174,16 +179,52 @@ MG.transposer = (scale_name, key_sig) ->
     return toPitch(tmp[0]+tmp[1]*scale_len+diff) + tmp[2]
 
 
-ex = /[ABCDEFG][b#]{0,2}/
+ex = /[A-G][b#]{0,2}/
+ex2 = /([VvIi]+)([b#]{0,2})/
 alias = {'7':'dom7','':'maj','M':'maj','m':'min','mi':'min','m7':'min7'}
-MG.getChords = (chord_str, oct)->
+
+roman = (->
+  arr = ['i','ii','iii','iv','v','vi','vii']
+  res = {}
+  arr.forEach (e,i)->
+    res[e.toUpperCase()] = res[e] = i
+  return res
+)()
+MG.getChords = (chord_str, oct, key_sig)->
+  key_sig ?= 'C' # for chords in degree
   oct ?= 4
-  root = ex.exec(chord_str)[0]
+  r = ex.exec(chord_str)
+  root = 'C'
+  lastIndex = 0
+  if r != null
+    root = r[0]
+    lastIndex = r.index + r[0].length
+  else
+    r = ex2.exec(chord_str)
+    if r != null
+      root = MG.scale_keys[key_sig][roman[r[1]]] + (r[2] || '')
+      root = root.replace(/b#/g,'').replace(/#b/g,'')
+      lastIndex = r.index + r[0].length
+
   root_pitch = MG.keyToPitch(root + oct)
-  chord_name = chord_str.substr(ex.lastIndex+root.length)
+  chord_name = chord_str.substr(lastIndex)
   chord_name = alias[chord_name] ? chord_name
   chord_pitches = MG.chords[chord_name] || MG.chords['maj'] # default maj
   return [root_pitch, chord_pitches]
+
+MG.keyToRoman = (key_sig)->
+  key_sig ?= 'C'
+  arr = ['I','II','III','IV','V','VI','VII']
+  toScale = MG.pitchToScale('maj',key_sig)
+  return (key)->
+    pitch = MG.keyToPitch(key + '4')
+    tmp = toScale(pitch)
+    num = arr[tmp[0]]
+    if tmp[2]>0
+      num += '#'
+    return num
+
+
 
 
 MG.key_sig_rev = {}

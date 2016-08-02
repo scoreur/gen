@@ -117,7 +117,7 @@ class seqPlayer
     @harmony = obj.harmony
     @midi = obj.toMidi()
     @raw_midi = MidiWriter(@midi)
-    return
+    return obj
   saveMidi: ->
     if @raw_midi.length < 1
       return
