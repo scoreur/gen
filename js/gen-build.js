@@ -1440,10 +1440,11 @@ if (typeof module !== 'undefined' && require.main === module) {
       this.cur_i = [];
       this.midi = null;
       this.raw_midi = '';
+      this.onend = function() {};
     }
 
     seqPlayer.prototype.play = function(n) {
-      var channel, cur, loop1, nexti, q, rate;
+      var channel, cur, loop1, nexti, onend, playing, q, rate;
       if (n == null) {
         n = 0;
       }
@@ -1457,6 +1458,8 @@ if (typeof module !== 'undefined' && require.main === module) {
       nexti++;
       channel = n;
       rate = 1;
+      onend = this.onend;
+      playing = this.playing;
       loop1 = (function(_this) {
         return function() {
           var dur, notes;
@@ -1478,8 +1481,8 @@ if (typeof module !== 'undefined' && require.main === module) {
                   MIDI.noteOff(channel, e);
                 }
               });
-              _this.playing[n] = false;
-              _this.onend(n);
+              playing[n] = false;
+              onend(n);
             } else {
               if (q[nexti][0] > 0) {
                 notes.forEach(function(e) {
@@ -1489,7 +1492,7 @@ if (typeof module !== 'undefined' && require.main === module) {
                 });
               }
               cur = q[nexti];
-              if (_this.playing[n]) {
+              if (playing[n]) {
                 nexti++;
                 if (nexti >= q.length) {
                   nexti = -1;
@@ -1548,7 +1551,10 @@ if (typeof module !== 'undefined' && require.main === module) {
       this.cur_i[n] = 0;
     };
 
-    seqPlayer.prototype.onend = function() {};
+    seqPlayer.prototype.setOnend = function(func) {
+      console.log('set');
+      return this.onend = func;
+    };
 
     seqPlayer.prototype.fromScore = function(src, contents) {
       var ctrlTicks, obj, q, t;
@@ -1689,7 +1695,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     AppMG.prototype.analysis = function(data, ctrl_per_beat) {
-      var m, obj, q, settings, tracks;
+      var e, error, m, obj, q, settings, tracks;
       data = data || MIDI.Player.currentData;
       ctrl_per_beat = ctrl_per_beat || 4;
       m = MidiFile(data);
@@ -1728,9 +1734,14 @@ if (typeof module !== 'undefined' && require.main === module) {
       obj = new ScoreObj(settings);
       obj.setMelody(tracks[0], true);
       this.obj = obj;
-      this.renderer.render(this.obj);
       this.editor.score.setValue(JSON.stringify(this.obj.getSettings(), null, 2), -1);
       this.editor.melody.setValue(this.obj.toText().join('\n'), -1);
+      try {
+        this.renderer.render(this.obj);
+      } catch (error) {
+        e = error;
+        console.log(e);
+      }
       return this.obj;
     };
 
@@ -1749,6 +1760,8 @@ if (typeof module !== 'undefined' && require.main === module) {
   MG = (ref = this.MG) != null ? ref : {};
 
   this.Generator = (function() {
+    var _seed, newChoices, rndPicker, seededRandom;
+
     function Generator(settings, schema) {
       var base, base1, base2;
       this.settings = settings;
@@ -1769,6 +1782,19 @@ if (typeof module !== 'undefined' && require.main === module) {
       this.toPitch = MG.scaleToPitch(this.settings.scale, this.settings.key_sig);
       this.toScale = MG.pitchToScale(this.settings.scale, this.settings.key_sig);
     }
+
+    _seed = 6;
+
+    seededRandom = function(max, min) {
+      var rnd;
+      max = max || 1;
+      min = min || 0;
+      _seed = (_seed * 9301 + 49297) % 233280;
+      rnd = _seed / 233280;
+      return min + rnd * (max - min);
+    };
+
+    MG.seededRandom = seededRandom;
 
     Generator.prototype.generate = function() {
       var dur, i, mode, ref1;
@@ -1794,6 +1820,15 @@ if (typeof module !== 'undefined' && require.main === module) {
       return this.res;
     };
 
+    newChoices = function(pre, choices, weights) {
+      var ret;
+      ret = {};
+      choices.forEach(function(e, i) {
+        ret[pre + e] = weights[i];
+      });
+      return ret;
+    };
+
     Generator.prototype.gen_transpose = function(dur, options) {
       var cur_i, interval, refd, res, src, tmp, tmp2, transpose;
       res = {
@@ -1809,7 +1844,6 @@ if (typeof module !== 'undefined' && require.main === module) {
       refd = 0;
       cur_i = 0;
       while (dur > 0) {
-        console.log(refd, src.dur.length);
         if (refd >= src.dur.length) {
           refd -= src.dur.length;
           cur_i = (cur_i + 1) % interval.length;
@@ -1866,9 +1900,10 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     Generator.prototype.gen_random = function(dur, options) {
-      var i, j, n, pre, rc1, rc2, res, scale_len, seed, seed2, tmp, toPitch;
+      var choices, i, j, k, n, pre, raw_choices, rc1, rc2, res, scale_len, seed, seed2, tmp, toPitch, toScale, v;
       toPitch = this.toPitch;
       scale_len = this.scale.length;
+      toScale = this.toScale;
       res = {
         dur: [],
         pitch: []
@@ -1888,9 +1923,7 @@ if (typeof module !== 'undefined' && require.main === module) {
         seed2 = options.interval;
       }
       n = dur / seed.dur >>> 0;
-      rc1 = this.rndPicker(seed.choices, seed.weights);
-      console.log(seed);
-      rc2 = this.rndPicker(seed2.choices, seed2.weights);
+      rc1 = rndPicker(seed.choices, seed.weights);
       pre = scale_len * 4;
       i = 0;
       while (i < n) {
@@ -1898,16 +1931,27 @@ if (typeof module !== 'undefined' && require.main === module) {
         tmp = [];
         j = 0;
         while (j < res.dur[i].length) {
-          pre += rc2.gen() % scale_len;
-          if (pre < 0) {
-            pre = 0;
+          raw_choices = newChoices(pre, seed2.choices, seed2.weights);
+          choices = {};
+          for (k in raw_choices) {
+            v = raw_choices[k];
+            if (k >= 0 && k <= scale_len * 8) {
+              k = toPitch(k);
+              if (k < 48 || k > 84) {
+                v /= 2;
+                console.log('less');
+              }
+              choices[k] = v;
+            }
           }
-          if (pre > scale_len * 8) {
-            pre = scale_len * 8;
-          }
-          tmp.push(toPitch(pre));
+          rc2 = rndPicker(_.keys(choices), _.values(choices));
+          pre = parseInt(rc2.gen());
+          tmp.push(pre);
+          pre = toScale(pre);
+          pre = pre[0] + pre[1] * scale_len;
           ++j;
         }
+        console.log(tmp);
         res.pitch.push(tmp);
         ++i;
       }
@@ -1915,7 +1959,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     Generator.prototype.gen_chord = function(dur, options) {
-      var chords, fix, i, ii, j, n, new_pre, pre, pre2, r, rc1, rc2, refc, refdur, res, scale_len, seed, seed2, tmp, toPitch, toScale;
+      var choices, chords, cur_chord, i, j, k, n, pre, pre2, raw_choices, rc1, rc2, refc, refdur, res, scale_len, seed, seed2, tmp, toPitch, toScale, v;
       toPitch = this.toPitch;
       toScale = this.toScale;
       chords = _.flatten(ScoreObj.prototype.parseHarmony(options.chords), true);
@@ -1941,8 +1985,7 @@ if (typeof module !== 'undefined' && require.main === module) {
         seed2 = options.interval;
       }
       n = dur / seed.dur >>> 0;
-      rc1 = this.rndPicker(seed.choices, seed.weights);
-      rc2 = this.rndPicker(seed2.choices, seed2.weights);
+      rc1 = rndPicker(seed.choices, seed.weights);
       pre = scale_len * 4;
       pre2 = pre;
       i = 0;
@@ -1951,39 +1994,34 @@ if (typeof module !== 'undefined' && require.main === module) {
         tmp = [];
         j = 0;
         while (j < res.dur[i].length) {
-          if (Math.random() > 0.6) {
-            pre += rc2.gen();
-            if (pre < 0) {
-              pre = 0;
-            }
-            if (pre > scale_len * 8) {
-              pre = scale_len * 8;
-            }
-            tmp.push(toPitch(pre));
-          } else {
-            r = Math.random() * 9 >> 0;
-            ii = r % 3;
-            if (refc + 1 < chords.length && refdur < 0) {
-              refdur += chords[++refc][0];
-            }
-            pre = toPitch(pre);
-            new_pre = chords[refc][1] + chords[refc][2][ii] + 12 * (Math.floor(r / 3) - 1);
-            while (new_pre - pre > 12) {
-              new_pre -= 12;
-            }
-            while (pre - new_pre > 12) {
-              new_pre += 12;
-            }
-            if (new_pre < 21) {
-              new_pre = 21;
-            }
-            if (new_pre > 108) {
-              new_pre = 108;
-            }
-            tmp.push(new_pre);
-            fix = toScale(new_pre);
-            pre = fix[0] + fix[1] * scale_len;
+          if (refc + 1 < chords.length && refdur < 0) {
+            refdur += chords[++refc][0];
           }
+          cur_chord = chords[refc];
+          raw_choices = newChoices(pre, seed2.choices, seed2.weights);
+          choices = {};
+          for (k in raw_choices) {
+            v = raw_choices[k];
+            if (k >= 0 && k <= scale_len * 8) {
+              k = toPitch(k);
+              if (k < 48 || k > 84) {
+                v /= 4;
+                console.log('less');
+              }
+              cur_chord[2].forEach(function(ee, ii) {
+                if (modulo(k - cur_chord[1], 12) === ee) {
+                  console.log('chord tone');
+                  return v *= 2;
+                }
+              });
+              choices[k] = v;
+            }
+          }
+          rc2 = rndPicker(_.keys(choices), _.values(choices));
+          pre = parseInt(rc2.gen());
+          tmp.push(pre);
+          pre = toScale(pre);
+          pre = pre[0] + pre[1] * scale_len;
           refdur -= options.rhythm[0];
           ++j;
         }
@@ -2042,8 +2080,8 @@ if (typeof module !== 'undefined' && require.main === module) {
       return obj;
     };
 
-    Generator.prototype.rndPicker = function(choices, weights) {
-      var i, k, p, ref1, s;
+    rndPicker = function(choices, weights) {
+      var i, l, p, ref1, s;
       s = weights.reduce((function(a, b) {
         return a + b;
       }), 0);
@@ -2051,14 +2089,14 @@ if (typeof module !== 'undefined' && require.main === module) {
         return e / s;
       });
       s = 0;
-      for (i = k = 0, ref1 = p.length; k < ref1; i = k += 1) {
+      for (i = l = 0, ref1 = p.length; l < ref1; i = l += 1) {
         s = (p[i] += s);
       }
       return {
         gen: function() {
-          var l, r, ref2;
-          r = Math.random();
-          for (i = l = 0, ref2 = p.length; l < ref2; i = l += 1) {
+          var m, r, ref2;
+          r = seededRandom();
+          for (i = m = 0, ref2 = p.length; m < ref2; i = m += 1) {
             if (r < p[i]) {
               return choices[i];
             }
@@ -2086,7 +2124,7 @@ if (typeof module !== 'undefined' && require.main === module) {
           return [val, weight];
         });
         merge = _.unzip(nexts);
-        picker = this.rndPicker(merge[0], merge[1]);
+        picker = rndPicker(merge[0], merge[1]);
         val = picker.gen();
         if (cur.pos + val.dur >= end_pos) {
           val.dur = end_pos - cur.pos;
@@ -2421,7 +2459,7 @@ if (typeof module !== 'undefined' && require.main === module) {
         e.forEach(function(e1) {
           var o;
           o = '';
-          if (typeof e1[1] === 'number') {
+          if (typeof e1[1] !== 'object') {
             e1[1] = [e1[1]];
           }
           e1[1].forEach(function(e2) {
@@ -2722,7 +2760,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreRenderer.prototype.render = function(s) {
-      var beams, formatter, i, l, later_tie, melody, notes, num_beats, raw_w, ref, sharp, stave, sum, ties, toScale, voice, w;
+      var beams, err, error, formatter, i, l, later_tie, melody, notes, num_beats, raw_w, ref, sharp, stave, sum, ties, toScale, voice, w;
       this.s = s;
       this.layout.measure_per_system = s.ctrl_per_beat >= 8 ? 2 : s.ctrl_per_beat >= 4 ? 3 : 4;
       this.geo.reserved_width = 25 + 5 * Math.abs(MG.key_sig[s.key_sig]);
@@ -2838,7 +2876,14 @@ if (typeof module !== 'undefined' && require.main === module) {
           beat_value: s.time_sig[1],
           resolution: Vex.Flow.RESOLUTION
         });
-        voice.addTickables(notes);
+        voice.setStrict(true);
+        try {
+          voice.addTickables(notes);
+        } catch (error) {
+          err = error;
+          console.log(err);
+          continue;
+        }
         Vex.Flow.Accidental.applyAccidentals([voice], s.key_sig);
         beams = Vex.Flow.Beam.applyAndGetBeams(voice);
         w = raw_w;
