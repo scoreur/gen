@@ -55,8 +55,6 @@
         margin-bottom: 60px;
         margin-top: 60px;
       }
-      .black_key {height: 80px;width: 28px;background: black;position: absolute;top: 20px}
-      .white_key {height: 150px;width: 40px;background: white;position: absolute;top: 20px}
       form {position: relative;}
       .editor {
         border: 1px solid #444;
@@ -146,23 +144,22 @@
         </div>
         <div id="bs-example-navbar-collapse-2" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
+            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Keyboard<span class="caret"></span></a>
+              <ul style="width:950px" class="dropdown-menu">
+                <li>
+                  <form id="keyboard_panel" style="height:150px">
+                    <svg id="keyboard" xmlns="http://www.w3.org/2000/svg" version="1.1" style="background-color:#FFF; border:groove; alignment-adjust:central;"></svg>
+                  </form>
+                </li>
+                <li role="separator" class="divider"></li>
+                <li><a id="keyboard_controls">
+                    <label for="amplitude">amplitude(0-127):</label>
+                    <input id="amplitude" type="range" min="0" max="127" value="100" class="form-control progress"></a></li>
+              </ul>
+            </li>
             <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Chords<span class="caret"></span></a>
               <ul style="width:240px" class="dropdown-menu">
                 <li><a id="mode_panel"></a></li>
-                <li><a id="keyboard_controls">
-                    <label for="amplitude">amplitude(0-127):</label>
-                    <input id="amplitude" type="range" min="0" max="127" value="100" class="form-control progress">
-                    <label for="lowest_pitch">lowest pitch(21-73):</label>
-                    <input id="lowest_pitch" type="range" min="21" max="73" value="60" class="form-control progress"></a></li>
-              </ul>
-            </li>
-            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Keyboard<span class="caret"></span></a>
-              <ul style="width:800px" class="dropdown-menu">
-                <li>
-                  <form id="keyboard_panel" style="height:200px"></form>
-                </li>
-                <li role="separator" class="divider"></li>
-                <li><a href="#">Separated link</a></li>
               </ul>
             </li>
             <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Console<span class="caret"></span></a>
