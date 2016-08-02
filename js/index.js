@@ -267,7 +267,7 @@ var click_event_list = {
 			$('#endTime').html((MIDI.Player.endTime/1000)>>>0);
 			$.notify('MIDI loaded!', 'success');
 			$('#play_slider').val(''+0);
-			app.renderer.render(app.settings, app.contents);
+			app.renderer.render(app.obj);
 			$('li[data-target="#midi_viewer"]').click();
 		});
 
@@ -371,6 +371,14 @@ var click_event_list = {
 		saveAs(file);
 		$.notify('JSON exported!', 'success');
 
+	},
+	'analyze_midi': function(){
+		if(typeof MIDI.Player.currentData == 'undefined'){
+			$.notify('No MIDI', 'info');
+			return;
+		}
+	    app.analysis(null, 16);
+		$('li[data-target="#midi_viewer"]').click();
 	},
 	'melody_absolute': function(){
 

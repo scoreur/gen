@@ -150,11 +150,15 @@ class @ScoreRenderer
     @UI.page_num.html(num+1)
 
 
-  render: (score,contents)->
+  render: (s)->
+
+    @s = s
+    @layout.measure_per_system = if s.ctrl_per_beat >= 8 then 2 else if s.ctrl_per_beat >= 4 then 3 else 4
+    @geo.reserved_width = 25 + 5 * Math.abs(MG.key_sig[s.key_sig])
+
     raw_w = (@geo.system_width - @geo.reserved_width) // @layout.measure_per_system
-    s = @s = new ScoreObj(score,contents)
-    sharp = MG.key_sig[score.key_sig] >= 0
-    toScale = MG.pitchToScale(score.scale, s.key_sig)
+    sharp = MG.key_sig[s.key_sig] >= 0
+    toScale = MG.pitchToScale(s.scale, s.key_sig)
     #console.log(s)
     @measures = []
     melody = s.tracks[0]
@@ -169,14 +173,14 @@ class @ScoreRenderer
       sum = 0
 
       melody[i].forEach (e)=>
-        {sum, dur} = @dur_obj(sum, 8 * e[0] / s.ctrl_per_beat)
+        {sum, dur} = @dur_obj(sum, 16 * e[0] / s.ctrl_per_beat)
         durs = []
         pd = 0
         dur.forEach (d)->
           if d == pd
             durs[durs.length - 1] += 'd'
           else
-            durs.push(''+(32/d))
+            durs.push(''+(64 / d))
           pd = d/2
 
         keys = []
@@ -187,6 +191,7 @@ class @ScoreRenderer
           if e1<21 || e1>108
             return
           tmp = toScale(e1)
+
           key = MG.scale_keys[s.key_sig][tmp[0]]
           # adjust
           key += '/' + ( (e1//12) - 1 + ({'Cb':1, 'B#':-1}[key] || 0))
@@ -242,7 +247,7 @@ class @ScoreRenderer
         return
 
 
-      num_beats = sum // 8
+      num_beats = sum // 16
       voice = new Vex.Flow.Voice {
         num_beats: num_beats,
         beat_value: s.time_sig[1],

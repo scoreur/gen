@@ -127,6 +127,34 @@ class seqPlayer
     saveAs new File([ bf ], 'sample.mid', type: 'audio/midi')
     return
 
+class Analyzer
+  constructor: (@key_sig, @scale_name)->
+    @scale = MG.scale_class[@scale_name]
+    @key_ref = MG.key_class[@key_sig]
+    @toScale = MG.pitchToScale(@scale_name, @key_sig)
+    @key_sig_acc = MG.key_sig[@key_sig]
+  pitch_info: (pitch, chord)->
+    info = {}
+    if chord?
+      if typeof chord == 'string'
+        chord = MG.getChords(chord,3,@key_sig)
+      info.isChordTone = false
+      for i,p of chord[1]
+        if (chord[0]+p-pitch)%12 == 0
+          info.isChordTone = true
+          break
+
+    tmp = @toScale(pitch)
+    info.inScale = tmp[2] == 0
+
+    key = MG.scale_keys[s.key_sig][tmp[0]]
+    # adjust
+    sharp = MG.key_sig[@key_sig] >= 0
+    info.keyName = if info.inScale then [key, pitch//12 - ({'Cb':0, 'B#':2}[key] || 1)] else MG.pitchToKey(pitch, sharp)
+    return info
+
+
+
 class @AppMG
   constructor: (ui, options) ->
     if options?
@@ -135,6 +163,7 @@ class @AppMG
       @schema = Object.assign({}, MG.schema_summer)
       @settings = Object.assign({}, MG.score_summer.settings)
       @contents = Object.assign({}, MG.score_summer.contents)
+      @obj = null
     if ui?
       {@editor, @renderer, @playbtns} = ui
       @player = new seqPlayer()
@@ -167,5 +196,58 @@ class @AppMG
       $.notify('Bad score format!', 'warning')
     ['melody','harmony','texture'].forEach (e)=>
       @contents[e] = @editor[e].getValue().split(/[/\n]+/)
-    @player.fromScore(@settings, @contents);
+    @obj = @player.fromScore(@settings, @contents)
+
+
+  analysis: (data, ctrl_per_beat) ->
+    data = data or MIDI.Player.currentData
+    ctrl_per_beat = ctrl_per_beat or 4
+    m = MidiFile(data)
+    settings = {
+      key_sig: MG.key_sig_rev[simpMidi::getKeySignature.call(m)[0]],
+      time_sig: simpMidi::getTimeSignature.call(m),
+      ctrl_per_beat: ctrl_per_beat
+    }
+    q = simpMidi::quantize.call(m, ctrl_per_beat)
+    tracks = q.map((track) ->
+      res = []
+      tmp = []
+      # handle
+      delta = 0
+      track.forEach (e) ->
+        if e[0] > delta
+          if tmp.length > 0
+            res.push [
+              e[0] - delta
+              tmp
+            ]
+            tmp = []
+          else
+            res.push [
+              e[0] - delta
+              [ 0 ]
+            ]
+          #rest
+          delta = e[0]
+        # ignore 'noteOff' and velocity == 0
+        if e[1] == 'noteOn' and e[3] != 0
+          tmp.push e[2]
+        #noteNumber
+        return
+      res = _.unzip(res)
+      res =
+        dur: res[0]
+        pitch: res[1]
+      Generator::b2score.call {}, res, ctrl_per_beat * settings.time_sig[0]
+    )
+
+    obj = new ScoreObj(settings)
+
+    obj.setMelody tracks[0], true
+    @obj = obj
+    @renderer.render(@obj)
+    @editor.score.setValue(JSON.stringify(@obj.getSettings(),null,2), -1);
+    @editor.melody.setValue(@obj.toText().join('\n'), -1);
+    return @obj
+
 
