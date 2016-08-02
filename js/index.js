@@ -543,7 +543,7 @@ function registerEvents(){
 
 
 	// Set up the event handlers for all the buttons
-	$("button.kb").on("mousedown", handlePianoKeyPress)
+	$(".kb").on("mousedown", handlePianoKeyPress)
 	  .on("mouseout", handlePianoKeyRelease)
 	  .on("mouseup", handlePianoKeyRelease);
 }
@@ -552,10 +552,9 @@ function use_local_store(){
 	return location.origin=="file://" || location.href.indexOf('http://localhost')>-1;
 }
 function initUI(){
-	var n_oct = 3;
-	$('#keyboard_panel').html(make_keyboard(n_oct,20,36,28));
-	$('input#lowest_pitch').attr("max",109-n_oct*12);
-	$('label[for=lowest_pitch]').html("MIDI lowest pitch (21-"+(109-n_oct*12)+"):");
+    var ww = 9, wh = 130;
+	//$('#keyboard_panel').html(make_keyboard(n_oct,20,36,28));
+	$("#keyboard").css({"height": wh, "width": ww * 104}).html(make_keyboard());
 	$('#mode_panel').html(make_modeboard(["maj","min","aug", "dim", "dom7", "maj7"]));
 
 	// ace editor

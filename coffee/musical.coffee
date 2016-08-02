@@ -20,8 +20,8 @@ MG.instrs =
   'Percussive': ['113 Tinkle Bell', '114 Agogo', '115 Steel Drums', '116 Woodblock', '117 Taiko Drum', '118 Melodic Tom', '119 Synth Drum'],
   'Sound effects': ['120 Reverse Cymbal', '121 Guitar Fret Noise', '122 Breath Noise', '123 Seashore', '124 Bird Tweet', '125 Telephone Ring', '126 Helicopter', '127 Applause', '128 Gunshot']
 
-
-@chord_num = MG.chord_class =
+# chord array
+MG.chord_class =
   "maj":[0,4,7],
   "min":[0,3,7],
   "dim":[0,3,6],
@@ -35,14 +35,17 @@ MG.instrs =
   "aug7":[0,4,8,10],
   "dim7":[0,3,6,9],
 
+# return inverted chord
 MG.inverted = (arr,n) ->
   n ?= 1
   n = n %% arr.length
-  ret = new Array(arr.length);
+  ret = new Array(arr.length)
   for i in [0...arr.length] by 1
-    ret[i] = (arr[(n+i)%arr.length]-arr[n]) %% 12
+    ret[i] = (arr[(n+i) % arr.length] - arr[n]) %% 12
   return ret
 
+# all chords including invertion
+# chord alias handled when parsing
 MG.chords = ( ->
   res = {}
   for c,v of MG.chord_class
@@ -50,10 +53,10 @@ MG.chords = ( ->
     for i in [0...v.length] by 1
       res[ci] = MG.inverted(v,i)
       ci += 'i'
-  # TODO: alias
   return res;
 )()
 
+# intervals
 MG.interval_class =
   'u1': 0,
   'm2': 1, 'M2': 2,
@@ -63,9 +66,10 @@ MG.interval_class =
   'm6': 8, 'M6': 9,
   'm7': 10, 'M7': 11,
   'o8': 12
-MG.consonant_interval = ['u1','p4','p5','m6','M6','o8']
-MG.dissonant_interval = ['m2','M2','a4','d5','m7','M7']
+MG.consonant_interval = ['u1','p4','p5','m6','M6','o8',0,3,4,5,7,8,9]
+MG.dissonant_interval = ['m2','M2','a4','d5','m7','M7',1,2,6,10,11]
 
+# key name to pitch modulo 12
 MG.key_class = ( ->
   kn1 = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
   kn2 = ['B#', 'C#', 'D', 'D#', 'Fb', 'E#', 'F#', 'G', 'G#', 'A', 'A#', 'Cb']
@@ -79,6 +83,7 @@ MG.key_class = ( ->
   return res
 )()
 
+# scale array
 MG.scale_class =
   'maj': [0,2,4,5,7,9,11],
   'min': [0,2,3,5,7,8,10],
@@ -97,15 +102,17 @@ MG.scale_class =
   'zhi': [0,2,5,7,9],
   'blues': [0,3,5,6,7,10]
 
-@white_key_num = [0,2,4,5,7,9,11]
+@white_key_num = MG.scale_class['maj']
 @black_key_num = [1,3,6,8,10]
 
+# 'C4' == 4 * scale_len + 0, etc
 MG.scaleToPitch = (mode, tonic) ->
   scale = MG.scale_class[mode] ? MG.scale_class['maj']
   ref = MG.key_class[tonic] ? 0
   return (num) ->
     return ref + (num // scale.length) * 12 + scale[num %% scale.length] + 12 # lowest 12
 
+# return format [scale_num, oct, sharp]
 MG.pitchToScale = (mode, tonic) ->
   scale = MG.scale_class[mode] ? MG.scale_class['maj']
   ref = MG.key_class[tonic] ? 0
@@ -118,6 +125,7 @@ MG.pitchToScale = (mode, tonic) ->
       if pitch >= scale[i]
         return [i, oct, pitch - scale[i]]
     return [0, oct, pitch-scale[0]]
+
 
 MG.testPitchScaleConversion = ()->
   for scale, mode of MG.scale_class
@@ -135,6 +143,7 @@ MG.testPitchScaleConversion = ()->
       console.log scale, 'success'
   return
 
+# compatible for such format; C4 C/4 4C etc
 MG.keyToPitch = (key) ->
   key_class = /[A-G][#b]{0,2}/.exec(key)[0]
   key_class ?= 'C'
@@ -179,10 +188,8 @@ MG.transposer = (scale_name, key_sig) ->
     return toPitch(tmp[0]+tmp[1]*scale_len+diff) + tmp[2]
 
 
-ex = /[A-G][b#]{0,2}/
-ex2 = /([VvIi]+)([b#]{0,2})/
+# chord alias
 alias = {'7':'dom7','':'maj','M':'maj','m':'min','mi':'min','m7':'min7'}
-
 roman = (->
   arr = ['i','ii','iii','iv','v','vi','vii']
   res = {}
@@ -190,7 +197,11 @@ roman = (->
     res[e.toUpperCase()] = res[e] = i
   return res
 )()
+
+# return format [bass, pitches[]]
 MG.getChords = (chord_str, oct, key_sig)->
+  ex = /[A-G][b#]{0,2}/
+  ex2 = /([VvIi]+)([b#]{0,2})/
   key_sig ?= 'C' # for chords in degree
   oct ?= 4
   r = ex.exec(chord_str)
@@ -212,6 +223,7 @@ MG.getChords = (chord_str, oct, key_sig)->
   chord_pitches = MG.chords[chord_name] || MG.chords['maj'] # default maj
   return [root_pitch, chord_pitches]
 
+# key to roman numeral
 MG.keyToRoman = (key_sig)->
   key_sig ?= 'C'
   arr = ['I','II','III','IV','V','VI','VII']
@@ -225,8 +237,7 @@ MG.keyToRoman = (key_sig)->
     return num
 
 
-
-
+# MIDI key_sig, positive (negative) for sharp (flat) key
 MG.key_sig_rev = {}
 MG.key_sig = (()->
   kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
@@ -248,11 +259,11 @@ MG.keyNames = (()->
   ref = MG.scale_class['maj']
   "CDEFGAB".split("").forEach (key,i)->
     #console.log ref[i]
-    res[(ref[i]-2)%%12].push(key + 'bb')
-    res[(ref[i]-1)%%12].push(key + 'b')
-    res[ref[i]%12].push(key)
-    res[(ref[i]+1)%12].push(key+'#')
-    res[(ref[i]+2)%12].push(key+'##')
+    res[(ref[i]-2) %% 12].push(key + 'bb')
+    res[(ref[i]-1) %% 12].push(key + 'b')
+    res[ref[i] % 12].push(key)
+    res[(ref[i]+1) % 12].push(key + '#')
+    res[(ref[i]+2) % 12].push(key + '##')
   return res
 )()
 
@@ -278,7 +289,7 @@ MG.scale_keys = (()->
 )()
 
 
-@chord_name = MG.chord_class_label =
+MG.chord_class_label =
   "maj": "Major triad",
   "min": "Minor triad",
   "aug": "Augmented triad",

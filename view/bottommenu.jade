@@ -8,26 +8,23 @@ nav#bottom-menu.navbar.navbar-default.navbar-fixed-bottom
     #bs-example-navbar-collapse-2.collapse.navbar-collapse
       ul.nav.navbar-nav
         li.dropdown
+          a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Keyboard
+            span.caret
+          ul.dropdown-menu(style='width:950px')
+            li
+              form#keyboard_panel(style='height:150px')
+                svg#keyboard(xmlns="http://www.w3.org/2000/svg" version="1.1" style="background-color:#FFF; border:groove; alignment-adjust:central;")
+            li.divider(role='separator')
+            li
+              a#keyboard_controls
+                label(for='amplitude') amplitude(0-127):
+                input#amplitude.form-control.progress(type='range', min='0', max='127', value='100')
+        li.dropdown
           a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Chords
             span.caret
           ul.dropdown-menu(style='width:240px')
             li
               a#mode_panel
-            li
-              a#keyboard_controls
-                label(for='amplitude') amplitude(0-127):
-                input#amplitude.form-control.progress(type='range', min='0', max='127', value='100')
-                label(for='lowest_pitch') lowest pitch(21-73):
-                input#lowest_pitch.form-control.progress(type='range', min='21', max='73', value='60')
-        li.dropdown
-          a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Keyboard
-            span.caret
-          ul.dropdown-menu(style='width:800px')
-            li
-              form#keyboard_panel(style='height:200px')
-            li.divider(role='separator')
-            li
-              a(href='#') Separated link
         li.dropdown
           a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Console
             span.caret

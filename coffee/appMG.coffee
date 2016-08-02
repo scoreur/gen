@@ -1,5 +1,9 @@
 MG = (module? && require? && require('./musical')) || @MG
 
+###
+  player for note sequence
+  warn: based of setTimeout, may slow down in background
+###
 class seqPlayer
   constructor: ->
     @harmony = []
@@ -8,14 +12,17 @@ class seqPlayer
     @playing = []
     @cur_i = []
     @midi = null
-    @raw_midi = ''
-    @onend = ->
+    @raw_midi = '' # midifile as string
+    @onend = (n)->
+      console.log 'track ' + n +' finished'
+
+  ## play track n
   play: (n) ->
 
     n ?= 0
     if not @tracks[n]? or @tracks[n].length <= 0
       return
-    @playing[n] = true
+
     q = @tracks[n]
     nexti = @cur_i[n]
     cur = q[nexti]
@@ -24,12 +31,12 @@ class seqPlayer
     rate = 1
     onend = @onend
     playing = @playing
+    playing[n] = true
 
     loop1 = =>
 
       if cur[0] > 0
-# not tied
-        notes = if typeof cur[1] == 'number' then [ cur[1] ] else cur[1]
+        notes = if typeof cur[1] != 'object' then [ cur[1] ] else cur[1]
         notes.forEach (e) ->
           if e >= 21 and e <= 108
             MIDI.noteOn channel, e, cur[2]
@@ -38,7 +45,7 @@ class seqPlayer
       dur *= rate
 
       setTimeout (=>
-        notes = if typeof cur[1] == 'number' then [ cur[1] ] else cur[1]
+        notes = if typeof cur[1] != 'object' then [ cur[1] ] else cur[1]
         if nexti < 0
           notes.forEach (e) =>
             if e >= 21 and e <= 108
@@ -69,6 +76,8 @@ class seqPlayer
 
     setTimeout loop1, 0
     return
+
+  # to note sequence, array of [dur, [pitches], vol] (single voice)
   toQ: (arr, ctrlTicks, vol) ->
     vol ?= 110
     m = _.flatten(arr, true)
@@ -86,12 +95,14 @@ class seqPlayer
       ]
       ++j
     res
+  # pause track n
   pause: (n) ->
     n ?= 0
     if n >= @tracks.length
       return
     @playing[n] = false
     return
+  # stop track n
   stop: (n) ->
     n ?= 0
     if n >= @tracks.length
@@ -100,14 +111,15 @@ class seqPlayer
     @cur_i[n] = 0
     return
   setOnend: (func)->
-    console.log 'set'
+    console.log 'set onend'
     @onend = func
-  fromScore: (src, contents) ->
-    obj = new ScoreObj(src, contents)
+  # get note sequence from score
+  fromScore: (obj) ->
+
     ctrlTicks = obj.init_ctrlTicks
     # TODO: add volume control
-    q = @toQ(obj.tracks[0], ctrlTicks, src.volumes[0])
-    t = @toQ(obj.tracks[1], ctrlTicks, src.volumes[1])
+    q = @toQ(obj.tracks[0], ctrlTicks, obj.volumes[0])
+    t = @toQ(obj.tracks[1], ctrlTicks, obj.volumes[1])
     @tracks = []
     @instrs = obj.instrs
     @tracks.push q, t
@@ -122,7 +134,7 @@ class seqPlayer
     @harmony = obj.harmony
     @midi = obj.toMidi()
     @raw_midi = MidiWriter(@midi)
-    return obj
+    return
   saveMidi: ->
     if @raw_midi.length < 1
       return
@@ -201,12 +213,14 @@ class @AppMG
       $.notify('Bad score format!', 'warning')
     ['melody','harmony','texture'].forEach (e)=>
       @contents[e] = @editor[e].getValue().split(/[/\n]+/)
-    @obj = @player.fromScore(@settings, @contents)
+    @obj = new ScoreObj(@settings, @contents)
+    @player.fromScore(@obj)
+    return @obj
 
-
+  # analyze midi file
   analysis: (data, ctrl_per_beat) ->
-    data = data or MIDI.Player.currentData
-    ctrl_per_beat = ctrl_per_beat or 4
+    data ?= MIDI.Player.currentData
+    ctrl_per_beat ?=  8
     m = MidiFile(data)
     settings = {
       key_sig: MG.key_sig_rev[simpMidi::getKeySignature.call(m)[0]],
