@@ -13,6 +13,19 @@ class @Generator
     @toPitch = MG.scaleToPitch(@settings.scale, @settings.key_sig)
     @toScale = MG.pitchToScale(@settings.scale, @settings.key_sig)
 
+
+
+
+  # reproducable random number generator
+  _seed = 6
+  seededRandom = (max, min) ->
+    max = max || 1
+    min = min || 0
+    _seed = (_seed * 9301 + 49297) % 233280;
+    rnd = _seed / 233280
+    return min + rnd * (max - min)
+  MG.seededRandom = seededRandom
+
   generate: ->
     for i,dur of @schema.blocks
       mode = @schema.melody[i]
@@ -28,6 +41,14 @@ class @Generator
     console.log @res, 'res'
     return @res
 
+  newChoices = (pre, choices, weights)->
+    ret = {}
+    choices.forEach (e,i)->
+      ret[pre+e] = weights[i]
+      return
+    return ret
+
+
   gen_transpose: (dur, options) ->
     res =
       dur: []
@@ -41,7 +62,6 @@ class @Generator
     refd = 0
     cur_i = 0
     while dur > 0
-      console.log refd, src.dur.length
       if refd >= src.dur.length
         refd -= src.dur.length
         cur_i = (cur_i+1)%interval.length
@@ -90,6 +110,7 @@ class @Generator
   gen_random:  (dur, options) ->
     toPitch = @toPitch
     scale_len =@scale.length
+    toScale = @toScale
     res =
       dur: []
       pitch: []
@@ -109,27 +130,35 @@ class @Generator
       seed2 = options.interval
 
     n = dur / seed.dur >>> 0
-    rc1 = @rndPicker(seed.choices, seed.weights)
-    console.log seed
-    rc2 = @rndPicker(seed2.choices, seed2.weights)
+    rc1 = rndPicker(seed.choices, seed.weights)
     pre = scale_len * 4
+
     i = 0
     while i < n
       res.dur.push rc1.gen()
       tmp = []
       j = 0
       while j < res.dur[i].length
-        pre += rc2.gen() % scale_len
-        if pre < 0
-          pre = 0
-        if pre > scale_len * 8
-          pre = scale_len * 8
-        #console.log(pre, toPitch(pre));
-        tmp.push toPitch(pre)
+        raw_choices = newChoices(pre, seed2.choices, seed2.weights)
+        choices = {}
+        for k,v of raw_choices
+          if k >= 0 && k <= scale_len * 8
+            k = toPitch(k)
+            if k < 48 || k > 84
+              v /= 2
+              console.log 'less'
+            choices[k] = v
+        rc2 = rndPicker(_.keys(choices), _.values(choices))
+        pre = parseInt(rc2.gen())
+        tmp.push pre
+        pre = toScale(pre)
+        pre = pre[0] + pre[1] * scale_len
         ++j
+      console.log tmp
       res.pitch.push tmp
       ++i
     res
+
 
   gen_chord: (dur, options) ->
     toPitch = @toPitch
@@ -157,8 +186,8 @@ class @Generator
       seed2 = options.interval
 
     n = dur / seed.dur >>> 0
-    rc1 = @rndPicker(seed.choices, seed.weights)
-    rc2 = @rndPicker(seed2.choices, seed2.weights)
+    rc1 = rndPicker(seed.choices, seed.weights)
+
     pre = scale_len * 4
     pre2 = pre
     i = 0
@@ -167,32 +196,31 @@ class @Generator
       tmp = []
       j = 0
       while j < res.dur[i].length
-        if Math.random() > 0.6
-          pre += rc2.gen()
-          if pre < 0
-            pre = 0
-          if pre > scale_len * 8
-            pre = scale_len * 8
-          tmp.push toPitch(pre)
-        else
-          r = Math.random() * 9 >> 0
-          ii = r % 3
-          if refc + 1 < chords.length and refdur < 0
-            refdur += chords[++refc][0]
-          pre = toPitch(pre)
-          new_pre = chords[refc][1] + chords[refc][2][ii] + 12 * (Math.floor(r / 3) - 1)
-          while new_pre - pre > 12
-            new_pre -= 12
-          while pre - new_pre > 12
-            new_pre += 12
-          if new_pre < 21
-            new_pre = 21
-          if new_pre > 108
-            new_pre = 108
-          tmp.push new_pre
-          fix = toScale(new_pre)
-          pre = fix[0] + fix[1] * scale_len
-        #console.log(pre, chords[refc])
+        if refc + 1 < chords.length and refdur < 0
+          refdur += chords[++refc][0]
+        cur_chord = chords[refc]
+        raw_choices = newChoices(pre, seed2.choices, seed2.weights)
+        choices = {}
+        for k,v of raw_choices
+          if k >= 0 && k <= scale_len * 8
+            k = toPitch(k)
+            if k < 48 || k > 84
+              v /= 4
+              console.log 'less'
+            cur_chord[2].forEach (ee,ii)->
+              if (k - cur_chord[1]) %% 12 == ee
+                console.log 'chord tone'
+                v *= 2
+            choices[k] = v
+        rc2 = rndPicker(_.keys(choices), _.values(choices))
+        pre = parseInt(rc2.gen())
+        tmp.push pre
+
+        pre = toScale(pre)
+
+        pre = pre[0] + pre[1] * scale_len
+
+
         refdur -= options.rhythm[0]
         ++j
       res.pitch.push tmp
@@ -241,7 +269,7 @@ class @Generator
     obj.setMelody  _.flatten(res, true), true
     return obj
 
-  rndPicker: (choices, weights) ->
+  rndPicker = (choices, weights) ->
     s = weights.reduce ((a,b)-> a+b), 0
     p = weights.map (e)-> e/s
     s = 0
@@ -251,7 +279,7 @@ class @Generator
     # TODO: add random seed
     # seed = Date.now();
     return gen:  ->
-      r = Math.random()
+      r = seededRandom() #Math.random()
       for i in [0...p.length] by 1
         if r < p[i]
           return choices[i]
@@ -268,7 +296,7 @@ class @Generator
         return [val, weight]
 
       merge = _.unzip(nexts)
-      picker = @rndPicker(merge[0], merge[1])
+      picker = rndPicker(merge[0], merge[1])
       val = picker.gen()
       if cur.pos + val.dur >= end_pos
         val.dur = end_pos - cur.pos

@@ -406,7 +406,7 @@ var click_event_list = {
 	},
 	'reset_editor': function(){
 		app = new AppMG(appUI);
-		updateEditor();
+		app.updateEditor();
 	},
 	'inc_ctrl': function(){
 		var mul;
@@ -475,7 +475,7 @@ var file_open_handlers = {
     'open_json': function(evt){
 	    load_json(evt.target.files[0], function(res){
 			app = new AppMG(appUI, res);
-			updateEditor();
+			app.updateEditor();
 	    });
 	},
 	'open_pdf': function(evt){
@@ -495,10 +495,11 @@ function registerEvents(){
 	for(var id in file_open_handlers){
 		openFor(id, file_open_handlers[id]);
 	}
-	app.player.onend = function(n){
+	app.player.setOnend(function(n){
 		var i = app.player.cur_i[n];
 		if(i>0 && i<app.player.tracks[n].length)
 		  return;
+		console.log('toggle');
 		switch(n){
 			case 0:
 				$('#play_melody>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
@@ -509,7 +510,7 @@ function registerEvents(){
 			default:
 		};
 
-	};
+	});
 
 	MIDI.Player.setAnimation(function(res){
 		//console.log(res.percent)

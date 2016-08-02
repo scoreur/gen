@@ -585,7 +585,7 @@ simpMidi.prototype.quantize = function(ctrl_per_beat){
 				if(e.deltaTime > 0){
 					delta += e.deltaTime
 				}
-				var tmp2 = [(delta / ticks * ctrl_per_beat)>>0];
+				var tmp2 = [Math.round(delta / ticks * ctrl_per_beat)];
 				switch(e.subtype){
 					case 'noteOn':case 'noteOff':
 						tmp2.push(e.subtype, e.noteNumber, e.velocity);

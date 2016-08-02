@@ -248,15 +248,21 @@ class @ScoreRenderer
 
 
       num_beats = sum // 16
+
       voice = new Vex.Flow.Voice {
         num_beats: num_beats,
         beat_value: s.time_sig[1],
         resolution: Vex.Flow.RESOLUTION
       }
+      voice.setStrict(true)
 
 
       # Add notes to voice
-      voice.addTickables(notes)
+      try
+        voice.addTickables(notes)
+      catch err
+        console.log err
+        continue
       # Add accidental
       Vex.Flow.Accidental.applyAccidentals([voice], s.key_sig)
       # Add beams

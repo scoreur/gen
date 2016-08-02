@@ -9,6 +9,7 @@ class seqPlayer
     @cur_i = []
     @midi = null
     @raw_midi = ''
+    @onend = ->
   play: (n) ->
 
     n ?= 0
@@ -21,6 +22,8 @@ class seqPlayer
     nexti++
     channel = n
     rate = 1
+    onend = @onend
+    playing = @playing
 
     loop1 = =>
 
@@ -41,8 +44,8 @@ class seqPlayer
             if e >= 21 and e <= 108
               MIDI.noteOff channel, e
             return
-          @playing[n] = false
-          @onend n
+          playing[n] = false
+          onend n
         else
           if q[nexti][0] > 0
             notes.forEach (e) =>
@@ -50,7 +53,7 @@ class seqPlayer
                 MIDI.noteOff channel, e
               return
           cur = q[nexti]
-          if @playing[n]
+          if playing[n]
             nexti++
             if nexti >= q.length
               nexti = -1
@@ -96,7 +99,9 @@ class seqPlayer
     @playing[n] = false
     @cur_i[n] = 0
     return
-  onend: ->
+  setOnend: (func)->
+    console.log 'set'
+    @onend = func
   fromScore: (src, contents) ->
     obj = new ScoreObj(src, contents)
     ctrlTicks = obj.init_ctrlTicks
@@ -245,9 +250,12 @@ class @AppMG
 
     obj.setMelody tracks[0], true
     @obj = obj
-    @renderer.render(@obj)
     @editor.score.setValue(JSON.stringify(@obj.getSettings(),null,2), -1);
     @editor.melody.setValue(@obj.toText().join('\n'), -1);
+    try
+      @renderer.render(@obj)
+    catch e
+      console.log e
     return @obj
 
 

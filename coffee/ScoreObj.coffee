@@ -193,7 +193,7 @@ class @ScoreObj
       ret = []
       e.forEach (e1)->
         o = ''
-        if typeof e1[1] == 'number'
+        if typeof e1[1] != 'object'
           e1[1] = [e1[1]]
         e1[1].forEach (e2)->
           if e2<21 || e2>108
