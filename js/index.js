@@ -252,17 +252,16 @@ function saveWav(data){
 
 
 
-// store all editors
-var eds = {};
 var mds = new ScoreRenderer('midi_score', undefined,  'midi_pointer');
 var appUI = {
-	editor: eds,
+	editor: {},
 	renderer: mds,
 	playbtns:[$('#play_melody>span.glyphicon'), $('#play_harmony>span.glyphicon')]
 };
 
 var app = new AppMG(appUI);
-
+app.cuer = cuer;
+app.tapper = tapper;
 
 var click_event_list = {
 	'parse': function(){
@@ -277,7 +276,7 @@ var click_event_list = {
 
 	},
 	'gen': function(){
-		app.schema = JSON.parse(eds.schema.getValue());
+		app.schema = JSON.parse(app.editor.schema.getValue());
 		var generator = new Generator(app.settings, app.schema);
 		generator.generate();
 		var score = generator.toScoreObj()
@@ -426,19 +425,22 @@ var click_event_list = {
 				$.notify('NOT updated!', 'info');
 				return;
 			}
-			var obj = JSON.parse(eds.score.getValue());
+			var obj = JSON.parse(app.editor.score.getValue());
 			['melody', 'harmony', 'texture'].forEach(function(e0){
 				var data = app.editor[e0].getValue().split(/[/\n]+/);
 				data = data.map(function(e1){
 					return e1.split(/\s+/).map(function(e2){
-						if(e2[0]==':'){
+						if(e2[0]==':' || e2[0]=='@'){
 							return e2;
 						}else{
+							if(e2 == '') return e2;
 							var e3 = e2.split(',');
 							if(e3.length<2){
 								e3.push(mul);
 							}else{
+								var orna = e3[1].indexOf('^') > -1;
 								e3[1]  = parseInt(e3[1]) * mul;
+								if(orna) e3[1] += '^';
 							}
 							return e3.join(',');
 						}
@@ -450,7 +452,7 @@ var click_event_list = {
 
 			obj.ctrl_per_beat *= mul;
 			app.editor.score.setValue(JSON.stringify(obj, null, 2), -1);
-			obj = JSON.parse(eds.schema.getValue());
+			obj = JSON.parse(app.editor.schema.getValue());
 			obj.ctrl_per_beat *= mul;
 			app.editor.schema.setValue(JSON.stringify(obj, null, 2), -1);
 			$.notify('Ctrl per beat updated!', 'success');
@@ -528,18 +530,6 @@ function registerEvents(){
 		}
 		
 	});
-    /*
-	['melody','harmony','texture'].forEach(function(e){
-		var r = ['melody','harmony','texture'];
-		r.splice(r.indexOf(e),1);
-		eds[e].getSession().selection.on('changeCursor', function(e2){
-			var line = eds[e].selection.getCursor().row+1;
-			r.forEach(function(e3){
-				eds[e3].gotoLine(line);
-			});
-		});
-	});
-	*/
 
 	$('#play_slider').on('change', function(){
 		MIDI.Player.currentTime = parseInt($('#play_slider').val())/100*MIDI.Player.endTime;
@@ -559,11 +549,11 @@ function initUI(){
     var ww = 9, wh = 130;
 	$("#keyboard").css({"height": wh, "width": ww * 104}).html(make_keyboard());
 	$('#mode_panel').html(make_modeboard(["maj","min","aug", "dim", "dom7", "maj7"]));
-	cuer.bind('#amplitude',keyHandlers[0],keyHandlers[1]);
+	app.cuer.bind('#amplitude',keyHandlers[0],keyHandlers[1]);
 
 	// ace editor
 	['melody','harmony','texture'].forEach(function(e){
-		eds[e] = setupEditor(e);
+		app.editor[e] = setupEditor(e);
 	});
 
 	['score','schema'].forEach(function(id){
@@ -572,7 +562,7 @@ function initUI(){
 		editor.getSession().setMode("ace/mode/json");
 		editor.getSession().setUseWrapMode(true);
 		editor.$blockScrolling = Infinity;
-		eds[id] = editor;
+		app.editor[id] = editor;
 		return editor;
 	});
 	app.updateEditor();

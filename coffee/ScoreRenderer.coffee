@@ -159,7 +159,7 @@ class @ScoreRenderer
     raw_w = (@geo.system_width - @geo.reserved_width) // @layout.measure_per_system
     sharp = MG.key_sig[s.key_sig] >= 0
     toScale = MG.pitchToScale(s.scale, s.key_sig)
-    console.log('render', s.tracks)
+    #console.log('render', s.tracks)
     @measures = []
     melody = s.tracks[0]
     #console.log melody
@@ -168,7 +168,7 @@ class @ScoreRenderer
       ties = []
       later_tie = []
       sum = 0
-      console.log i
+      #console.log i
       melody[i].forEach (e)->
         {sum, dur} = dur_obj(sum, 16 * e[0] / s.ctrl_per_beat)
         durs = []
@@ -261,7 +261,7 @@ class @ScoreRenderer
       catch err
         console.log err.message
         continue
-      console.log voice
+      #console.log voice
       # Add accidental
       Vex.Flow.Accidental.applyAccidentals([voice], s.key_sig)
       # Add beams

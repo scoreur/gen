@@ -1,5 +1,7 @@
 MG = @MG ? {}
 
+MG.ref_midi_info = null
+
 class @Generator
   constructor: (@settings, @schema) ->
     @settings.key_sig ?= 'C'
@@ -26,6 +28,34 @@ class @Generator
     return min + rnd * (max - min)
   MG.seededRandom = seededRandom
 
+
+  evaluate: (data)->
+    info = MG.midi_statistics(data)
+
+
+    report = {}
+
+    if MG.ref_midi_info != null
+      ref_beat_dur = MG.ref_midi_info.rhythm[0][0].split(',').map (ee)->
+        parseInt(ee)
+      ref_beat_dur = _.reduce(ref_beat_dur, (a,b)->
+        a+b
+      ,0)
+      info_dur =  info.rhythm[0][0].split(',').map (ee)->
+        parseInt(ee)
+      info_dur =  _.reduce(info_dur, (a,b)->
+        a+b
+      ,0)
+      console.log 'compare',info_dur, ref_beat_dur
+
+      # compare with existing midi
+    # optimize
+
+    return info
+
+
+
+  # low_level / high_level
   generate: ->
     for i,dur of @schema.blocks
       mode = @schema.melody[i]
@@ -39,7 +69,81 @@ class @Generator
         when 'reverse'
           @res[i] = @gen_reverse(mode.options)
     console.log @res, 'res'
-    return @res
+    sec = @settings.ctrl_per_beat * @settings.time_sig[0] # separate bar
+    res = {}
+    res_eval = {}
+    for e0, b of @res
+      res[e0] = @b2score(b, sec)
+      console.log res_eval[e0] = @evaluate(@b2score(b, @settings.ctrl_per_beat))
+
+
+    # evaluation
+
+
+    res = @schema.structure.map (e)-> JSON.parse(JSON.stringify(res[e]))
+    @res2 = res
+    console.log res
+
+    # between-block modification
+    for i in [1...res.length] by 1
+      last_measure = res[i-1][res[i-1].length-1]
+      first_measure = res[i][0]
+
+      last_note = last_measure[last_measure.length-1][1]
+      first_note = first_measure[0][1]
+
+
+      if last_measure.length > 1
+        pre_note = last_measure[last_measure.length - 2][1]
+        if (last_note > pre_note && last_note > first_note) || (last_note < pre_note && last_note < first_note)
+          # swap, make smooth
+          last_measure[last_measure.length - 2][1] = last_note
+          last_note = pre_note
+          pre_note = last_measure[last_measure.length - 2][1]
+          console.log 'smooth', i, pre_note, last_note, first_note
+      if last_note - first_note <= -12
+        last_note += 12
+      else if last_note - first_note >= 12
+        last_note -= 12
+      console.log i, last_note, first_note
+      last_measure[last_measure.length - 1][1] = last_note
+      res[i-1][res[i-1].length - 1] = last_measure
+
+    # cadence
+    last_block = res[res.length-1]
+    last_measure = last_block[last_block.length-1].slice()
+
+    last_measure.sort (a,b)->
+      a[0] - b[0]
+    tonic = MG.key_class[@settings.key_sig]
+    last_note = last_measure[last_measure.length-1][1]
+    if typeof last_note == 'object'
+      last_note = last_note[0]
+    adjust = (tonic - (last_note % 12)) %% 12
+    last_note += adjust
+    console.log adjust, 'adjust', last_note, 'last_note'
+
+    if last_measure.length > 1
+      pre_note = last_measure[last_measure.length - 2][1]
+      if typeof pre_note == 'object'
+        pre_note = pre_note[0]
+      console.log 'pre_note', pre_note
+      if last_note - pre_note >= 12
+        last_note -= 12;
+      if last_note == pre_note
+        console.log 'may merge last two notes', last_note
+        return
+        #last_note = last_measure.pop()
+        #last_measure[last_measure.length - 1][0] += last_note[0]
+        #last_note = last_note[1]
+
+    last_measure[last_measure.length - 1][1] = last_note
+
+    last_block[last_block.length - 1] = last_measure
+    console.log res
+
+    # ornamentation
+    return res
 
   newChoices = (pre, choices, weights)->
     ret = {}
@@ -122,6 +226,8 @@ class @Generator
       seed.dur = options.rhythm[0]
       seed.choices = options.rhythm[1]
       seed.weights = options.rhythm[2]
+    swarp = options.rhythm.swarp
+    swarp ?= 1
 
     seed2 = {}
     if options.interval.seed? && @seeds?
@@ -129,13 +235,16 @@ class @Generator
     else
       seed2 = options.interval
 
-    n = dur / seed.dur >>> 0
+    n = dur // (seed.dur/swarp)
+
     rc1 = rndPicker(seed.choices, seed.weights)
     pre = scale_len * 4
 
     i = 0
     while i < n
-      res.dur.push rc1.gen()
+      new_dur = rc1.gen().map (d)-> d//swarp
+      res.dur.push new_dur
+
       tmp = []
       j = 0
       while j < res.dur[i].length
@@ -185,14 +294,18 @@ class @Generator
     else
       seed2 = options.interval
 
-    n = dur / seed.dur >>> 0
+    swarp = options.rhythm.swarp
+    swarp ?= 1
+
+    n = dur // (seed.dur/swarp)
     rc1 = rndPicker(seed.choices, seed.weights)
 
     pre = scale_len * 4
     pre2 = pre
     i = 0
     while i < n
-      res.dur.push rc1.gen()
+      new_dur = rc1.gen().map (d)-> d//swarp
+      res.dur.push new_dur
       tmp = []
       j = 0
       while j < res.dur[i].length
@@ -225,12 +338,15 @@ class @Generator
         ++j
       res.pitch.push tmp
       ++i
+    # evaluation , optimization
+
+
     res
 
-
+  # sperate into measures
   b2score: (b, sec, flat) ->
     dur = if flat then b.dur else _.flatten(b.dur, true);
-    pitch = if flat then else _.flatten(b.pitch, true);
+    pitch = if flat then b.pitch else _.flatten(b.pitch, true);
     # console.log dur.length == pitch.length
     ret = []
     # separate measure, add ties
@@ -255,13 +371,10 @@ class @Generator
 
 
   toScoreObj: ->
-    if res == {}
+    if _.keys(@res2).length == 0
       @generate()
-    sec = @settings.ctrl_per_beat * @settings.time_sig[0] # separate bar
-    res = {}
-    for e0, b of @res
-      res[e0] = @b2score(b, sec)
-    res = @schema.structure.map (e)-> res[e]
+
+    res = @res2
 
 
     obj = new ScoreObj(@settings)

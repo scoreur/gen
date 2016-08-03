@@ -217,7 +217,7 @@ class @ScoreObj
             o += {'-1':'-',1:'+'}[diff] || ''
             o += {1:'#',2:'##'}[tmp[2]] || ''
         if e1[2] == true
-          e1[0] = e1[0] + '^'
+          e1[0] = (e1[0] + '^').replace('^^','^')
         if typeof e1[0] == 'string' || e1[0] > 1
           o += ',' + e1[0] # dur
         ret.push o

@@ -309,7 +309,7 @@ MG.chord_class_label =
     ctrl_per_beat: 2,
     incomplete_measure: true,
     volumes: [110,80],
-    instrs: [1,1]
+    instrs: [66,1]
   contents:
     melody: ':+ 3,2 1,2/3,8^/3,2 2 1 2 3 1,2/:- 6,4 3,4^/3,4 :+ 3,2 1,2/2 2,7^/2,2 1 6-,1 1 6-,1 1,2/:- 7,8^/7,4 0 :+ 3,2 1/3 3,2 3,1^ 3,4^/3,2 2 1 2 3 1,2/:- 6,4 3,4^/3,6 3,2/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6,8^/6,4 :+ 3,2 1,2'.split('/'),
     harmony: "E7,4/Amin,8/Bb7,8/Amin,4 E7,4/Amin,4 A7,4/Dmin,8/F7,8/F#min7,4 B7,4/E7,8/Am,8/Bb7,8/Am,8/D7,8/C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4 E7,4".split('/'),
@@ -337,9 +337,9 @@ MG.chord_class_label =
   ,
   seeds:
     's1':
-      dur: 4,
+      dur: 16,
       choices:
-        ('1 1 1 1/2 1 1/1 1 2/1 2 1/1 3/3 1/2 2/4'.split('/').map (e)->
+        ('4 4 4 4/8 4 4/4 4 8/4 8 4/4 12/12 4/8 8/16'.split('/').map (e)->
           e.split(/\s+/).map (e2)-> parseInt(e2)
         )
       weights:
@@ -358,12 +358,13 @@ MG.chord_class_label =
       options:
         rhythm:
           seed: 's1'
+          swarp: 4
 
         interval:
           chromatic: false
           seed: 's2'
     'A':
-      mode:'random'
+      mode:'chord'
       options:
         chords: [
           "Amin,8",
@@ -373,6 +374,7 @@ MG.chord_class_label =
         ]
         rhythm:
           seed: 's1'
+          swarp: 4
 
         interval:
           chromatic: false
@@ -397,6 +399,7 @@ MG.chord_class_label =
         chords: "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
         rhythm:
           seed: 's1'
+          swarp: 4
         interval:
           chromatic: false,
           seed: 's2'

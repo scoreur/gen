@@ -14,7 +14,7 @@ class seqPlayer
     @midi = null
     @raw_midi = '' # midifile as string
     @onend = (n)->
-      console.log('track ' + n +' finished')
+      console.log("track #{n} finished")
 
   ## play track n
   play: (n) ->
@@ -117,7 +117,7 @@ class seqPlayer
   fromScore: (obj) ->
 
     ctrlTicks = obj.init_ctrlTicks
-    # TODO: add volume control
+
     q = @toQ(obj.tracks[0], ctrlTicks, obj.volumes[0])
     t = @toQ(obj.tracks[1], ctrlTicks, obj.volumes[1])
     @tracks = []
@@ -169,6 +169,68 @@ class Analyzer
     sharp = MG.key_sig[@key_sig] >= 0
     info.keyName = if info.inScale then [key, pitch//12 - ({'Cb':0, 'B#':2}[key] || 1)] else MG.pitchToKey(pitch, sharp)
     return info
+
+obj_sort = (data) ->
+  kv = _.zip(_.keys(data), _.values(data))
+  kv.sort (a, b) ->
+    b[1] - (a[1])
+  # decending
+  kv
+
+MG.midi_statistics = midi_statistics = (obj) ->
+  info =
+    rhythm: {}
+    melody:
+      one: {}
+      two: {}
+  one = {}
+  two = {}
+  n_one = 0
+  n_two = 0
+
+
+  obj.forEach (e) ->
+    measure = _.unzip(e)
+    r = measure[0]
+    info.rhythm[r] = 1 + (info.rhythm[r] or 0)
+    r = measure[1]
+    if r.length < 2
+      return
+    c = [
+      r[0] % 12
+      (r[1] - (r[0])) % 12
+    ]
+    one[c] ?= 0
+    one[c]++
+    n_one++
+    i = 2
+    while i < r.length
+      c = [
+        r[i - 1] % 12
+        (r[i] - (r[i - 1])) % 12
+      ]
+      one[c] = 1 + (one[c] or 0)
+      n_one++
+      c = [
+        r[i - 2] % 12
+        (r[i - 1] - (r[i - 2])) % 12
+        c[1]
+      ]
+      two[c] = 1 + (two[c] or 0)
+      n_two++
+      ++i
+    return
+  info =
+    rhythm: obj_sort(info.rhythm)
+    melody:
+      one: obj_sort(one)
+      two: obj_sort(two)
+      n: [
+        0
+        n_one
+        n_two
+      ]
+
 
 
 
@@ -257,7 +319,9 @@ class @AppMG
       res =
         dur: res[0]
         pitch: res[1]
-      Generator::b2score.call {}, res, ctrl_per_beat * settings.time_sig[0]
+      ret = Generator::b2score.call {}, res, ctrl_per_beat * settings.time_sig[0]
+      ret.info = midi_statistics(Generator::b2score.call {}, res, ctrl_per_beat)
+      return ret
     )
 
     obj = new ScoreObj(settings)
@@ -268,6 +332,11 @@ class @AppMG
     @editor.score.setValue(JSON.stringify(@obj.getSettings(),null,2), -1);
     @editor.melody.setValue(@obj.toText().join('\n'), -1);
     #@renderer.render(@obj)
-    return @obj
+    info =  tracks.map (e)-> e.info
+    console.log info
+    MG.ref_midi_info = info[0]
+    return info
+
+
 
 

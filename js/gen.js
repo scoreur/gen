@@ -12,44 +12,6 @@ var TEST = TEST || {};
 
 
 
-TEST.analysis = function(data, ctrl_per_beat){
-	var data = data || MIDI.Player.currentData;
-	var ctrl_per_beat = ctrl_per_beat || 4;
-	var m = MidiFile(data);
-	var q = simpMidi.prototype.quantize.call(m, ctrl_per_beat);
-
-	var tracks =  q.map(function(track){
-		var res = [];
-		var tmp = [];
-		// handle
-		var delta = 0;
-		track.forEach(function(e){
-			if(e[0]>delta){
-				if(tmp.length>0){
-					res.push([e[0]-delta, tmp]);
-					tmp = [];
-				}else{
-					res.push([e[0]-delta, [0]]);//rest
-				}
-				delta = e[0];
-			}else{
-				// ignore 'noteOff' and velocity == 0
-				if(e[1] == 'noteOn' && e[3] != 0){
-					tmp.push(e[2]); //noteNumber
-				}
-			}
-		});
-		res = _.unzip(res);
-		res = {dur:res[0], pitch:res[1]};
-		return Generator.prototype.b2score.call({},res,ctrl_per_beat);
-	});
-	var info =  tracks.map(function(e){
-		return midi_statistics(e);
-	});
-
-	return info;
-};
-
 function midi_statistics(obj){
 	function obj_sort(data){
 		var k = Object.keys(data);
