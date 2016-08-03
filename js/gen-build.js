@@ -1646,18 +1646,20 @@ if (typeof module !== 'undefined' && require.main === module) {
       melody: {
         one: {},
         two: {}
-      }
+      },
+      range: []
     };
     one = {};
     two = {};
     n_one = 0;
     n_two = 0;
-    obj.forEach(function(e) {
+    obj.forEach(function(e, ii) {
       var c, i, measure, r;
       measure = _.unzip(e);
       r = measure[0];
       info.rhythm[r] = 1 + (info.rhythm[r] || 0);
       r = measure[1];
+      info.range.push(_.max(r) - _.min(r));
       if (r.length < 2) {
         return;
       }
@@ -1684,7 +1686,8 @@ if (typeof module !== 'undefined' && require.main === module) {
         one: obj_sort(one),
         two: obj_sort(two),
         n: [0, n_one, n_two]
-      }
+      },
+      range: info.range
     };
   };
 
@@ -1861,9 +1864,16 @@ if (typeof module !== 'undefined' && require.main === module) {
     MG.seededRandom = seededRandom;
 
     Generator.prototype.evaluate = function(data) {
-      var info, info_dur, ref_beat_dur, report;
+      var info, info_dur, r_all, ref_beat_dur, report;
       info = MG.midi_statistics(data);
       report = {};
+      r_all = 0;
+      info.rhythm.forEach(function(e) {
+        return r_all += e[1];
+      });
+      report.simp = info.rhythm[0][1] / r_all;
+      report.range = _.max(info.range);
+      console.log('report', report.simp, report.range);
       if (MG.ref_midi_info !== null) {
         ref_beat_dur = MG.ref_midi_info.rhythm[0][0].split(',').map(function(ee) {
           return parseInt(ee);

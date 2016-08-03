@@ -183,17 +183,20 @@ MG.midi_statistics = midi_statistics = (obj) ->
     melody:
       one: {}
       two: {}
+    range:[]
   one = {}
   two = {}
   n_one = 0
   n_two = 0
 
 
-  obj.forEach (e) ->
+  obj.forEach (e,ii) ->
     measure = _.unzip(e)
     r = measure[0]
-    info.rhythm[r] = 1 + (info.rhythm[r] or 0)
+    info.rhythm[r] = 1 + (info.rhythm[r] || 0)
     r = measure[1]
+    info.range.push _.max(r) - _.min(r)
+
     if r.length < 2
       return
     c = [
@@ -230,6 +233,7 @@ MG.midi_statistics = midi_statistics = (obj) ->
         n_one
         n_two
       ]
+    range: info.range
 
 
 

@@ -31,9 +31,17 @@ class @Generator
 
   evaluate: (data)->
     info = MG.midi_statistics(data)
-
+    #console.log info
 
     report = {}
+
+    r_all = 0
+    info.rhythm.forEach (e)->
+      r_all += e[1]
+    report.simp = (info.rhythm[0][1]/r_all )
+    report.range = _.max(info.range)
+    console.log 'report', report.simp, report.range
+
 
     if MG.ref_midi_info != null
       ref_beat_dur = MG.ref_midi_info.rhythm[0][0].split(',').map (ee)->
@@ -48,7 +56,10 @@ class @Generator
       ,0)
       console.log 'compare',info_dur, ref_beat_dur
 
+
       # compare with existing midi
+
+
     # optimize
 
     return info
