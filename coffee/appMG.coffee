@@ -14,7 +14,7 @@ class seqPlayer
     @midi = null
     @raw_midi = '' # midifile as string
     @onend = (n)->
-      console.log 'track ' + n +' finished'
+      console.log('track ' + n +' finished')
 
   ## play track n
   play: (n) ->
@@ -263,13 +263,11 @@ class @AppMG
     obj = new ScoreObj(settings)
 
     obj.setMelody tracks[0], true
+    obj.setTexture tracks[1], [], true
     @obj = obj
     @editor.score.setValue(JSON.stringify(@obj.getSettings(),null,2), -1);
     @editor.melody.setValue(@obj.toText().join('\n'), -1);
-    try
-      @renderer.render(@obj)
-    catch e
-      console.log e
+    #@renderer.render(@obj)
     return @obj
 
 

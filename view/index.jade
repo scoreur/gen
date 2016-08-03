@@ -7,11 +7,7 @@ html
       window.module = module;
       module = undefined;
       }
-    if stand_alone
-      include scripts_alone.jade
-    else
-      include scripts.jade
-   
+    include scripts.jade
     style(type='text/css', media='screen').
       body {
         /* Margin bottom by footer height */

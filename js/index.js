@@ -101,22 +101,26 @@ var recorder = (function(){
 
 var cuer = (function(){
 	var ele;
-	var act;
+	var act = [];
 	function testFunc(e){
 		console.log(e.key);
 	}
-	function bind(id, f){
+	function bind(id, f1, f2){
 		ele = $(id);
-		act = f || testFunc;
-		ele.on('keydown',act);
+		act = [f1, f2];
+		if(act[0] == null)
+			act[0] = testFunc;
+		ele.on('keydown',act[0]);
+		ele.on('keyup', act[1]);
 	}
 	function unbind(){
 		if(ele == null){
 			return;
 		}
-		ele.off('keydown', act);
+		ele.off('keydown', act[0]);
+		ele.off('keyup', act[1]);
 		ele = null;
-		act = null;
+		act = [];
 	}
 	return {
 		bind: bind,
@@ -553,9 +557,9 @@ function use_local_store(){
 }
 function initUI(){
     var ww = 9, wh = 130;
-	//$('#keyboard_panel').html(make_keyboard(n_oct,20,36,28));
 	$("#keyboard").css({"height": wh, "width": ww * 104}).html(make_keyboard());
 	$('#mode_panel').html(make_modeboard(["maj","min","aug", "dim", "dom7", "maj7"]));
+	cuer.bind('#amplitude',keyHandlers[0],keyHandlers[1]);
 
 	// ace editor
 	['melody','harmony','texture'].forEach(function(e){

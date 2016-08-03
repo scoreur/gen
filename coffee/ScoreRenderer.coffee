@@ -72,7 +72,7 @@ class @ScoreRenderer
     return res
 
   toBit: toBit
-  dur_obj: (sum, dur)->
+  dur_obj = (sum, dur)->
     if sum == 0
       return{
         sum: dur,
@@ -159,21 +159,18 @@ class @ScoreRenderer
     raw_w = (@geo.system_width - @geo.reserved_width) // @layout.measure_per_system
     sharp = MG.key_sig[s.key_sig] >= 0
     toScale = MG.pitchToScale(s.scale, s.key_sig)
-    #console.log(s)
+    console.log('render', s.tracks)
     @measures = []
     melody = s.tracks[0]
     #console.log melody
     for  i in [0...melody.length] by 1
-      stave = this.newStave(i, s.key_sig)
-      if i==0
-        stave.addTimeSignature(s.time_sig.join('/'))
       notes = []
       ties = []
       later_tie = []
       sum = 0
-
-      melody[i].forEach (e)=>
-        {sum, dur} = @dur_obj(sum, 16 * e[0] / s.ctrl_per_beat)
+      console.log i
+      melody[i].forEach (e)->
+        {sum, dur} = dur_obj(sum, 16 * e[0] / s.ctrl_per_beat)
         durs = []
         pd = 0
         dur.forEach (d)->
@@ -254,15 +251,17 @@ class @ScoreRenderer
         beat_value: s.time_sig[1],
         resolution: Vex.Flow.RESOLUTION
       }
-      voice.setStrict(true)
+      #voice.setStrict(true)
+
 
 
       # Add notes to voice
       try
         voice.addTickables(notes)
       catch err
-        console.log err
+        console.log err.message
         continue
+      console.log voice
       # Add accidental
       Vex.Flow.Accidental.applyAccidentals([voice], s.key_sig)
       # Add beams
@@ -274,6 +273,10 @@ class @ScoreRenderer
         w -= @geo.reserved_width
       if i == 0
         w -= 10
+
+      stave = this.newStave(i, s.key_sig)
+      if i==0
+        stave.addTimeSignature(s.time_sig.join('/'))
 
       formatter = new Vex.Flow.Formatter().
         joinVoices([voice]).
