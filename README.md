@@ -7,18 +7,19 @@ Introduction
 The app is targeted at both web and desktop.
 ### Goal
 * Provide basic score input (melody/harmony/texture) and operations on MIDI file.
-* Provide a general way to incorporate structural information into music composition, generating good melody and harmony.
+* Incorporate structural information into music composition, generating good melody and harmony.
 
 ### User Interface
-* Score Viewer (support pdf, image or rendered from score input).
+* Viewer (support pdf, image or rendered from score input).
 * Editors for melody, harmony, texture, score settings and schema
 * Buttons (generate, parse, play, etc)
-* Top Menu: File, Edit
+* Top Menu: File, Edit, View, Examples (json/midi/pdf)
 * Bottom Menu: Keyboard, Console, Tutorial, Instrument List
 
 ### Illustrative Workflow
-1. Using default score is summertime, just click `parse`, then the score will be parsed and rendered and you can play melody, harmony or all the MIDI tracks generated from that score.
-2. In Example menu, click `load sample json` to load one excerpt from Chopin's *butterfly etude* . Then play the MIDI or generate new melody based on the associated schema.
+* Using default score is summertime, just click `parse`, then the score will be parsed and rendered and you can play melody, harmony or all the MIDI tracks generated from that score.
+* In Example menu, click `load sample json` to load one excerpt from Chopin's *butterfly etude* . Then play the MIDI or generate new melody based on the associated schema.
+* In Example menu, click `load sample midi` to load Bach's two-part invention No.1, then analyze it (in Edit menu), set seed `s1` (in Edit menu). Then you can generate music based on the rhythmic patterns in the MIDI.
 
 Music Generation
 ------------
@@ -32,7 +33,7 @@ include crafted repetitions, transpositions, inversions, etc;
 3. between-block modification
 make coherent transitions, cadences, etc, also adjust notes not fit the harmony due to block operations;
 4. ornamentation
-add grace notes or other small variations to enhance musicality without affecting the structure
+add grace notes, trills or other small variations to enhance musicality without affecting the structure
 
 
 

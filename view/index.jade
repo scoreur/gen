@@ -62,15 +62,39 @@ html
           .modal.footer
 
     // Ctrl
-    #ctrl.modal.fade(tabindex='-2', role='dialog', aria-hidden='true')
+    #ctrl1.modal.fade(tabindex='-2', role='dialog', aria-hidden='true')
       .modal-dialog.modal-sm(role='')
         .modal-body
           input.form-control#ctrl_mul(type="text", placeholder="2")
           button.btn-default#inc_ctrl(data-dismiss='modal') Multiply
+    #ctrl2.modal.fade(tabindex='-3', role='dialog', aria-hidden='true')
+      .modal-dialog.modal-sm(role='')
+        .modal-body
+          input.form-contral#ctrl_seed(type="text", placeholder="s1")
+          button.btn-default#set_seed(data-dismiss='modal') Set
     // Contents
     .container-fluid
       // Viewer
       #score_viewer.row
+        // buttons
+        .nav.col-sr-1.col-xs-3
+          ul.list-group
+            li.list-group-item
+              #gen.btn.btn-info.btn-block Generate
+            li.list-group-item
+              #parse.btn.btn-primary.btn-block Parse
+            li.list-group-item
+              #play_melody.btn.btn-info.btn-block Melody
+                span.glyphicon.glyphicon-play
+
+            li.list-group-item
+              #play_harmony.btn.btn-info.btn-block Harmony
+                span.glyphicon.glyphicon-play
+
+            li.list-group-item
+              #play_MIDI.btn.btn-info.btn-block MIDI
+                span.glyphicon.glyphicon-play
+        // score display
         .tab-content.col-sr-10.col-xs-9
           .tab-pane.in.active#img_viewer
             img#score_img.img-responsive(src='')
@@ -101,39 +125,22 @@ html
                 span.page_num 1
                 |  /
                 span.page_count 1
-        .nav.col-sr-1.col-xs-3
-          ul.list-group
-            li.list-group-item
-              #gen.btn.btn-info.btn-block Generate
-            li.list-group-item
-              #parse.btn.btn-primary.btn-block Parse
-            li.list-group-item
-              #play_melody.btn.btn-info.btn-block Melody
-                span.glyphicon.glyphicon-play
-
-            li.list-group-item
-              #play_harmony.btn.btn-info.btn-block Harmony
-                span.glyphicon.glyphicon-play
-
-            li.list-group-item
-              #play_MIDI.btn.btn-info.btn-block MIDI
-                span.glyphicon.glyphicon-play
-
         .col-sr-1.sr-only
-
       // Player
       .row
-        .col-md-7.col-xs-10
+        .col-sr-1.col-xs-1
+        .col-sr-7.col-xs-9
           progress#midi_progress.progress.hidden.progress-info(max='100', value='0', style='width: 100%;') 
           input#play_slider.progress(type='range', min='0', max='100', value='0') 
-        .col-md-3.col-xs-2
+        .col-sr-3.col-xs-2
           a.pager
             span#currentTime 
             | / 
             span#endTime
-        .col-md-1.col-xs-0
+
       // Editor 1
       .row
+
         .col-sr-6.col-xs-10.col-md-6
           ul.nav.nav-tabs.nav-justified.nav-pills
             li.active(data-toggle='tab', data-target='#melody_wrapper')
@@ -167,6 +174,7 @@ html
               .editor#ace_schema(style='height:300px')
               ul#btn_gp2
         .xs-only.col-xs-2
+
 
 
       .row

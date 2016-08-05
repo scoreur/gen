@@ -374,6 +374,54 @@ var click_event_list = {
 	    app.analysis(null, 16);
 		$('li[data-target="#midi_viewer"]').click();
 	},
+	'set_seed': function(){
+		var seeds = _.keys(app.schema.seeds);
+
+		var seed_id = $('#ctrl_seed').val();
+		if(seeds.indexOf(seed_id)<0){
+			return $.notify('seed id not exist!', 'warning');
+		}
+		if(MG.ref_midi_info == null){
+			if(MIDI.Player.currentData == null){
+				return $.notify('No MIDI analyzed', 'warning');
+			}else{
+				app.analysis(null, 16);
+			}
+		}
+		// get data, transform duration
+		var seed = app.schema.seeds[seed_id];
+		console.log (seed);
+
+		if ("dur" in seed){
+			// rhythm
+			var tmp = _.unzip(MG.ref_midi_info.rhythm);
+			seed.choices = tmp[0].map(function(ee){
+				return ee.split(',');
+			});
+			seed.weights = tmp[1];
+
+
+		}else{
+			// interval
+			var one = MG.ref_midi_info.melody.one;
+			one = _.groupBy(one, function(ee){
+				return ee[0].split(',')[1];
+			});
+			for(var ee in one){
+				// sum
+				one[ee] = _.reduce(one[ee], function(a,b){return a+b[1];}, 0);
+			}
+			seed.choices = _.keys(one);
+			seed.weights = _.values(one);
+
+
+		}
+		app.updateEditor();
+		$.notify('seed '+seed_id+' set!', 'success');
+
+
+
+	},
 	'melody_absolute': function(){
 
 	},
@@ -416,7 +464,7 @@ var click_event_list = {
 				$.notify('NOT updated!', 'info');
 				return;
 			}
-			var obj = JSON.parse(app.editor.score.getValue());
+			var obj = JSON.parse(app.editor.settings.getValue());
 			['melody', 'harmony', 'texture'].forEach(function(e0){
 				var data = app.editor[e0].getValue().split(/[/\n]+/);
 				data = data.map(function(e1){
@@ -442,7 +490,7 @@ var click_event_list = {
 			});
 
 			obj.ctrl_per_beat *= mul;
-			app.editor.score.setValue(JSON.stringify(obj, null, 2), -1);
+			app.editor.settings.setValue(JSON.stringify(obj, null, 2), -1);
 			obj = JSON.parse(app.editor.schema.getValue());
 			obj.ctrl_per_beat *= mul;
 			app.editor.schema.setValue(JSON.stringify(obj, null, 2), -1);

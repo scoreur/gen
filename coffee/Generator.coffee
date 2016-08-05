@@ -31,10 +31,12 @@ class @Generator
 
   evaluate: (data)->
     info = MG.midi_statistics(data)
-    #console.log info
+    console.log 'eval', data, info
 
     report = {}
 
+    if(info.rhythm.length == 0)
+      return
     r_all = 0
     info.rhythm.forEach (e)->
       r_all += e[1]
@@ -247,6 +249,7 @@ class @Generator
       seed2 = options.interval
 
     n = dur // (seed.dur/swarp)
+
 
     rc1 = rndPicker(seed.choices, seed.weights)
     pre = scale_len * 4
