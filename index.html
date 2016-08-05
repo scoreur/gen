@@ -254,23 +254,59 @@ The score renderer uses <a href="https://github.com/0xfe/vexflow">vexflow</a> as
             <h4 class="modal-title">Syntax</h4>
           </div>
           <div class="modal-body"><h2 id="melody-syntax">Melody Syntax</h2>
-<p>One line per measure, each line contains several notes separated by space.<br>Each note has the format <code>(pitch[flag])*,duration</code>. The pitch is represented in scale number (major, minor, pentatonic, blues, ...) 1-7, with reference to the key of the score.
+<p>One line per measure or use <code>|</code> to separate, each measure contains several notes or control change separated by space.
+Each note has the format <code>(pitch[flag])*,duration[tie]</code>. The pitch is represented in scale degree (major, minor, pentatonic, blues, ...) 1-7, with reference to the key of the score.
 The duration is in unit of the shortest note in the score. The optional flag can be:</p>
 <ul>
 <li>#, one half step up;</li>
 <li>b, one half step down;</li>
 <li>+, one octave up;</li>
-<li>-, one octave down;</li>
-<li>^, tied to the next note.<br>Use <code>:flag</code> format to shift the reference pitch for all the following notes. Use <code>:</code> to reset the reference pitch.</li>
+<li>-, one octave down.</li>
 </ul>
+<p>Use <code>:flag</code> format to shift the reference pitch for all the following notes. Use <code>:</code> to reset the reference pitch. To tie the note, just add the symbol <code>^</code> to its duration.</p>
 <h2 id="harmony-syntax">Harmony Syntax</h2>
 <p>One line per measure. Use <code>chord_name,duration</code> format.</p>
 <h2 id="texture-syntax">Texture Syntax</h2>
 <p>Support inversion, doubling of the chords, both vertical and horizontal arrangements.
-Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord class is obtained from the harmony), then the arrangement is in the same syntax as the melody.</p>
+Use <code>@(pitch[flag])*</code> format to specify the chord template (the chord class is obtained from the harmony), then the arrangement is in the same syntax as the melody.</p>
 <h2 id="schema-syntax">Schema Syntax</h2>
-<p>JSON format, specify the structures and how the melody/harmony/texture for each block is generated.</p>
+<p>JSON format, specify the structures and how the melody/harmony/texture for each block is generated.
+You need to specify the following entry:</p>
+<ul>
+<li><code>block</code>: a dict of <code>block_id: block_duration</code>;</li>
+<li><code>structure</code>: an array of <code>block_id</code> (can be repeatable)</li>
+<li><code>seeds</code>: a dict of <code>seed_id: seed_option</code>, serve as the random source of the generator. The <code>seed_option</code> should contain <code>dur</code>, <code>choices</code> and <code>weights</code>;</li>
+<li><code>melody</code>: a dict of <code>block_id: generating_options</code>. The <code>generating_options should contain</code>mode` (random with/without chord, transpose, reverse, etc). The other options depends on which mode it is for.</li>
+</ul>
+<p>Here is some samples for currently supported mode:</p>
+<pre><code>    {
+        &quot;mode&quot;: &quot;chord&quot;,
+        &quot;options&quot;: {
+          &quot;chords&quot;: [
+            &quot;Gb,4 Db,4&quot;,
+            &quot;Ebm,4 Bbm,4&quot;
+          ],
+          &quot;rhythm&quot;: {
+            &quot;seed&quot;: &quot;s1&quot;,
+            &quot;swarp&quot;: 4
+          },
+          &quot;interval&quot;: {
+            &quot;chromatic&quot;: false,
+            &quot;seed&quot;: &quot;s2&quot;
+          }
+        }
+    }
 
+    {
+      &quot;mode&quot;: &quot;transpose&quot;,
+      &quot;options&quot;: {
+        &quot;src&quot;: &quot;A&quot;,
+        &quot;scale&quot;: &quot;maj&quot;,
+        &quot;offset&quot;: 0,
+        &quot;interval&quot;: 3
+      }
+    }
+</code></pre>
           </div>
           <div class="modal-footer"></div>
         </div>

@@ -1849,11 +1849,11 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
       m = MidiFile(data);
       settings = {
-        key_sig: MG.key_sig_rev[simpMidi.prototype.getKeySignature.call(m)[0]],
-        time_sig: simpMidi.prototype.getTimeSignature.call(m),
+        key_sig: MG.key_sig_rev[m.getKeySignature()[0]],
+        time_sig: m.getTimeSignature(),
         ctrl_per_beat: ctrl_per_beat
       };
-      q = simpMidi.prototype.quantize.call(m, ctrl_per_beat);
+      q = m.quantize(ctrl_per_beat);
       tracks = q.map(function(track) {
         var delta, res, ret, tmp;
         res = [];
@@ -1886,7 +1886,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       obj.setMelody(tracks[0], true);
       obj.setTexture(tracks[1], [], true);
       this.obj = obj;
-      this.editor.score.setValue(JSON.stringify(this.obj.getSettings(), null, 2), -1);
+      this.editor.settings.setValue(JSON.stringify(this.obj.getSettings(), null, 2), -1);
       this.editor.melody.setValue(this.obj.toText().join('\n'), -1);
       info = tracks.map(function(e) {
         return e.info;
