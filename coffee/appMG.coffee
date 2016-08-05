@@ -324,11 +324,11 @@ class @AppMG
     ctrl_per_beat ?=  8
     m = MidiFile(data)
     settings = {
-      key_sig: MG.key_sig_rev[simpMidi::getKeySignature.call(m)[0]],
-      time_sig: simpMidi::getTimeSignature.call(m),
+      key_sig: MG.key_sig_rev[m.getKeySignature()[0]],
+      time_sig: m.getTimeSignature(),
       ctrl_per_beat: ctrl_per_beat
     }
-    q = simpMidi::quantize.call(m, ctrl_per_beat)
+    q = m.quantize(ctrl_per_beat)
     tracks = q.map((track) ->
       res = []
       tmp = []
@@ -368,7 +368,7 @@ class @AppMG
     obj.setMelody tracks[0], true
     obj.setTexture tracks[1], [], true
     @obj = obj
-    @editor.score.setValue(JSON.stringify(@obj.getSettings(),null,2), -1);
+    @editor.settings.setValue(JSON.stringify(@obj.getSettings(),null,2), -1);
     @editor.melody.setValue(@obj.toText().join('\n'), -1);
     #@renderer.render(@obj)
     info =  tracks.map (e)-> e.info
