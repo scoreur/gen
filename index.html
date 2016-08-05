@@ -92,8 +92,9 @@
             <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Edit<span class="caret"></span></a>
               <ul class="dropdown-menu nav nav-tabs nav-stacked">
                 <li><a id="analyze_midi">Analyze MIDI</a></li>
+                <li><a data-toggle="modal" data-target="#ctrl2" href="#ctrl2">Set Seed From MIDI</a></li>
                 <li><a id="reset_editor">Reset Editor</a></li>
-                <li><a data-toggle="modal" data-target="#ctrl" href="#ctrl">Increase Controls</a></li>
+                <li><a data-toggle="modal" data-target="#ctrl1" href="#ctrl1">Increase Controls</a></li>
                 <li><a id="melody_absolute">Melody in Note Name</a></li>
                 <li><a id="melody_relative">Melody in Scale Degree</a></li>
                 <li><a id="harmony_absolute">Harmony in Note Name</a></li>
@@ -196,21 +197,22 @@
 <h3 id="goal">Goal</h3>
 <ul>
 <li>Provide basic score input (melody/harmony/texture) and operations on MIDI file.</li>
-<li>Provide a general way to incorporate structural information into music composition, generating good melody and harmony.</li>
+<li>Incorporate structural information into music composition, generating good melody and harmony.</li>
 </ul>
 <h3 id="user-interface">User Interface</h3>
 <ul>
-<li>Score Viewer (support pdf, image or rendered from score input).</li>
+<li>Viewer (support pdf, image or rendered from score input).</li>
 <li>Editors for melody, harmony, texture, score settings and schema</li>
 <li>Buttons (generate, parse, play, etc)</li>
-<li>Top Menu: File, Edit</li>
+<li>Top Menu: File, Edit, View, Examples (json/midi/pdf)</li>
 <li>Bottom Menu: Keyboard, Console, Tutorial, Instrument List</li>
 </ul>
 <h3 id="illustrative-workflow">Illustrative Workflow</h3>
-<ol>
+<ul>
 <li>Using default score is summertime, just click <code>parse</code>, then the score will be parsed and rendered and you can play melody, harmony or all the MIDI tracks generated from that score.</li>
 <li>In Example menu, click <code>load sample json</code> to load one excerpt from Chopin&#39;s <em>butterfly etude</em> . Then play the MIDI or generate new melody based on the associated schema.</li>
-</ol>
+<li>In Example menu, click <code>load sample midi</code> to load Bach&#39;s two-part invention No.1, then analyze it (in Edit menu), set seed <code>s1</code> (in Edit menu). Then you can generate music based on the rhythmic patterns in the MIDI.</li>
+</ul>
 <h2 id="music-generation">Music Generation</h2>
 <p>The generation procedure includes four phases:</p>
 <ol>
@@ -221,7 +223,7 @@ include crafted repetitions, transpositions, inversions, etc;</li>
 <li>between-block modification
 make coherent transitions, cadences, etc, also adjust notes not fit the harmony due to block operations;</li>
 <li>ornamentation
-add grace notes or other small variations to enhance musicality without affecting the structure</li>
+add grace notes, trills or other small variations to enhance musicality without affecting the structure</li>
 </ol>
 <h2 id="score-representation">Score Representation</h2>
 <p>The score input is based on the scale (e.g., major/pentatonic/blues scales, etc)
@@ -631,7 +633,7 @@ You need to specify the following entry:</p>
       </div>
     </div>
     <!-- Ctrl-->
-    <div id="ctrl" tabindex="-2" role="dialog" aria-hidden="true" class="modal fade">
+    <div id="ctrl1" tabindex="-2" role="dialog" aria-hidden="true" class="modal fade">
       <div role="" class="modal-dialog modal-sm">
         <div class="modal-body">
           <input id="ctrl_mul" type="text" placeholder="2" class="form-control">
@@ -639,10 +641,39 @@ You need to specify the following entry:</p>
         </div>
       </div>
     </div>
+    <div id="ctrl2" tabindex="-3" role="dialog" aria-hidden="true" class="modal fade">
+      <div role="" class="modal-dialog modal-sm">
+        <div class="modal-body">
+          <input id="ctrl_seed" type="text" placeholder="s1" class="form-contral">
+          <button id="set_seed" data-dismiss="modal" class="btn-default">Set</button>
+        </div>
+      </div>
+    </div>
     <!-- Contents-->
     <div class="container-fluid">
       <!-- Viewer-->
       <div id="score_viewer" class="row">
+        <!-- buttons-->
+        <div class="nav col-sr-1 col-xs-3">
+          <ul class="list-group">
+            <li class="list-group-item">
+              <div id="gen" class="btn btn-info btn-block">Generate</div>
+            </li>
+            <li class="list-group-item">
+              <div id="parse" class="btn btn-primary btn-block">Parse</div>
+            </li>
+            <li class="list-group-item">
+              <div id="play_melody" class="btn btn-info btn-block">Melody<span class="glyphicon glyphicon-play"></span></div>
+            </li>
+            <li class="list-group-item">
+              <div id="play_harmony" class="btn btn-info btn-block">Harmony<span class="glyphicon glyphicon-play"></span></div>
+            </li>
+            <li class="list-group-item">
+              <div id="play_MIDI" class="btn btn-info btn-block">MIDI<span class="glyphicon glyphicon-play"></span></div>
+            </li>
+          </ul>
+        </div>
+        <!-- score display-->
         <div class="tab-content col-sr-10 col-xs-9">
           <div id="img_viewer" class="tab-pane in active"><img id="score_img" src="" class="img-responsive"></div>
           <div id="pdf_viewer" class="tab-pane">
@@ -667,35 +698,16 @@ You need to specify the following entry:</p>
             </ul>
           </div>
         </div>
-        <div class="nav col-sr-1 col-xs-3">
-          <ul class="list-group">
-            <li class="list-group-item">
-              <div id="gen" class="btn btn-info btn-block">Generate</div>
-            </li>
-            <li class="list-group-item">
-              <div id="parse" class="btn btn-primary btn-block">Parse</div>
-            </li>
-            <li class="list-group-item">
-              <div id="play_melody" class="btn btn-info btn-block">Melody<span class="glyphicon glyphicon-play"></span></div>
-            </li>
-            <li class="list-group-item">
-              <div id="play_harmony" class="btn btn-info btn-block">Harmony<span class="glyphicon glyphicon-play"></span></div>
-            </li>
-            <li class="list-group-item">
-              <div id="play_MIDI" class="btn btn-info btn-block">MIDI<span class="glyphicon glyphicon-play"></span></div>
-            </li>
-          </ul>
-        </div>
         <div class="col-sr-1 sr-only"></div>
       </div>
       <!-- Player-->
       <div class="row">
-        <div class="col-md-7 col-xs-10">
+        <div class="col-sr-1 col-xs-1"></div>
+        <div class="col-sr-7 col-xs-9">
           <progress id="midi_progress" max="100" value="0" style="width: 100%;" class="progress hidden progress-info"> </progress>
           <input id="play_slider" type="range" min="0" max="100" value="0" class="progress">
         </div>
-        <div class="col-md-3 col-xs-2"><a class="pager"><span id="currentTime"> </span>/ <span id="endTime"></span></a></div>
-        <div class="col-md-1 col-xs-0"></div>
+        <div class="col-sr-3 col-xs-2"><a class="pager"><span id="currentTime"> </span>/ <span id="endTime"></span></a></div>
       </div>
       <!-- Editor 1-->
       <div class="row">
