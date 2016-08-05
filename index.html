@@ -131,7 +131,7 @@
                 <li><a data-toggle="modal" data-target="#tutorial" href="#tutorial">Tutorial</a></li>
               </ul>
             </li>
-            <li><a href="about.pdf" target="_blank">About</a></li>
+            <li><a data-toggle="modal" data-target="#readme" href="#readme">About</a></li>
           </ul>
         </div>
         <!-- /.navbar-collapse-->
@@ -184,13 +184,76 @@
       </div>
     </nav>
     <!-- Modal-->
+    <div id="readme" tabindex="-3" aria-hidden="true" class="modal fade">
+      <div role="document" class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Read Me</h4>
+          </div>
+          <div class="modal-body"><h1 id="-music-generator-https-scoreur-github-io-gen-"><a href="https://scoreur.github.io/gen">Music Generator</a> </h1>
+<h2 id="introduction">Introduction</h2>
+<p>The app is targeted at both web and desktop.</p>
+<h3 id="goal">Goal</h3>
+<ul>
+<li>Provide basic score input (melody/harmony/texture) and operations on MIDI file.</li>
+<li>Provide a general way to incorporate structural information into music composition, generating good melody and harmony.</li>
+</ul>
+<h3 id="user-interface">User Interface</h3>
+<ul>
+<li>Score Viewer (support pdf, image or rendered from score input).</li>
+<li>Editors for melody, harmony, texture, score settings and schema</li>
+<li>Buttons (generate, parse, play, etc)</li>
+<li>Top Menu: File, Edit</li>
+<li>Bottom Menu: Keyboard, Console, Tutorial, Instrument List</li>
+</ul>
+<h3 id="illustrative-workflow">Illustrative Workflow</h3>
+<ol>
+<li>Using default score is summertime, just click <code>parse</code>, then the score will be parsed and rendered and you can play melody, harmony or all the MIDI tracks generated from that score.</li>
+<li>In Example menu, click <code>load sample json</code> to load one excerpt from Chopin&#39;s <em>butterfly etude</em> . Then play the MIDI or generate new melody based on the associated schema.</li>
+</ol>
+<h2 id="music-generation">Music Generation</h2>
+<p>The generation procedure includes four phases:</p>
+<ol>
+<li>low-level structural optimization (within one block)
+the current evaluation is based on harmony (chord abstraction), simplicity (material reuse), associability (piecewise similarity, auditory streaming).</li>
+<li>high-level structural enforcement (upon defined blocks)
+include crafted repetitions, transpositions, inversions, etc;</li>
+<li>between-block modification
+make coherent transitions, cadences, etc, also adjust notes not fit the harmony due to block operations;</li>
+<li>ornamentation
+add grace notes or other small variations to enhance musicality without affecting the structure</li>
+</ol>
+<h2 id="score-representation">Score Representation</h2>
+<p>The score input is based on the scale (e.g., major/pentatonic/blues scales, etc)
+The score parser is generated from lex file by <a href="https://github.com/zaach/jison">jison</a>. And can be extended to support more MIDI event like tempo changes.
+The score renderer uses <a href="https://github.com/0xfe/vexflow">vexflow</a> as underlying library.</p>
+<h2 id="utilities">Utilities</h2>
+<ul>
+<li>MIDI: open MIDI file, quantize, analyze, render as score, save as wav/mp3</li>
+<li>keyboard: <code>a, s, d, f, j, k, l, ;</code> correponds to <code>C, D, E, F, G, A, B</code> as the white keys, and the black keys are <code>w, e, u, i, o</code> which have similar positions as on the piano keyboard.</li>
+</ul>
+<h2 id="development-guide">Development Guide</h2>
+<h3 id="build">Build</h3>
+<ul>
+<li>Run <code>grunt web</code> to generate <code>index.html</code> and <code>js/gen-build.js</code> for the website.</li>
+<li>Run <code>grunt app</code> to generate <code>app.html</code>, and the generated js file is in <code>coffee/</code>.</li>
+</ul>
+<h3 id="launch">Launch</h3>
+<p>Run <code>npm start</code> to launch the app or setup a http server.</p>
+<p>Try the examples in the menu <code>Example</code>. Click Parse, Render, Play MIDI one by one. Edit the melody or harmony, or generate from the schema. Then parse again.</p>
+
+          </div>
+          <div class="modal-footer"></div>
+        </div>
+      </div>
+    </div>
     <div id="tutorial" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" class="modal fade">
       <div role="document" class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Syntax</h4>
           </div>
-          <div class="modal-body"><h2 id="melody">Melody</h2>
+          <div class="modal-body"><h2 id="melody-syntax">Melody Syntax</h2>
 <p>One line per measure, each line contains several notes separated by space.<br>Each note has the format <code>(pitch[flag])*,duration</code>. The pitch is represented in scale number (major, minor, pentatonic, blues, ...) 1-7, with reference to the key of the score.
 The duration is in unit of the shortest note in the score. The optional flag can be:</p>
 <ul>
@@ -200,12 +263,12 @@ The duration is in unit of the shortest note in the score. The optional flag can
 <li>-, one octave down;</li>
 <li>^, tied to the next note.<br>Use <code>:flag</code> format to shift the reference pitch for all the following notes. Use <code>:</code> to reset the reference pitch.</li>
 </ul>
-<h2 id="harmony">Harmony</h2>
+<h2 id="harmony-syntax">Harmony Syntax</h2>
 <p>One line per measure. Use <code>chord_name,duration</code> format.</p>
-<h2 id="texture">Texture</h2>
+<h2 id="texture-syntax">Texture Syntax</h2>
 <p>Support inversion, doubling of the chords, both vertical and horizontal arrangements.
 Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord class is obtained from the harmony), then the arrangement is in the same syntax as the melody.</p>
-<h2 id="schema">Schema</h2>
+<h2 id="schema-syntax">Schema Syntax</h2>
 <p>JSON format, specify the structures and how the melody/harmony/texture for each block is generated.</p>
 
           </div>
@@ -628,7 +691,7 @@ Use <code>:(pitch[flag])*</code> format to specify the chord template (the chord
           </ul>
           <div class="tab-content">
             <div id="score_wrapper" class="tab-pane in active">
-              <div id="ace_score" style="height:300px" class="editor"></div>
+              <div id="ace_settings" style="height:300px" class="editor"></div>
               <ul id="btn_gp1"></ul>
             </div>
             <div id="schema_wrapper" class="tab-pane">

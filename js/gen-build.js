@@ -388,6 +388,11 @@
     "dim7": "Diminished seventh chord"
   };
 
+
+  /*
+      sample data
+   */
+
   this.score_summer = MG.score_summer = {
     settings: {
       tempo: 120,
@@ -504,6 +509,44 @@
         }
       }
     }
+  };
+
+
+  /*
+    utilities
+   */
+
+  MG.circularClone = function(obj) {
+    var clone, getVisited, visited;
+    visited = [];
+    getVisited = function(o) {
+      var i;
+      i = 0;
+      while (i < visited.length) {
+        if (visited[i][0] === o) {
+          return visited[i][1];
+        }
+        ++i;
+      }
+      return null;
+    };
+    clone = function(o) {
+      var i, ret;
+      if (typeof o !== 'object' || o === null) {
+        return o;
+      }
+      ret = getVisited(o);
+      if (ret !== null) {
+        return ret;
+      }
+      ret = Array.isArray(o) ? [] : {};
+      visited.push([o, ret]);
+      for (i in o) {
+        ret[i] = clone(o[i]);
+      }
+      return ret;
+    };
+    return clone(obj);
   };
 
   this.MG = MG;
@@ -1419,7 +1462,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 (function() {
   var Analyzer, MG, midi_statistics, obj_sort, seqPlayer;
 
-  MG = ((typeof module !== "undefined" && module !== null) && (typeof require !== "undefined" && require !== null) && require('./musical')) || this.MG;
+  MG = this.MG || ((typeof module !== "undefined" && module !== null) && (typeof require !== "undefined" && require !== null) && require('./musical')) || {};
 
 
   /*
@@ -1442,7 +1485,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     }
 
     seqPlayer.prototype.play = function(n) {
-      var channel, cur, loop1, nexti, onend, playing, q, rate;
+      var channel, cur, cur_i, loop1, nexti, onend, playing, q, rate;
       if (n == null) {
         n = 0;
       }
@@ -1451,6 +1494,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
       q = this.tracks[n];
       nexti = this.cur_i[n];
+      cur_i = this.cur_i;
       cur = q[nexti];
       nexti++;
       channel = n;
@@ -1480,7 +1524,7 @@ if (typeof module !== 'undefined' && require.main === module) {
                 }
               });
               playing[n] = false;
-              onend(n);
+              onend.call(_this, n);
             } else {
               if (q[nexti][0] > 0) {
                 notes.forEach(function(e) {
@@ -1494,10 +1538,10 @@ if (typeof module !== 'undefined' && require.main === module) {
                 nexti++;
                 if (nexti >= q.length) {
                   nexti = -1;
-                  _this.cur_i[n] = 0;
+                  cur_i[n] = 0;
                 }
               } else {
-                _this.cur_i[n] = nexti;
+                cur_i[n] = nexti;
                 nexti = -1;
               }
               loop1();
@@ -1547,11 +1591,6 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
       this.playing[n] = false;
       this.cur_i[n] = 0;
-    };
-
-    seqPlayer.prototype.setOnend = function(func) {
-      console.log('set onend');
-      return this.onend = func;
     };
 
     seqPlayer.prototype.fromScore = function(obj) {
@@ -1693,20 +1732,64 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   this.AppMG = (function() {
     function AppMG(ui, options) {
+      var playbtns;
+      this.ui = ui;
       if (options != null) {
         this.schema = options.schema, this.settings = options.settings, this.contents = options.contents;
       } else {
-        this.schema = Object.assign({}, MG.schema_summer);
-        this.settings = Object.assign({}, MG.score_summer.settings);
-        this.contents = Object.assign({}, MG.score_summer.contents);
+        this.schema = MG.circularClone(MG.schema_summer);
+        this.settings = MG.circularClone(MG.score_summer.settings);
+        this.contents = MG.circularClone(MG.score_summer.contents);
         this.obj = null;
       }
-      if (ui != null) {
-        this.editor = ui.editor, this.renderer = ui.renderer, this.playbtns = ui.playbtns;
-        this.player = new seqPlayer();
-      }
+      playbtns = this.playbtns = this.ui.playbtns.map(function(id) {
+        return $(id + '>span.glyphicon');
+      });
+      this.renderer = new ScoreRenderer(this.ui.renderer[0], void 0, this.ui.renderer[1]);
+      this.player = new seqPlayer();
+      this.player.onend = function(n) {
+        var i;
+        i = this.cur_i[n];
+        if (i > 0 && i < this.tracks[n].length) {
+          return;
+        }
+        return playbtns[n].toggleClass('glyphicon-play glyphicon-pause');
+      };
+      this.editor = {};
+      this.ui.editor[0].forEach((function(_this) {
+        return function(id) {
+          var editor;
+          editor = ace.edit('ace_' + id);
+          editor.setTheme("ace/theme/clouds");
+          editor.getSession().setMode("ace/mode/score");
+          editor.setFontSize(16);
+          editor.$blockScrolling = Infinity;
+          return _this.editor[id] = editor;
+        };
+      })(this));
+      this.ui.editor[1].forEach((function(_this) {
+        return function(id) {
+          var editor;
+          editor = ace.edit('ace_' + id);
+          editor.setTheme("ace/theme/clouds");
+          editor.getSession().setMode("ace/mode/json");
+          editor.getSession().setUseWrapMode(true);
+          editor.$blockScrolling = Infinity;
+          return _this.editor[id] = editor;
+        };
+      })(this));
+      this.updateEditor();
       return;
     }
+
+    AppMG.prototype.reset = function() {
+      this.schema = MG.circularClone(MG.schema_summer);
+      this.settings = MG.circularClone(MG.score_summer.settings);
+      this.contents = MG.circularClone(MG.score_summer.contents);
+      this.obj = null;
+      this.player = new seqPlayer();
+      return this.updateEditor();
+    };
 
     AppMG.prototype["export"] = function() {
       return {
@@ -1717,13 +1800,16 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     AppMG.prototype.updateEditor = function() {
-      ['melody', 'harmony', 'texture'].forEach((function(_this) {
+      this.ui.editor[0].forEach((function(_this) {
         return function(e) {
           _this.editor[e].setValue(_this.contents[e].join('\n'), -1);
         };
       })(this));
-      this.editor.score.setValue(JSON.stringify(this.settings, null, 2), -1);
-      this.editor.schema.setValue(JSON.stringify(this.schema, null, 2), -1);
+      return this.ui.editor[1].forEach((function(_this) {
+        return function(e) {
+          _this.editor[e].setValue(JSON.stringify(_this[e], null, 2), -1);
+        };
+      })(this));
     };
 
     AppMG.prototype.play = function(n) {
@@ -1738,7 +1824,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     AppMG.prototype.parse = function() {
       var e, error;
       try {
-        this.settings = JSON.parse(this.editor.score.getValue());
+        this.settings = JSON.parse(this.editor.settings.getValue());
       } catch (error) {
         e = error;
         $.notify('Bad score format!', 'warning');
@@ -2702,6 +2788,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       m = new simpMidi();
       delta = 0;
       vol = this.volumes[0];
+      m.addEvent(1, 0, 'programChange', 0, this.instrs[0] - 1);
       i = 0;
       while (i < q.length) {
         e = q[i];
@@ -2721,7 +2808,6 @@ if (typeof module !== 'undefined' && require.main === module) {
       m.setKeySignature(MG.key_sig[this.key_sig], 'maj');
       m.setTempo(this.tempo);
       m.setDefaultTempo(this.tempo);
-      m.setInstr(this.instrs[0]);
       MIDI.programChange(0, this.instrs[0] - 1);
       if (t === null) {
         m.finish();
