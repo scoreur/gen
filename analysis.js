@@ -13,7 +13,7 @@ var analysis = function(filename){
         raw_midi += String.fromCharCode(e);
     });
     var midi = MidiFile(raw_midi);
-    var res = simpMidi.prototype.quantize.call(midi, 8);
+    var res = midi.quantize(8);
 
 
 }

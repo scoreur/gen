@@ -1,4 +1,4 @@
-MG = (module? && require? && require('./musical')) || @MG
+MG = @MG || (module? && require? && require('./musical')) || {}
 
 ###
   player for note sequence
@@ -25,6 +25,7 @@ class seqPlayer
 
     q = @tracks[n]
     nexti = @cur_i[n]
+    cur_i = @cur_i
     cur = q[nexti]
     nexti++
     channel = n
@@ -47,15 +48,15 @@ class seqPlayer
       setTimeout (=>
         notes = if typeof cur[1] != 'object' then [ cur[1] ] else cur[1]
         if nexti < 0
-          notes.forEach (e) =>
+          notes.forEach (e) ->
             if e >= 21 and e <= 108
               MIDI.noteOff channel, e
             return
           playing[n] = false
-          onend n
+          onend.call @, n
         else
           if q[nexti][0] > 0
-            notes.forEach (e) =>
+            notes.forEach (e) ->
               if e >= 21 and e <= 108
                 MIDI.noteOff channel, e
               return
@@ -64,9 +65,9 @@ class seqPlayer
             nexti++
             if nexti >= q.length
               nexti = -1
-              @cur_i[n] = 0
+              cur_i[n] = 0
           else
-            @cur_i[n] = nexti
+            cur_i[n] = nexti
             nexti = -1
 
           loop1()
@@ -110,9 +111,7 @@ class seqPlayer
     @playing[n] = false
     @cur_i[n] = 0
     return
-  setOnend: (func)->
-    console.log 'set onend'
-    @onend = func
+
   # get note sequence from score
   fromScore: (obj) ->
 
@@ -239,18 +238,54 @@ MG.midi_statistics = midi_statistics = (obj) ->
 
 
 class @AppMG
-  constructor: (ui, options) ->
+  constructor: (@ui, options) ->
     if options?
       {@schema, @settings, @contents}  = options
     else
-      @schema = Object.assign({}, MG.schema_summer)
-      @settings = Object.assign({}, MG.score_summer.settings)
-      @contents = Object.assign({}, MG.score_summer.contents)
+      @schema = MG.circularClone(MG.schema_summer)
+      @settings = MG.circularClone(MG.score_summer.settings)
+      @contents = MG.circularClone(MG.score_summer.contents)
       @obj = null
-    if ui?
-      {@editor, @renderer, @playbtns} = ui
-      @player = new seqPlayer()
+
+    playbtns = @playbtns = @ui.playbtns.map (id)-> $(id+'>span.glyphicon')
+    @renderer = new ScoreRenderer(@ui.renderer[0], undefined,  @ui.renderer[1])
+    @player = new seqPlayer()
+    @player.onend = (n)->
+      i = @cur_i[n]
+      if i>0 && i<@tracks[n].length
+        return
+      playbtns[n].toggleClass('glyphicon-play glyphicon-pause')
+
+
+    @editor = {}
+    @ui.editor[0].forEach (id)=>
+      editor = ace.edit('ace_'+id)
+      editor.setTheme("ace/theme/clouds")
+      editor.getSession().setMode("ace/mode/score")
+      # editor.getSession().setUseWrapMode(true);
+      editor.setFontSize(16)
+      editor.$blockScrolling = Infinity
+      @editor[id] = editor
+    @ui.editor[1].forEach (id)=>
+      editor = ace.edit('ace_'+id)
+      editor.setTheme("ace/theme/clouds")
+      editor.getSession().setMode("ace/mode/json")
+      editor.getSession().setUseWrapMode(true);
+      editor.$blockScrolling = Infinity
+      @editor[id] = editor
+    @updateEditor()
+
+
     return
+
+  reset: ()->
+    @schema = MG.circularClone(MG.schema_summer)
+    @settings = MG.circularClone(MG.score_summer.settings)
+    @contents = MG.circularClone(MG.score_summer.contents)
+    @obj = null
+    @player = new seqPlayer()
+    @updateEditor()
+
 
   export: ->
       settings: @settings
@@ -258,12 +293,12 @@ class @AppMG
       contents: @contents
 
   updateEditor: ->
-    ['melody', 'harmony', 'texture'].forEach (e) =>
+    @ui.editor[0].forEach (e) =>
       @editor[e].setValue @contents[e].join('\n'), -1
       return
-    @editor.score.setValue JSON.stringify(@settings, null, 2), -1
-    @editor.schema.setValue JSON.stringify(@schema, null, 2), -1
-    return
+    @ui.editor[1].forEach (e) =>
+      @editor[e].setValue JSON.stringify(@[e], null, 2), -1
+      return
 
   play: (n)->
     if !@player.playing[n]
@@ -274,7 +309,7 @@ class @AppMG
 
   parse: ->
     try
-      @settings = JSON.parse(@editor.score.getValue())
+      @settings = JSON.parse(@editor.settings.getValue())
     catch e
       $.notify('Bad score format!', 'warning')
     ['melody','harmony','texture'].forEach (e)=>

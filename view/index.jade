@@ -25,6 +25,14 @@ html
     include topmenu.jade
     include bottommenu.jade
     // Modal
+    #readme.modal.fade(tabindex='-3', role=dialog, aria-hidden='true')
+      .modal-dialog.modal-lg(role='document')
+        .modal-content
+          .modal-header
+            h4.modal-title Read Me
+          .modal-body
+            include:marked ../README.md
+          .modal-footer
     #tutorial.modal.fade(tabindex='-1', role='dialog', aria-labelledby='myModalLabel', aria-hidden='true')
       .modal-dialog.modal-lg(role='document')
         .modal-content
@@ -152,7 +160,7 @@ html
             li.xs-only
           .tab-content
             .tab-pane.in.active#score_wrapper
-              .editor#ace_score(style='height:300px')
+              .editor#ace_settings(style='height:300px')
               ul#btn_gp1
 
             .tab-pane#schema_wrapper

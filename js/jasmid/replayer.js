@@ -1,4 +1,5 @@
 
+var MG = MG || {};
 
 function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 	var trackStates = [];
@@ -88,6 +89,7 @@ function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 			while(midiEvent) processNext(true);
 		}
 	};
+
 	function clone(o) {
 		if (typeof o != 'object') return (o);
 		if (o == null) return (o);
@@ -95,6 +97,7 @@ function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 		for (var key in o) ret[key] = clone(o[key]);
 		return ret;
 	};
+
 	processEvents();
 	return {
 		"getData": function() {
@@ -102,3 +105,10 @@ function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 		}
 	};
 };
+
+if(typeof module != 'undefined'){
+	module.exports = function(){
+
+		return Replayer;
+	}
+}

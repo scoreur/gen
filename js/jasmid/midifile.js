@@ -274,10 +274,7 @@ function MidiFile(data) {
 		}
 	}
 	
-	return {
-		'header': header,
-		'tracks': tracks
-	}
+	return new simpMidi(header, tracks);
 }
 
 
@@ -461,23 +458,22 @@ function simpEvent(deltaTime, subtype, param0, param1){
 	return event;
 }
 
-function simpMidi(){
-	this.header = {
+function simpMidi(header, tracks){
+	this.header = header || {
 		'formatType': 1,
 		'trackCount': 2,
 		'ticksPerBeat': 500
 	};
-	this.tsig = simpEvent(0, 'timeSignature', 4,4);
-    this.ksig = simpEvent(0, 'keySignature', 0, 'maj');
-    this.tempo = simpEvent(0, 'setTempo', 120);
-    this.instr = simpEvent(0, 'programChange', 0, 0);
-	var tracks = [[
+	this.tracks = tracks;
+	this.getTimeSignature(); //simpEvent(0, 'timeSignature', 4,4);
+    this.getKeySignature(); //simpEvent(0, 'keySignature', 0, 'maj');
+    this.getTempo(); // simpEvent(0, 'setTempo', 120);
+	this.tracks = this.tracks || [[
 	    this.tsig,
 	    this.ksig,
 	    this.tempo
 	],[
-	    this.instr]];
-	this.tracks = tracks;
+	    ]];
 
 }
 
@@ -486,7 +482,12 @@ simpMidi.prototype.setDefaultTempo = function(tempo){
 	this.header.ticksPerBeat = Math.floor(60000/tempo);
 };
 
+simpMidi.prototype.getDefaultTempo = function(){
+	return Math.floor(60000/this.header.ticksPerBeat);
+}
+
 simpMidi.prototype.getMeta = function(subtype){
+	if(this.tracks == null) return null;
 	var res = null;
 	var track = this.tracks[0];
 	for (var i = 0; i < track.length; ++i) {
@@ -515,6 +516,10 @@ simpMidi.prototype.getKeySignature = function(){
 	return [this.ksig.key, this.ksig.scale];
 }
 
+simpMidi.prototype.write = function(lazy){
+	return this.raw_midi = lazy? (this.raw_midi || MidiWriter(this)): MidiWriter(this);
+}
+
 simpMidi.prototype.setTimeSignature = function(n,d){
 	this.tsig.numerator = n;
 	this.tsig.denominator = d;
@@ -526,17 +531,12 @@ simpMidi.prototype.setKeySignature = function(k,m){
 simpMidi.prototype.setTempo = function(t){
 	this.tempo.microsecondsPerBeat = 60000000/t >>> 0;
 }
-simpMidi.prototype.setInstr = function(i){
-	this.instr.programNumber = i-1;
-}
+
 simpMidi.prototype.addEvent = function(){
-	if(this.tracks.length == 2){
-		this.tracks[1].push(simpEvent(...arguments));
-	}else{
-		var arg = Array.prototype.slice.call(arguments);
-		this.tracks[arg.shift()].push(simpEvent(...arg));
-	}
+	var arg = Array.prototype.slice.call(arguments);
+	this.tracks[arg.shift()].push(simpEvent(...arg));
 }
+
 simpMidi.prototype.finish = function(){
 	for(var i=0;i<this.tracks.length;++i){
 		this.tracks[i].push(simpEvent(0,'endOfTrack'));
@@ -548,12 +548,8 @@ simpMidi.prototype.addTrack = function(){
 }
 simpMidi.prototype.addNotes = function(l,dur,notes,vols,rollTime,delta){
 	var delta = delta || 0;
-	if(typeof rollTimes == 'undefined'){
-		rollTime = 0;
-	}
-	if(typeof vols == 'undefined'){
-		vols = [110];
-	}
+	var rollTime = rollTime || 0;
+	var vols = vols || [110]
 	if(typeof vols == 'number'){
 		vols = [vols];
 	}
@@ -563,7 +559,9 @@ simpMidi.prototype.addNotes = function(l,dur,notes,vols,rollTime,delta){
 	if(l < 1){l = 1;}
 	if(l >= this.tracks.length){ l = this.tracks.length - 1}
 	var track = this.tracks[l];
-	track.push(simpEvent(delta, 'noteOn', l-1, [notes[0], vols[0]]));
+
+	// the track l use the  channel l - 1
+ 	track.push(simpEvent(delta, 'noteOn', l-1, [notes[0], vols[0]]));
 	notes.slice(1).forEach( function(e, i){
 	    track.push(simpEvent(rollTime, 'noteOn', l-1, [e,vols[i] || vols[0]]));
 	});
@@ -575,6 +573,7 @@ simpMidi.prototype.addNotes = function(l,dur,notes,vols,rollTime,delta){
 }
 
 simpMidi.prototype.quantize = function(ctrl_per_beat){
+	var ctrl_per_beat = ctrl_per_beat || 8;
 	var ticks = this.header.ticksPerBeat;
 	var res = [];
 	for(var i=1;i<this.tracks.length;++i){

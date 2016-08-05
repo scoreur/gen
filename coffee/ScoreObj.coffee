@@ -246,6 +246,7 @@ class @ScoreObj
     m = new simpMidi()
     delta = 0
     vol = @volumes[0]
+    m.addEvent 1, 0, 'programChange', 0, @instrs[0]-1
     i = 0
     while i < q.length
       e = q[i]
@@ -263,7 +264,7 @@ class @ScoreObj
     m.setKeySignature MG.key_sig[@key_sig], 'maj'
     m.setTempo @tempo
     m.setDefaultTempo @tempo
-    m.setInstr(@instrs[0])
+
     MIDI.programChange(0,@instrs[0]-1)
 
     if t == null

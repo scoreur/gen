@@ -1,18 +1,4 @@
 
-
-
-
-function setupEditor(id){
-	var editor = ace.edit('ace_'+id);
-	editor.setTheme("ace/theme/clouds");
-	editor.getSession().setMode("ace/mode/score");
-	//editor.getSession().setUseWrapMode(true);
-	editor.setFontSize(16);
-	editor.$blockScrolling = Infinity;
-	return editor;
-
-}
-
 function load_local_midi(file, onsuccess){
 	if(file.type != 'audio/midi'){
 		console.log('file type cannot be ' + file.type);
@@ -35,6 +21,9 @@ function load_json(file, onsuccess){
 	reader.readAsText(file);
 	return true;
 }
+
+
+
 var lame_worker;
 
 var recorder = (function(){
@@ -42,6 +31,10 @@ var recorder = (function(){
 			navigator.webkitGetUserMedia ||
 			navigator.mozGetUserMedia ||
 			navigator.msGetUserMedia;
+	if(navigator.getUserMedia == null){
+		$.notify('microphone not supported', 'warn');
+		return null;
+	}
 	var context = new AudioContext();
 	var mic, processor;
 	var dataBuf = [];
@@ -99,7 +92,7 @@ var recorder = (function(){
 	}
 })();
 
-var cuer = (function(){
+var keybinder = (function(){
 	var ele;
 	var act = [];
 	function testFunc(e){
@@ -172,7 +165,7 @@ var tapper = (function(dur){
 		ref = Date.now();
 		buf = [];
 		cur = 0;
-		cuer.bind('body', cue);
+		keybinder.bind('body', cue);
 		setTimeout(loop, 0);
 	}
 	function stop(){
@@ -183,7 +176,7 @@ var tapper = (function(dur){
 			var ret = buf.slice();
 			console.log(ret);
 			buf = null;
-			cuer.unbind();
+			keybinder.unbind();
 			return ret;
 		}
 	}
@@ -252,15 +245,13 @@ function saveWav(data){
 
 
 
-var mds = new ScoreRenderer('midi_score', undefined,  'midi_pointer');
 var appUI = {
-	editor: {},
-	renderer: mds,
-	playbtns:[$('#play_melody>span.glyphicon'), $('#play_harmony>span.glyphicon')]
+	editor: [['melody','harmony','texture'], ['settings','schema']],
+	renderer: ['midi_score', 'midi_pointer'],
+	playbtns: ['#play_melody', '#play_harmony']
 };
-
 var app = new AppMG(appUI);
-app.cuer = cuer;
+app.keybinder = keybinder;
 app.tapper = tapper;
 
 var click_event_list = {
@@ -408,7 +399,7 @@ var click_event_list = {
 		app.editor.harmony.setValue(data.join('\n'), -1);
 	},
 	'reset_editor': function(){
-		app = new AppMG(appUI);
+		app.reset();
 		app.updateEditor();
 	},
 	'inc_ctrl': function(){
@@ -501,23 +492,6 @@ function registerEvents(){
 	for(var id in file_open_handlers){
 		openFor(id, file_open_handlers[id]);
 	}
-	app.player.setOnend(function(n){
-		var i = app.player.cur_i[n];
-		if(i>0 && i<app.player.tracks[n].length)
-		  return;
-		console.log('toggle');
-		switch(n){
-			case 0:
-				$('#play_melody>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
-				break;
-			case 1:
-				$('#play_harmony>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
-				break;
-			default:
-		};
-
-	});
-
 	MIDI.Player.setAnimation(function(res){
 		//console.log(res.percent)
 		$('#midi_progress').val(''+(100*res.percent)>>>0);
@@ -549,24 +523,8 @@ function initUI(){
     var ww = 9, wh = 130;
 	$("#keyboard").css({"height": wh, "width": ww * 104}).html(make_keyboard());
 	$('#mode_panel').html(make_modeboard(["maj","min","aug", "dim", "dom7", "maj7"]));
-	app.cuer.bind('#amplitude',keyHandlers[0],keyHandlers[1]);
-
+	app.keybinder.bind('#amplitude',keyHandlers[0],keyHandlers[1]);
 	// ace editor
-	['melody','harmony','texture'].forEach(function(e){
-		app.editor[e] = setupEditor(e);
-	});
-
-	['score','schema'].forEach(function(id){
-		var editor = ace.edit('ace_'+id);
-		editor.setTheme("ace/theme/clouds");
-		editor.getSession().setMode("ace/mode/json");
-		editor.getSession().setUseWrapMode(true);
-		editor.$blockScrolling = Infinity;
-		app.editor[id] = editor;
-		return editor;
-	});
-	app.updateEditor();
-
 	$('#score_img').attr('src','./score/summertime.png');
 }
 

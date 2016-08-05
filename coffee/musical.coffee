@@ -300,6 +300,10 @@ MG.chord_class_label =
   "aug7": "Augmented seventh chord",
   "dim7": "Diminished seventh chord",
 
+
+###
+    sample data
+###
 @score_summer = MG.score_summer =
   settings:
     tempo: 120,
@@ -403,6 +407,37 @@ MG.chord_class_label =
         interval:
           chromatic: false,
           seed: 's2'
+
+###
+  utilities
+###
+
+MG.circularClone = (obj) ->
+  visited = []
+  getVisited = (o) ->
+    i = 0
+    while i < visited.length
+      if visited[i][0] == o
+        return visited[i][1]
+      ++i
+    null
+
+  clone = (o) ->
+    if typeof o != 'object' or o == null
+      return o
+    ret = getVisited(o)
+    if ret != null
+      return ret
+    ret = if Array.isArray(o) then [] else {}
+    visited.push [
+      o
+      ret
+    ]
+    for i of o
+      ret[i] = clone(o[i])
+    ret
+
+  clone obj
 
 @MG = MG
 
