@@ -14,6 +14,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min.js" type="text/javascript"></script>
     <!-- underscore-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js" type="text/javascript"></script>
+    <!-- mathjs-->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/3.4.1/math.min.js" type="text/javascript"></script>
     <!-- Bootstrap-->
     <!-- Latest compiled and minified CSS-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -670,7 +672,9 @@ You need to specify the following entry:</p>
         </div>
         <!-- score display-->
         <div class="tab-content col-sr-10 col-xs-9">
-          <div id="img_viewer" class="tab-pane in active"><img id="score_img" src="" class="img-responsive"></div>
+          <div id="img_viewer" class="tab-pane in active">
+            <div style="height: 450px; overflow: scroll" class="img-wrapper"><img id="score_img" src="" class="img-responsive"></div>
+          </div>
           <div id="pdf_viewer" class="tab-pane">
             <div id="canvas-wrapper" style="height:400px; overflow: scroll">
               <canvas id="the-canvas" style="border:1px solid black"></canvas>
@@ -682,7 +686,7 @@ You need to specify the following entry:</p>
             </ul>
           </div>
           <div id="midi_viewer" class="tab-pane">
-            <div style="height: 600;" class="canvas-wrapper">
+            <div style="height: 400px; overflow: scroll" class="canvas-wrapper">
               <!-- canvas#midi_pointer(style='width: 100%; height:100%;left: 0; top: 0; z-index:0;')-->
               <canvas id="midi_score" style="width: 100%;left: 0; top: 0; z-index: 1;border:1px solid black;"></canvas>
             </div>
