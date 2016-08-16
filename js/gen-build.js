@@ -1732,20 +1732,80 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   this.AppMG = (function() {
     function AppMG(ui, options) {
-      var playbtns;
+      var options_container, tracks_container;
       this.ui = ui;
+      tracks_container = $(this.ui.tracks_container);
+      options_container = $(this.ui.options_container);
+      this.tracks_tabs = tracks_container.children('.nav-tabs');
+      this.tracks_contents = tracks_container.children('.tab-content');
+      this.options_tabs = options_container.children('.nav-tabs');
+      this.options_contents = options_container.children('.tab-content');
+      this.renderer = new ScoreRenderer(this.ui.renderer[0], void 0, this.ui.renderer[1]);
+      this.editor = {};
+      this.ui.editor[0].forEach((function(_this) {
+        return function(id, i) {
+          var editor, ele, wrapper;
+          wrapper = "track_" + i;
+          ele = $('<li data-toggle="tab" data-target="#' + wrapper + '"><a href="#' + wrapper + '">' + id[0].toUpperCase() + id.substr(1) + '</a></li>');
+          ele.children().append($('<span class="glyphicon glyphicon-play"></span>'));
+          _this.tracks_tabs.children('li.tab_plus').before(ele);
+          ele = $('<div class="tab-pane" id="' + wrapper + '"><div class="editor" id="ace_' + id.toLowerCase() + '" style="height:300px"></div></div>');
+          _this.tracks_contents.append(ele);
+          editor = ace.edit('ace_' + id.toLowerCase());
+          editor.setTheme("ace/theme/clouds");
+          editor.getSession().setMode("ace/mode/score");
+          editor.setFontSize(16);
+          editor.$blockScrolling = Infinity;
+          return _this.editor[id] = editor;
+        };
+      })(this));
+      this.tracks_tabs.children().first().addClass('active');
+      this.tracks_contents.children().first().addClass('active in');
+      this.ui.editor[1].forEach((function(_this) {
+        return function(id, i) {
+          var editor, ele, wrapper;
+          wrapper = "options_" + i;
+          ele = $('<li data-toggle="tab" data-target="#' + wrapper + '"><a href="#' + wrapper + '">' + id[0].toUpperCase() + id.substr(1) + '</a></li>');
+          _this.options_tabs.children('li.tab_plus').before(ele);
+          ele = $('<div class="tab-pane" id="' + wrapper + '"><div class="editor" id="ace_' + id.toLowerCase() + '" style="height:300px"></div></div>');
+          _this.options_contents.append(ele);
+          editor = ace.edit('ace_' + id.toLowerCase());
+          editor.setTheme("ace/theme/clouds");
+          editor.getSession().setMode("ace/mode/json");
+          editor.getSession().setUseWrapMode(true);
+          editor.$blockScrolling = Infinity;
+          return _this.editor[id] = editor;
+        };
+      })(this));
+      this.options_tabs.children().first().addClass('active');
+      this.options_contents.children().first().addClass('active in');
+      this.player = null;
+      this.playbtns = this.ui.playbtns.map((function(_this) {
+        return function(id, i) {
+          var ret;
+          ret = $(id + '>span.glyphicon');
+          ret.on('click', function() {
+            return _this.play(i);
+          });
+          return ret;
+        };
+      })(this));
+      this.reset(options);
+      return;
+    }
+
+    AppMG.prototype.reset = function(options) {
+      var playbtns;
       if (options != null) {
         this.schema = options.schema, this.settings = options.settings, this.contents = options.contents;
+        this.obj = options;
       } else {
         this.schema = MG.circularClone(MG.schema_summer);
         this.settings = MG.circularClone(MG.score_summer.settings);
         this.contents = MG.circularClone(MG.score_summer.contents);
         this.obj = null;
       }
-      playbtns = this.playbtns = this.ui.playbtns.map(function(id) {
-        return $(id + '>span.glyphicon');
-      });
-      this.renderer = new ScoreRenderer(this.ui.renderer[0], void 0, this.ui.renderer[1]);
+      playbtns = this.playbtns;
       this.player = new seqPlayer();
       this.player.onend = function(n) {
         var i;
@@ -1755,39 +1815,6 @@ if (typeof module !== 'undefined' && require.main === module) {
         }
         return playbtns[n].toggleClass('glyphicon-play glyphicon-pause');
       };
-      this.editor = {};
-      this.ui.editor[0].forEach((function(_this) {
-        return function(id) {
-          var editor;
-          editor = ace.edit('ace_' + id);
-          editor.setTheme("ace/theme/clouds");
-          editor.getSession().setMode("ace/mode/score");
-          editor.setFontSize(16);
-          editor.$blockScrolling = Infinity;
-          return _this.editor[id] = editor;
-        };
-      })(this));
-      this.ui.editor[1].forEach((function(_this) {
-        return function(id) {
-          var editor;
-          editor = ace.edit('ace_' + id);
-          editor.setTheme("ace/theme/clouds");
-          editor.getSession().setMode("ace/mode/json");
-          editor.getSession().setUseWrapMode(true);
-          editor.$blockScrolling = Infinity;
-          return _this.editor[id] = editor;
-        };
-      })(this));
-      this.updateEditor();
-      return;
-    }
-
-    AppMG.prototype.reset = function() {
-      this.schema = MG.circularClone(MG.schema_summer);
-      this.settings = MG.circularClone(MG.score_summer.settings);
-      this.contents = MG.circularClone(MG.score_summer.contents);
-      this.obj = null;
-      this.player = new seqPlayer();
       return this.updateEditor();
     };
 

@@ -10,6 +10,7 @@
     </script>
     <!-- jQuery-->
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min.js" type="text/javascript"></script>
     <!-- underscore-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js" type="text/javascript"></script>
@@ -278,7 +279,7 @@ You need to specify the following entry:</p>
 <li><code>block</code>: a dict of <code>block_id: block_duration</code>;</li>
 <li><code>structure</code>: an array of <code>block_id</code> (can be repeatable)</li>
 <li><code>seeds</code>: a dict of <code>seed_id: seed_option</code>, serve as the random source of the generator. The <code>seed_option</code> should contain <code>dur</code>, <code>choices</code> and <code>weights</code>;</li>
-<li><code>melody</code>: a dict of <code>block_id: generating_options</code>. The <code>generating_options should contain</code>mode` (random with/without chord, transpose, reverse, etc). The other options depends on which mode it is for.</li>
+<li><code>melody</code>: a dict of <code>block_id: generating_options</code>. The <code>generating_options</code> should contain <code>mode</code> (random with/without chord, transpose, reverse, etc). The other options depends on which mode it is for.</li>
 </ul>
 <p>Here is some samples for currently supported mode:</p>
 <pre><code>    {
@@ -663,12 +664,6 @@ You need to specify the following entry:</p>
               <div id="parse" class="btn btn-primary btn-block">Parse</div>
             </li>
             <li class="list-group-item">
-              <div id="play_melody" class="btn btn-info btn-block">Melody<span class="glyphicon glyphicon-play"></span></div>
-            </li>
-            <li class="list-group-item">
-              <div id="play_harmony" class="btn btn-info btn-block">Harmony<span class="glyphicon glyphicon-play"></span></div>
-            </li>
-            <li class="list-group-item">
               <div id="play_MIDI" class="btn btn-info btn-block">MIDI<span class="glyphicon glyphicon-play"></span></div>
             </li>
           </ul>
@@ -711,42 +706,18 @@ You need to specify the following entry:</p>
       </div>
       <!-- Editor 1-->
       <div class="row">
-        <div class="col-sr-6 col-xs-10 col-md-6">
+        <div id="options_container" class="col-sr-6 col-xs-10 col-md-6">
           <ul class="nav nav-tabs nav-justified nav-pills">
-            <li data-toggle="tab" data-target="#melody_wrapper" class="active"><a href="#melody_wrapper">Melody</a></li>
-            <li data-toggle="tab" data-target="#harmony_wrapper"><a href="#harmony_wrapper">Harmony</a></li>
-            <li data-toggle="tab" data-target="#texture_wrapper"><a href="#texture_wrapper">Texture</a></li>
-            <li class="xs-only"></li>
+            <li class="xs-only tab_plus"><a>+</a></li>
           </ul>
-          <div class="tab-content">
-            <div id="melody_wrapper" class="tab-pane in active">
-              <div id="ace_melody" style="height:300px" class="editor"></div>
-            </div>
-            <div id="harmony_wrapper" class="tab-pane">
-              <div id="ace_harmony" style="height:300px" class="editor"></div>
-            </div>
-            <div id="texture_wrapper" class="tab-pane">
-              <div id="ace_texture" style="height:300px" class="editor"></div>
-            </div>
-          </div>
+          <div class="tab-content"></div>
         </div>
         <div class="xs-only col-xs-2"></div>
-        <div class="col-sr-6 col-xs-10 col-md-6">
+        <div id="tracks_container" class="col-sr-6 col-xs-10 col-md-6">
           <ul class="nav nav-tabs nav-justified nav-pills">
-            <li data-toggle="tab" data-target="#score_wrapper" class="active"><a href="#score_wrapper">Score Settings</a></li>
-            <li data-toggle="tab" data-target="#schema_wrapper"><a href="#schema_wrapper">Schema</a></li>
-            <li class="xs-only"></li>
+            <li class="xs-only tab_plus"><a>+</a></li>
           </ul>
-          <div class="tab-content">
-            <div id="score_wrapper" class="tab-pane in active">
-              <div id="ace_settings" style="height:300px" class="editor"></div>
-              <ul id="btn_gp1"></ul>
-            </div>
-            <div id="schema_wrapper" class="tab-pane">
-              <div id="ace_schema" style="height:300px" class="editor"></div>
-              <ul id="btn_gp2"></ul>
-            </div>
-          </div>
+          <div class="tab-content"></div>
         </div>
         <div class="xs-only col-xs-2"></div>
       </div>
