@@ -260,7 +260,7 @@ class @AppMG
       @tracks_contents.append(ele)
       editor = ace.edit('ace_'+id.toLowerCase())
       editor.setTheme("ace/theme/clouds")
-      editor.getSession().setMode("ace/mode/score")
+      editor.getSession().setMode("ace/mode/" + @ui.modes[0][i])
       # editor.getSession().setUseWrapMode(true);
       editor.setFontSize(16)
       editor.$blockScrolling = Infinity
@@ -275,8 +275,9 @@ class @AppMG
       @options_contents.append(ele)
       editor = ace.edit('ace_'+id.toLowerCase())
       editor.setTheme("ace/theme/clouds")
-      editor.getSession().setMode("ace/mode/json")
+      editor.getSession().setMode("ace/mode/"+@ui.modes[1][i])
       editor.getSession().setUseWrapMode(true);
+      editor.setFontSize(14)
       editor.$blockScrolling = Infinity
       @editor[id] = editor
     @options_tabs.children().first().addClass('active')
@@ -321,12 +322,11 @@ class @AppMG
       contents: @contents
 
   updateEditor: ->
-    @ui.editor[0].forEach (e) =>
-      @editor[e].setValue @contents[e].join('\n'), -1
+    _.flatten(@ui.editor).forEach (e) =>
+      ret = if @contents[e]? then @contents[e].join('\n') else JSON.stringify(@[e], null, 2)
+      @editor[e].setValue ret, -1
       return
-    @ui.editor[1].forEach (e) =>
-      @editor[e].setValue JSON.stringify(@[e], null, 2), -1
-      return
+
 
   play: (n)->
     if !@player.playing[n]

@@ -6,11 +6,11 @@ class @ScoreRenderer
     @r = new Vex.Flow.Renderer @hidden_canvas, Vex.Flow.Renderer.Backends.CANVAS
     @ctx = @r.getContext()
     @geo =
-      system_width: 900, system_height: 80, system_interval: 30,
-      left_padding: 25, top_padding: 20, reserved_width: 55
+      system_width: 900, system_height: 80, system_interval: 50,
+      left_padding: 30, top_padding: 70, reserved_width: 55
     @layout =
       measure_per_system: 4,
-      system_per_page: 6
+      system_per_page: 5
     @numPage = 1
     @currentPage = 1
     @measures = []
@@ -39,7 +39,7 @@ class @ScoreRenderer
     if p?
       @p = new fabric.StaticCanvas(p, {
         width: $('.canvas-wrapper').width(),
-        height: $('.canvas-wrapper').height(),
+        height: $('.canvas-wrapper').width() * 2,
         backgroundColor: 'rgba(240,250,240, 5)'
       })
 

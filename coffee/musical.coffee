@@ -439,6 +439,28 @@ MG.circularClone = (obj) ->
 
   clone obj
 
+# greatest common divisor
+gcd = (a,b)->
+  while b > 0
+    tmp = b
+    b = a % b
+    a = tmp
+  return a
+lcm = (a,b)->
+  return a / gcd(a,b) * b
+MG.gcd = ()->
+  ret = gcd(arguments[0], arguments[1])
+  for i in [2...arguments.length] by 1
+    ret = gcd(ret, arguments[i])
+  ret
+
+# least common multiple
+MG.lcm = ()->
+  ret = lcm(arguments[0], arguments[1])
+  for i in [2...arguments.length] by 1
+    ret = lcm(ret, arguments[i])
+  ret
+
 @MG = MG
 
 if module?

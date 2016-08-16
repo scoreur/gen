@@ -560,9 +560,10 @@ function initUI(){
 	$('#mode_panel').html(make_modeboard(["maj","min","aug", "dim", "dom7", "maj7"]));
 
 	appUI = {
-		editor: [['melody','harmony','texture'], ['settings','schema']],
+		editor: [['melody','texture'], ['settings','schema', 'harmony',]],
+		modes: [['score', 'score'],['json', 'json', 'score']],
 		renderer: ['midi_score', 'midi_pointer'],
-		playbtns: ['a[href="#track_0"]', 'a[href="#track_2"]'],
+		playbtns: ['a[href="#track_0"]', 'a[href="#track_1"]'],
 		tracks_container: '#tracks_container',
 		options_container: '#options_container'
 	};
