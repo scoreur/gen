@@ -23,6 +23,10 @@
 		function playChannel(channel, note) {
 			if (!MIDI.channels[channel]) return;
 			var instrument = MIDI.channels[channel].program;
+			if(channelId == 9){
+				// reserved for percussion
+				instrument = 128;//need to check
+			}
 			var instrumentId = MIDI.GM.byId[instrument].id;
 			var note = notes[note];
 			if (note) {
@@ -44,6 +48,10 @@
 		function stopChannel(channel, note) {
 			if (!MIDI.channels[channel]) return;
 			var instrument = MIDI.channels[channel].program;
+			if(channelId == 9){
+				// reserved for percussion
+				instrument = 128;
+			}
 			var instrumentId = MIDI.GM.byId[instrument].id;
 			var note = notes[note];
 			if (note) {
@@ -210,6 +218,11 @@
 			/// check whether the note exists
 			var channel = MIDI.channels[channelId];
 			var instrument = channel.program;
+			if(channelId == 9){
+				// reserved for percussion
+				instrument = 128;
+				velocity *= 0.75;
+			}
 			var bufferId = instrument + 'x' + noteId;
 			var buffer = audioBuffers[bufferId];
 			if (buffer) {
@@ -272,6 +285,10 @@
 			/// check whether the note exists
 			var channel = MIDI.channels[channelId];
 			var instrument = channel.program;
+			if(channelId == 9){
+				// percussion
+				instrument = 128;
+			}
 			var bufferId = instrument + 'x' + noteId;
 			var buffer = audioBuffers[bufferId];
 			if (buffer) {

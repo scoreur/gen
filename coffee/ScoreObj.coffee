@@ -45,7 +45,7 @@ class @ScoreObj
       @harmony = harmony
       @tracks[1] = texture
     else
-      @harmony = @parseHarmony(harmony)
+      @harmony = @parseHarmony(harmony, @ctrl_per_beat * @time_sig[0])
       @tracks[1] = @parseMelody(texture, {harmony: @harmony})
 
 
@@ -104,10 +104,10 @@ class @ScoreObj
           incr()
 
       return {
-      bass: bass,
-      chord: chord,
-      process: process,
-      forward: forward
+        bass: bass,
+        chord: chord,
+        process: process,
+        forward: forward
       }
 
     )()
@@ -169,17 +169,31 @@ class @ScoreObj
       return measure
     return res
 
-  parseHarmony: (measures) ->
+  parseHarmony: (measures, tatum) ->
     if typeof measures == 'undefined'
       console.log 'empty harmony'
       return
     key_sig = @key_sig
     measures.map (e) ->
-      e.trim().split(/\s+/).map (e2) ->
+      durs = []
+      ret = e.trim().split(/\s+/).map (e2) ->
         terms = e2.split(',')
         chord_info = MG.getChords(terms[0],3,key_sig)
         dur =  if terms.length>=2 then parseInt(terms[1]) else 1
+        durs.push dur
         [dur,chord_info[0],chord_info[1]]
+      if tatum? && durs[0] == 1
+        r = tatum / math.sum(durs)
+        durs = []
+        ret.forEach (ee,ii)->
+          durs.push(ret[ii][0] = Math.floor(ee[0] * r))
+        ret[ret.length - 1][0] += (tatum - math.sum(durs))
+      ret
+
+
+
+
+
 
   toText: (m)->
     console.log 'to score text'

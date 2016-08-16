@@ -177,6 +177,9 @@ midi.getFileInstruments = function(data) {
 			case 'noteOn':
 				var program = programs[channel];
 				var gm = MIDI.GM.byId[isFinite(program) ? program : channel];
+				if(channel == 9){
+					instruments['percussion'] = true; // synth_drum for percussion
+				}
 				instruments[gm.id] = true;
 				break;
 		}

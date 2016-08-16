@@ -72,6 +72,11 @@ function midi2wav(midifile, sampleps){
 	function noteOn(channelId, noteId, velocity){
 		var channel = MIDI.channels[channelId];
 		var instrument = channel.program;
+		if(channelId == 9){
+			instrument = 128;
+			velocity *= 0.75;
+			//console.log('percussion');
+		}
 		var bufferId = instrument + 'x' + noteId;
 		var buffer = MIDI.audioBuffers[bufferId];
 		if(buffer == null){
