@@ -84,14 +84,6 @@ html
             li.list-group-item
               #parse.btn.btn-primary.btn-block Parse
             li.list-group-item
-              #play_melody.btn.btn-info.btn-block Melody
-                span.glyphicon.glyphicon-play
-
-            li.list-group-item
-              #play_harmony.btn.btn-info.btn-block Harmony
-                span.glyphicon.glyphicon-play
-
-            li.list-group-item
               #play_MIDI.btn.btn-info.btn-block MIDI
                 span.glyphicon.glyphicon-play
         // score display
@@ -140,39 +132,17 @@ html
 
       // Editor 1
       .row
-
-        .col-sr-6.col-xs-10.col-md-6
+        .col-sr-6.col-xs-10.col-md-6#options_container
           ul.nav.nav-tabs.nav-justified.nav-pills
-            li.active(data-toggle='tab', data-target='#melody_wrapper')
-              a(href='#melody_wrapper') Melody
-            li(data-toggle="tab", data-target='#harmony_wrapper')
-              a(href='#harmony_wrapper') Harmony
-            li(data-toggle='tab',data-target='#texture_wrapper')
-              a(href='#texture_wrapper') Texture
-            li.xs-only
+            li.xs-only.tab_plus
+              a +
           .tab-content
-            .tab-pane.in.active#melody_wrapper
-              .editor#ace_melody(style='height:300px')
-            .tab-pane#harmony_wrapper
-              .editor#ace_harmony(style='height:300px')
-            .tab-pane#texture_wrapper
-              .editor#ace_texture(style='height:300px')
         .xs-only.col-xs-2
-        .col-sr-6.col-xs-10.col-md-6
+        .col-sr-6.col-xs-10.col-md-6#tracks_container
           ul.nav.nav-tabs.nav-justified.nav-pills
-            li.active(data-toggle='tab', data-target='#score_wrapper')
-              a(href='#score_wrapper') Score Settings
-            li(data-toggle='tab', data-target='#schema_wrapper')
-              a(href='#schema_wrapper') Schema
-            li.xs-only
+            li.xs-only.tab_plus
+              a +
           .tab-content
-            .tab-pane.in.active#score_wrapper
-              .editor#ace_settings(style='height:300px')
-              ul#btn_gp1
-
-            .tab-pane#schema_wrapper
-              .editor#ace_schema(style='height:300px')
-              ul#btn_gp2
         .xs-only.col-xs-2
 
 

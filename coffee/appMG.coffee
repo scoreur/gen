@@ -239,51 +239,79 @@ MG.midi_statistics = midi_statistics = (obj) ->
 
 class @AppMG
   constructor: (@ui, options) ->
-    if options?
-      {@schema, @settings, @contents}  = options
-    else
-      @schema = MG.circularClone(MG.schema_summer)
-      @settings = MG.circularClone(MG.score_summer.settings)
-      @contents = MG.circularClone(MG.score_summer.contents)
-      @obj = null
 
-    playbtns = @playbtns = @ui.playbtns.map (id)-> $(id+'>span.glyphicon')
+    tracks_container = $(@ui.tracks_container)
+    options_container = $(@ui.options_container)
+    @tracks_tabs = tracks_container.children('.nav-tabs')
+    @tracks_contents = tracks_container.children('.tab-content')
+    @options_tabs = options_container.children('.nav-tabs')
+    @options_contents = options_container.children('.tab-content')
     @renderer = new ScoreRenderer(@ui.renderer[0], undefined,  @ui.renderer[1])
-    @player = new seqPlayer()
-    @player.onend = (n)->
-      i = @cur_i[n]
-      if i>0 && i<@tracks[n].length
-        return
-      playbtns[n].toggleClass('glyphicon-play glyphicon-pause')
 
 
     @editor = {}
-    @ui.editor[0].forEach (id)=>
-      editor = ace.edit('ace_'+id)
+    @ui.editor[0].forEach (id,i)=>
+      # append new tabs
+      wrapper = "track_#{i}"
+      ele = $('<li data-toggle="tab" data-target="#'+wrapper+'"><a href="#'+wrapper+'">'+id[0].toUpperCase()+id.substr(1)+'</a></li>')
+      ele.children().append($('<span class="glyphicon glyphicon-play"></span>'))
+      @tracks_tabs.children('li.tab_plus').before(ele)
+      ele = $('<div class="tab-pane" id="'+wrapper+'"><div class="editor" id="ace_' + id.toLowerCase()+'" style="height:300px"></div></div>')
+      @tracks_contents.append(ele)
+      editor = ace.edit('ace_'+id.toLowerCase())
       editor.setTheme("ace/theme/clouds")
       editor.getSession().setMode("ace/mode/score")
       # editor.getSession().setUseWrapMode(true);
       editor.setFontSize(16)
       editor.$blockScrolling = Infinity
       @editor[id] = editor
-    @ui.editor[1].forEach (id)=>
-      editor = ace.edit('ace_'+id)
+    @tracks_tabs.children().first().addClass('active')
+    @tracks_contents.children().first().addClass('active in')
+    @ui.editor[1].forEach (id, i)=>
+      wrapper = "options_#{i}"
+      ele = $('<li data-toggle="tab" data-target="#'+wrapper+'"><a href="#'+wrapper+'">'+id[0].toUpperCase()+id.substr(1)+'</a></li>')
+      @options_tabs.children('li.tab_plus').before(ele)
+      ele = $('<div class="tab-pane" id="'+wrapper+'"><div class="editor" id="ace_' + id.toLowerCase()+'" style="height:300px"></div></div>')
+      @options_contents.append(ele)
+      editor = ace.edit('ace_'+id.toLowerCase())
       editor.setTheme("ace/theme/clouds")
       editor.getSession().setMode("ace/mode/json")
       editor.getSession().setUseWrapMode(true);
       editor.$blockScrolling = Infinity
       @editor[id] = editor
-    @updateEditor()
+    @options_tabs.children().first().addClass('active')
+    @options_contents.children().first().addClass('active in')
+    @player = null
+
+    @playbtns = @ui.playbtns.map (id, i)=>
+      ret = $(id+'>span.glyphicon')
+      ret.on('click', =>
+        @play(i)
+      )
+      ret
+
+    @reset(options)
+
 
 
     return
 
-  reset: ()->
-    @schema = MG.circularClone(MG.schema_summer)
-    @settings = MG.circularClone(MG.score_summer.settings)
-    @contents = MG.circularClone(MG.score_summer.contents)
-    @obj = null
+  reset: (options)->
+    if options?
+      {@schema, @settings, @contents}  = options
+      @obj = options
+    else
+      @schema = MG.circularClone(MG.schema_summer)
+      @settings = MG.circularClone(MG.score_summer.settings)
+      @contents = MG.circularClone(MG.score_summer.contents)
+      @obj = null
+    playbtns = @playbtns
     @player = new seqPlayer()
+    @player.onend = (n)->
+      i = @cur_i[n]
+      if i>0 && i<@tracks[n].length
+        return
+      playbtns[n].toggleClass('glyphicon-play glyphicon-pause')
     @updateEditor()
 
 

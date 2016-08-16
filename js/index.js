@@ -245,14 +245,9 @@ function saveWav(data){
 
 
 
-var appUI = {
-	editor: [['melody','harmony','texture'], ['settings','schema']],
-	renderer: ['midi_score', 'midi_pointer'],
-	playbtns: ['#play_melody', '#play_harmony']
-};
-var app = new AppMG(appUI);
-app.keybinder = keybinder;
-app.tapper = tapper;
+var appUI;
+var app;
+
 
 var click_event_list = {
 	'parse': function(){
@@ -286,8 +281,7 @@ var click_event_list = {
 			if(typeof obj != 'object'){
 				$.notify('wrong JSON!', 'warning');
 			}
-			app = new AppMG(appUI,obj)
-			app.updateEditor();
+			app.reset(obj);
 			$.notify('sample JSON loaded!', 'success');
 			click_event_list.parse();
 		});
@@ -315,12 +309,6 @@ var click_event_list = {
 		}
 		$('#play_MIDI>span.glyphicon').toggleClass('glyphicon-play glyphicon-pause');
 
-	},
-	'play_melody': function(){
-		app.play(0)
-	},
-	'play_harmony': function(){
-		app.play(1)
 	},
 	'save_midi': function(){
 		app.player.saveMidi();
@@ -519,8 +507,7 @@ var file_open_handlers = {
     },
     'open_json': function(evt){
 	    load_json(evt.target.files[0], function(res){
-			app = new AppMG(appUI, res);
-			app.updateEditor();
+			app.reset(res);
 	    });
 	},
 	'open_pdf': function(evt){
@@ -571,9 +558,28 @@ function initUI(){
     var ww = 9, wh = 130;
 	$("#keyboard").css({"height": wh, "width": ww * 104}).html(make_keyboard());
 	$('#mode_panel').html(make_modeboard(["maj","min","aug", "dim", "dom7", "maj7"]));
+
+	appUI = {
+		editor: [['melody','harmony','texture'], ['settings','schema']],
+		renderer: ['midi_score', 'midi_pointer'],
+		playbtns: ['a[href="#track_0"]', 'a[href="#track_2"]'],
+		tracks_container: '#tracks_container',
+		options_container: '#options_container'
+	};
+	app = new AppMG(appUI);
+	app.keybinder = keybinder;
 	app.keybinder.bind('#amplitude',keyHandlers[0],keyHandlers[1]);
+	app.tapper = tapper;
 	// ace editor
 	$('#score_img').attr('src','./score/summertime.png');
+	$( "#tracks_resizable" ).resizable({
+		handles: "s",
+		resize: function() {
+			app.ui.editor[0].forEach(function(e){app.editor[e].resize();});
+		}
+	});
+
+
 }
 
 $( document ).ready( function() {
