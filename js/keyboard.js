@@ -11,7 +11,7 @@
         });
         return ret;
     })();
-    var keydown = function(evt){
+    function keydown(evt){
         switch(evt.key){
             default:
                 var pitch = keymap[evt.key];
@@ -222,3 +222,38 @@
 
 })(this, 130, 70, 6, 9);
 
+(function(self){
+    var pressed = {};
+    function pressing(kit){
+        if(typeof pressed[kit] != 'undefined'){
+            return;
+        }
+        var amplitude = parseInt($('#drum_amplitude').val());
+        MIDI.noteOn(9, kit, amplitude);
+        pressed[kit] = kit;
+    }
+    function release(kit){
+        if(typeof pressed[kit] == 'undefined') return;
+
+        delete pressed[kit];
+    }
+    var keymap = {
+        'v': 36, 'f': 37, 'g': 38,
+        'h': 50, 'b': 45, 'n': 41,
+        'y': 49, 'i': 51, 'u': 46, 'j': 44, 'm': 42,
+    };
+    function keydown(evt){
+        if(typeof keymap[evt.key] != 'undefined'){
+            pressing(keymap[evt.key]);
+        }else{
+            // TODO: add other control change
+            // switch
+        }
+    }
+    function keyup(evt){
+        if(typeof keymap[evt.key] != 'undefined'){
+            release(keymap[evt.key]);
+        }
+    }
+    self.drumHandlers = [keydown, keyup];
+})(this)

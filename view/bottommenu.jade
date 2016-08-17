@@ -17,7 +17,7 @@ nav#bottom-menu.navbar.navbar-default.navbar-fixed-bottom
             li.divider(role='separator')
             li
               a#keyboard_controls
-                label(for='amplitude') amplitude(0-127):
+                label(for='amplitude') amplitude (0 - 127):
                 input#amplitude.form-control.progress(type='range', min='0', max='127', value='100', style='width:200px;')
         li.dropdown
           a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Chords
@@ -25,6 +25,17 @@ nav#bottom-menu.navbar.navbar-default.navbar-fixed-bottom
           ul.dropdown-menu(style='width:240px')
             li
               a#mode_panel
+        li.dropdown
+          a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Drums
+            span.caret
+          ul.dropdown-menu(style='width:200px')
+            li
+              form#drum_panel
+            li.divider(role='separator')
+            li
+              a#drum_controls
+                lable(for='drum_amplitude') amplitude (0 - 127):
+                input#drum_amplitude.form-control.progress(type='range', min='0', max='127', value='88', style='width:120px;')
         li.dropdown
           a.dropdown-toggle(data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false') Console
             span.caret

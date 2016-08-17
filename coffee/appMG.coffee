@@ -299,13 +299,27 @@ class @AppMG
 
   reset: (options)->
     if options?
-      {@schema, @settings, @contents}  = options
+      version = options.version
+      version ?= "0.1"
+      switch version
+        when "0.1"
+          {@schema, @settings, @contents}  = options
+        when "0.2"
+          {@schema, @settings}  = options
+          @contents = {}
+          for ele in options.contents
+            @contents[ele.mode] = ele.data
+          @contents.harmony = options.harmony
+
       @obj = options
     else
       @schema = MG.circularClone(MG.schema_summer)
       @settings = MG.circularClone(MG.score_summer.settings)
       @contents = MG.circularClone(MG.score_summer.contents)
       @obj = null
+
+
+
     playbtns = @playbtns
     @player = new seqPlayer()
     @player.onend = (n)->
@@ -317,9 +331,20 @@ class @AppMG
 
 
   export: ->
+      version: "0.2"
       settings: @settings
       schema: @schema
-      contents: @contents
+      harmony: @contents.harmony
+      contents: [
+        {
+          "mode": "melody",
+          "data": @contents.melody
+        },
+        {
+          "mode": "texture",
+          "data": @contents.texture
+        }
+      ]
 
   updateEditor: ->
     _.flatten(@ui.editor).forEach (e) =>

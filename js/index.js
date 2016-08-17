@@ -92,7 +92,7 @@ var recorder = (function(){
 	}
 })();
 
-var keybinder = (function(){
+var keybinder = function(){
 	var ele;
 	var act = [];
 	function testFunc(e){
@@ -115,11 +115,10 @@ var keybinder = (function(){
 		ele = null;
 		act = [];
 	}
-	return {
-		bind: bind,
-		unbind: unbind
-	};
-})();
+	this.bind = bind;
+	this.unbind = unbind;
+
+};
 
 var tapper = (function(dur){
 	var rate = 1;
@@ -508,6 +507,7 @@ var file_open_handlers = {
     'open_json': function(evt){
 	    load_json(evt.target.files[0], function(res){
 			app.reset(res);
+			click_event_list.parse();
 	    });
 	},
 	'open_pdf': function(evt){
@@ -568,8 +568,11 @@ function initUI(){
 		options_container: '#options_container'
 	};
 	app = new AppMG(appUI);
-	app.keybinder = keybinder;
-	app.keybinder.bind('#amplitude',keyHandlers[0],keyHandlers[1]);
+	app.keyboard = new keybinder();
+	app.keyboard.bind('#amplitude',keyHandlers[0],keyHandlers[1]);
+	app.drums = new keybinder();
+	app.drums.bind('#drum_amplitude', drumHandlers[0], drumHandlers[1]);
+
 	app.tapper = tapper;
 	// ace editor
 	$('#score_img').attr('src','./score/summertime.png');
@@ -598,6 +601,8 @@ $( document ).ready( function() {
 			MIDI.setVolume(0, 100); // Set the general volume level
 			MIDI.programChange(0, 0);
 			MIDI.programChange(1,0);
+			MIDI.programChange(9,128);
+			MIDI.setVolume(9, 96);
 		}
 	});
 
