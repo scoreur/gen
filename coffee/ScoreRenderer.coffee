@@ -153,7 +153,7 @@ class @ScoreRenderer
   render: (s)->
 
     @s = s
-    @layout.measure_per_system = if s.ctrl_per_beat >= 8 then 2 else if s.ctrl_per_beat >= 4 then 3 else 4
+    @layout.measure_per_system = if s.ctrl_per_beat >= 8 then 3 else 4
     @geo.reserved_width = 25 + 5 * Math.abs(MG.key_sig[s.key_sig])
 
     raw_w = (@geo.system_width - @geo.reserved_width) // @layout.measure_per_system

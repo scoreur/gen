@@ -364,10 +364,10 @@ MG.chord_class_label =
       weights:
         [2,3,3,5,1,3,2,1]
     's2':
-      weights: [1,1,2,5,12,6,8,  4,7,12,8,3,1,0,1],
+      weights: [1,2,5,12,6,30,  8,30,12,8,3,1,1],
       choices: (->
-        Array(15).fill().map (e,i)->
-          i-7
+        Array(13).fill().map (e,i)->
+          i-6
       )()
 
 
@@ -377,7 +377,7 @@ MG.chord_class_label =
       options:
         rhythm:
           seed: 's1'
-          swarp: 1
+          swarp: 0.5
 
         interval:
           chromatic: false
@@ -393,11 +393,13 @@ MG.chord_class_label =
         ]
         rhythm:
           seed: 's1'
-          swarp: 1
+          swarp: 0.5
 
         interval:
           chromatic: false
           seed: 's2'
+        range: [56, 77],
+        dist: 'quadratic'
 
     'B':
       mode:'transpose'
@@ -418,10 +420,12 @@ MG.chord_class_label =
         chords: "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
         rhythm:
           seed: 's1'
-          swarp: 1
+          swarp: 0.5
         interval:
           chromatic: false,
           seed: 's2'
+        range: [56, 77],
+        dist: 'quadratic'
 
 ###
   utilities

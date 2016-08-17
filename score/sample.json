@@ -80,28 +80,28 @@
           ]
         ],
         "weights": [
-          2,
-          3,
-          3,
-          5,
           1,
           3,
-          2,
-          1
+          3,
+          8,
+          1,
+          3,
+          8,
+          8
         ]
       },
       "s2": {
         "weights": [
+          1,
           2,
           5,
-          12,
-          6,
+          10,
+          30,
           8,
-          4,
-          7,
-          12,
-          8,
-          3,
+          30,
+          10,
+          5,
+          2,
           1
         ],
         "choices": [
@@ -154,7 +154,8 @@
           "interval": {
             "chromatic": false,
             "seed": "s2"
-          }
+          },
+          "range": [54, 80]
         }
       },
       "B": {
@@ -180,7 +181,8 @@
           "interval": {
             "chromatic": false,
             "seed": "s2"
-          }
+          },
+          "range": [54, 80]
         }
       },
       "A2": {
@@ -197,7 +199,8 @@
           "interval": {
             "chromatic": false,
             "seed": "s2"
-          }
+          },
+          "range": [54, 80]
         }
       },
       "B2": {
@@ -207,7 +210,8 @@
           "scale": "maj",
           "offset": 0,
           "interval": 3
-        }
+        },
+        "range": [54, 80]
       },
       "C2": {
         "mode": "chord",
@@ -223,7 +227,8 @@
           "interval": {
             "chromatic": false,
             "seed": "s2"
-          }
+          },
+          "range": [54, 80]
         }
       }
     },

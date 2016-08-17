@@ -308,6 +308,25 @@ class @Generator
     else
       seed2 = options.interval
 
+    range = options.range
+    range ?= [48, 90]
+
+
+    # quadratic distribution
+    range_dist = (k)->
+      if k < range[0] || k > range[1]
+        return 0
+      else
+        return 0.25 + 3 * (k-range[0]) * (range[1]-k) / (range[1]-range[0])**2
+    if options.dist? && options.dist == 'linear'
+      range_dist = (k)->
+        if k < range[0] || k > range[1]
+          return 0
+        else # quadratic distribution
+          return 1 - 2 * Math.abs(k-(range[0]+range[1])/2) / (range[1]-range[0])
+
+
+
     swarp = options.rhythm.swarp
     swarp ?= 1
 
@@ -331,9 +350,7 @@ class @Generator
         for k,v of raw_choices
           if k >= 0 && k <= scale_len * 8
             k = toPitch(k)
-            if k < 48 || k > 84
-              v /= 4
-              console.log 'less'
+            v *= range_dist(k)
             cur_chord[2].forEach (ee,ii)->
               if (k - cur_chord[1]) %% 12 == ee
                 console.log 'chord tone'
