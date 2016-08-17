@@ -86,21 +86,30 @@ class @ScoreObj
         harmony = options.harmony
     refc = null
     chorder = (()->
-      c = if harmony?  then _.flatten(harmony, true) else []
-      refi = -1
+      m_i = 0
+      b_i = -1
       delta = 0
       bass = (inv)->
-        return (c[refi][1] + c[refi][2][inv]) % 12
+        curchord = harmony[m_i][b_i]
+        return (curchord[1] + curchord[2][inv]) % 12
       incr = ()->
-        return delta -= c[++refi][0]
+        b_i++
+        if b_i >= harmony[m_i].length
+          b_i = 0
+          m_i++
+          if m_i >= harmony.length
+            m_i = harmony.length - 1
+        delta -= harmony[m_i][b_i][0]
+
+        return delta
 
       chord = (inv) ->
-        return MG.inverted(c[refi][2],inv)
+        return MG.inverted(harmony[m_i][b_i][2],inv)
       forward = (d)->
         delta += d
 
       process = ()->
-        while refi < c.length && delta >= 0
+        while m_i < harmony.length && delta >= 0
           incr()
 
       return {

@@ -12,7 +12,7 @@ KEY             =	([A-GR][#b]{0,2})
 Op_unary        =	("rate"|"volume"|"ctrls"|[r|c|v])
 Op_string       =   ("out"|"scale"|[o|s])
 Op              =	("key_sig"|"time_sig"|"instrument"|[k|t|i])
-MODE            =	("melody"|"harmony")
+MODE            =	("melody"|"harmony"|"percussion")
 
 %s CTRL NOTE NOTE_DUR CHORD
 
@@ -104,6 +104,10 @@ e :
   | harmony
   {
     $$ = {mode:'harmony'};
+  }
+  | percussion
+  {
+    $$ = {mode:'percussion'};
   }
   ;
 
