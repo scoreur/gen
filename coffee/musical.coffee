@@ -362,7 +362,7 @@ MG.chord_class_label =
           e.split(/\s+/).map (e2)-> parseInt(e2)
         )
       weights:
-        [2,3,3,5,1,3,2,1]
+        [1,3,3,5,1,5,8,8]
     's2':
       weights: [1,2,5,12,6,30,  8,30,12,8,3,1,1],
       choices: (->

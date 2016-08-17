@@ -503,13 +503,13 @@
             return parseInt(e2);
           });
         }),
-        weights: [2, 3, 3, 5, 1, 3, 2, 1]
+        weights: [1, 3, 3, 5, 1, 5, 8, 8]
       },
       's2': {
-        weights: [1, 1, 2, 5, 12, 6, 8, 4, 7, 12, 8, 3, 1, 0, 1],
+        weights: [1, 2, 5, 12, 6, 30, 8, 30, 12, 8, 3, 1, 1],
         choices: (function() {
-          return Array(15).fill().map(function(e, i) {
-            return i - 7;
+          return Array(13).fill().map(function(e, i) {
+            return i - 6;
           });
         })()
       }
@@ -520,7 +520,7 @@
         options: {
           rhythm: {
             seed: 's1',
-            swarp: 1
+            swarp: 0.5
           },
           interval: {
             chromatic: false,
@@ -534,12 +534,14 @@
           chords: ["Amin,8", "Bb7,8", "Amin,4 E7,4", "Amin,4 A7,4"],
           rhythm: {
             seed: 's1',
-            swarp: 1
+            swarp: 0.5
           },
           interval: {
             chromatic: false,
             seed: 's2'
-          }
+          },
+          range: [56, 77],
+          dist: 'quadratic'
         }
       },
       'B': {
@@ -564,12 +566,14 @@
           chords: "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
           rhythm: {
             seed: 's1',
-            swarp: 1
+            swarp: 0.5
           },
           interval: {
             chromatic: false,
             seed: 's2'
-          }
+          },
+          range: [56, 77],
+          dist: 'quadratic'
         }
       }
     }
@@ -2372,7 +2376,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     Generator.prototype.gen_chord = function(dur, options) {
-      var choices, chords, cur_chord, i, j, k, n, new_dur, pre, pre2, raw_choices, rc1, rc2, refc, refdur, res, scale_len, seed, seed2, swarp, tmp, toPitch, toScale, v;
+      var choices, chords, cur_chord, i, j, k, n, new_dur, pre, pre2, range, range_dist, raw_choices, rc1, rc2, refc, refdur, res, scale_len, seed, seed2, swarp, tmp, toPitch, toScale, v;
       toPitch = this.toPitch;
       toScale = this.toScale;
       chords = _.flatten(ScoreObj.prototype.parseHarmony(options.chords), true);
@@ -2396,6 +2400,26 @@ if (typeof module !== 'undefined' && require.main === module) {
         seed2 = this.seeds[options.interval.seed];
       } else {
         seed2 = options.interval;
+      }
+      range = options.range;
+      if (range == null) {
+        range = [48, 90];
+      }
+      range_dist = function(k) {
+        if (k < range[0] || k > range[1]) {
+          return 0;
+        } else {
+          return 0.25 + 3 * (k - range[0]) * (range[1] - k) / Math.pow(range[1] - range[0], 2);
+        }
+      };
+      if ((options.dist != null) && options.dist === 'linear') {
+        range_dist = function(k) {
+          if (k < range[0] || k > range[1]) {
+            return 0;
+          } else {
+            return 1 - 2 * Math.abs(k - (range[0] + range[1]) / 2) / (range[1] - range[0]);
+          }
+        };
       }
       swarp = options.rhythm.swarp;
       if (swarp == null) {
@@ -2424,10 +2448,7 @@ if (typeof module !== 'undefined' && require.main === module) {
             v = raw_choices[k];
             if (k >= 0 && k <= scale_len * 8) {
               k = toPitch(k);
-              if (k < 48 || k > 84) {
-                v /= 4;
-                console.log('less');
-              }
+              v *= range_dist(k);
               cur_chord[2].forEach(function(ee, ii) {
                 if (modulo(k - cur_chord[1], 12) === ee) {
                   console.log('chord tone');
@@ -3196,7 +3217,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     ScoreRenderer.prototype.render = function(s) {
       var beams, err, error, formatter, i, l, later_tie, melody, notes, num_beats, raw_w, ref, sharp, stave, sum, ties, toScale, voice, w;
       this.s = s;
-      this.layout.measure_per_system = s.ctrl_per_beat >= 8 ? 2 : s.ctrl_per_beat >= 4 ? 3 : 4;
+      this.layout.measure_per_system = s.ctrl_per_beat >= 8 ? 3 : 4;
       this.geo.reserved_width = 25 + 5 * Math.abs(MG.key_sig[s.key_sig]);
       raw_w = Math.floor((this.geo.system_width - this.geo.reserved_width) / this.layout.measure_per_system);
       sharp = MG.key_sig[s.key_sig] >= 0;
