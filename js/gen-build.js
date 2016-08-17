@@ -728,12 +728,12 @@
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,17],$V1=[1,18],$V2=[1,15],$V3=[1,16],$V4=[1,13],$V5=[1,4,10,11,19,20,41],$V6=[1,23],$V7=[1,24],$V8=[1,25],$V9=[4,13,14,15],$Va=[1,35],$Vb=[1,36],$Vc=[1,37],$Vd=[1,38],$Ve=[1,39],$Vf=[1,40],$Vg=[1,41],$Vh=[4,10,11,13,14,15,45],$Vi=[4,13,14,15,22,24,26,28,33,34,35,36,37,38,39],$Vj=[10,11,33,34,35,36,37,38,39,43],$Vk=[4,10,11,13,14,15,33,34,35,36,37,38,39,45],$Vl=[4,10,11,13,14,15,22,23,24,26,28,33,34,35,36,37,38,39,45,46],$Vm=[4,10,11,13,14,15,22,24,26,28,33,34,35,36,37,38,39,43,45];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,18],$V1=[1,19],$V2=[1,16],$V3=[1,17],$V4=[1,14],$V5=[1,4,11,12,20,21,42],$V6=[1,24],$V7=[1,25],$V8=[1,26],$V9=[4,14,15,16],$Va=[1,36],$Vb=[1,37],$Vc=[1,38],$Vd=[1,39],$Ve=[1,40],$Vf=[1,41],$Vg=[1,42],$Vh=[4,11,12,14,15,16,46],$Vi=[4,14,15,16,23,25,27,29,34,35,36,37,38,39,40],$Vj=[11,12,34,35,36,37,38,39,40,44],$Vk=[4,11,12,14,15,16,34,35,36,37,38,39,40,46],$Vl=[4,11,12,14,15,16,23,24,25,27,29,34,35,36,37,38,39,40,46,47],$Vm=[4,11,12,14,15,16,23,25,27,29,34,35,36,37,38,39,40,44,46];
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"e":3,"EOF":4,"M":5,"Measure":6,"melody":7,"harmony":8,"NUMBER":9,"DIGIT":10,"DIGITS":11,"M_end":12,"M_SEP":13,"BAR":14,"REPEAT_END":15,"Note":16,"Ctrl":17,"C0":18,"CTRL_START":19,"REPEAT_START":20,"C1":21,"t":22,"/":23,"k":24,"KEY":25,"Op_string":26,"STRING":27,"Op_unary":28,"P1":29,"C":30,"Chord":31,"P":32,"#":33,"FLAT":34,"+":35,"-":36,"NATURAL":37,"TRILL_UP":38,"TRILL_DOWN":39,"Pitches":40,"CHORD_START":41,"Inverse":42,"i":43,"DUR":44,",":45,"^":46,"$accept":0,"$end":1},
-terminals_: {2:"error",4:"EOF",7:"melody",8:"harmony",10:"DIGIT",11:"DIGITS",13:"M_SEP",14:"BAR",15:"REPEAT_END",19:"CTRL_START",20:"REPEAT_START",22:"t",23:"/",24:"k",25:"KEY",26:"Op_string",27:"STRING",28:"Op_unary",33:"#",34:"FLAT",35:"+",36:"-",37:"NATURAL",38:"TRILL_UP",39:"TRILL_DOWN",41:"CHORD_START",43:"i",45:",",46:"^"},
-productions_: [0,[3,2],[3,3],[3,2],[3,1],[3,1],[3,1],[9,1],[9,1],[6,2],[6,3],[12,1],[12,1],[5,1],[5,1],[5,3],[5,3],[18,1],[18,1],[21,4],[21,2],[21,2],[21,2],[21,1],[30,1],[30,2],[17,1],[17,1],[32,1],[32,2],[29,1],[29,1],[29,1],[29,1],[29,1],[29,1],[29,1],[40,1],[40,2],[31,3],[42,2],[42,2],[42,0],[16,2],[44,2],[44,3],[44,0]],
+symbols_: {"error":2,"e":3,"EOF":4,"M":5,"Measure":6,"melody":7,"harmony":8,"percussion":9,"NUMBER":10,"DIGIT":11,"DIGITS":12,"M_end":13,"M_SEP":14,"BAR":15,"REPEAT_END":16,"Note":17,"Ctrl":18,"C0":19,"CTRL_START":20,"REPEAT_START":21,"C1":22,"t":23,"/":24,"k":25,"KEY":26,"Op_string":27,"STRING":28,"Op_unary":29,"P1":30,"C":31,"Chord":32,"P":33,"#":34,"FLAT":35,"+":36,"-":37,"NATURAL":38,"TRILL_UP":39,"TRILL_DOWN":40,"Pitches":41,"CHORD_START":42,"Inverse":43,"i":44,"DUR":45,",":46,"^":47,"$accept":0,"$end":1},
+terminals_: {2:"error",4:"EOF",7:"melody",8:"harmony",9:"percussion",11:"DIGIT",12:"DIGITS",14:"M_SEP",15:"BAR",16:"REPEAT_END",20:"CTRL_START",21:"REPEAT_START",23:"t",24:"/",25:"k",26:"KEY",27:"Op_string",28:"STRING",29:"Op_unary",34:"#",35:"FLAT",36:"+",37:"-",38:"NATURAL",39:"TRILL_UP",40:"TRILL_DOWN",42:"CHORD_START",44:"i",46:",",47:"^"},
+productions_: [0,[3,2],[3,3],[3,2],[3,1],[3,1],[3,1],[3,1],[10,1],[10,1],[6,2],[6,3],[13,1],[13,1],[5,1],[5,1],[5,3],[5,3],[19,1],[19,1],[22,4],[22,2],[22,2],[22,2],[22,1],[31,1],[31,2],[18,1],[18,1],[33,1],[33,2],[30,1],[30,1],[30,1],[30,1],[30,1],[30,1],[30,1],[41,1],[41,2],[32,3],[43,2],[43,2],[43,0],[17,2],[45,2],[45,3],[45,0]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -784,88 +784,93 @@ case 6:
 break;
 case 7:
 
-    this.$ = parseInt($$[$0]);
+    this.$ = {mode:'percussion'};
   
 break;
 case 8:
+
+    this.$ = parseInt($$[$0]);
+  
+break;
+case 9:
  /* remove brackets */
     this.$ = parseInt($$[$0].substr(1,$$[$0].length-2));
     console.log('braket number', this.$);
   
 break;
-case 9: case 38:
+case 10: case 39:
 
     $$[$0-1].push($$[$0]);
     this.$ = $$[$0-1];
   
 break;
-case 10: case 15: case 16:
+case 11: case 16: case 17:
 
     $$[$0-2].push($$[$0]);
     this.$ = $$[$0-2];
   
 break;
-case 11:
+case 12:
 
     this.$ = {
       ctrl: 'normal_end'
     };
   
 break;
-case 12:
+case 13:
 
     this.$ = {
       ctrl: 'repeat_end'
     };
   
 break;
-case 13: case 14: case 37:
+case 14: case 15: case 38:
 
     this.$ = [$$[$0]];
   
 break;
-case 17:
+case 18:
 
     this.$ = ['ctrl', 'reset'];
   
 break;
-case 18:
+case 19:
 
     this.$ = ['ctrl', 'repeat_start'];
   
 break;
-case 19:
+case 20:
 
     this.$ = [$$[$0-3], [$$[$0-2], $$[$0]]];
   
 break;
-case 20:
+case 21:
 
     this.$ = [$$[$0-1], $$[$0]];
   
 break;
-case 21:
+case 22:
 
     this.$ = [$$[$0-1], $$[$0].substr(1, $$[$0].length-2)];
   
 break;
-case 22:
+case 23:
 
     this.$ = [$$[$0-1][0], $$[$0]];
   
 break;
-case 23:
+case 24:
 
     this.$ = ['p', $$[$0]];
   
 break;
-case 24:
+case 25:
 
     this.$ = {};
     this.$[$$[$0][0]] = $$[$0][1];
   
 break;
-case 25:
+case 26:
 
     $$[$0-1][$$[$0][0]] = $$[$0][1];
     if($$[$0-1].ctrl == 'reset'){
@@ -874,12 +879,12 @@ case 25:
     this.$ = $$[$0-1];
   
 break;
-case 26: case 27: case 28:
+case 27: case 28: case 29:
 
     this.$ = $$[$0];
   
 break;
-case 29:
+case 30:
 
     if(typeof $$[$0-1] == 'number'){
       $$[$0-1] = {
@@ -892,42 +897,42 @@ case 29:
     this.$ = $$[$0-1]
   
 break;
-case 30:
+case 31:
 
     this.$ = 1;
   
 break;
-case 31:
+case 32:
 
     this.$ = -1;
   
 break;
-case 32:
+case 33:
 
     this.$ = 12;
   
 break;
-case 33:
+case 34:
 
     this.$ = -12;
   
 break;
-case 34:
+case 35:
 
     this.$ = 0;
   
 break;
-case 35:
+case 36:
 
     this.$ = 'trill_up'
   
 break;
-case 36:
+case 37:
 
     this.$ = 'trill_down'
   
 break;
-case 39:
+case 40:
 
     this.$ = {};
     this.$.ctrl = 'chord';
@@ -936,13 +941,13 @@ case 39:
     this.$.pitch = $$[$0];
   
 break;
-case 40:
+case 41:
 
     $$[$0-1].inv += 1;
     this.$ = $$[$0-1];
   
 break;
-case 41:
+case 42:
 
     if(typeof $$[$0] == 'number'){
       $$[$0-1].transpose += $$[$0];
@@ -953,12 +958,12 @@ case 41:
     this.$ = $$[$0-1];
   
 break;
-case 42:
+case 43:
 
     this.$ = {inv: 0, transpose: 0};
   
 break;
-case 43:
+case 44:
 
     this.$ = {
       pitch:$$[$0-1],
@@ -966,13 +971,13 @@ case 43:
       };
   
 break;
-case 44:
+case 45:
 
     this.$ = $$[$0];
 
   
 break;
-case 45:
+case 46:
 
     this.$ = {
       original: $$[$0-1],
@@ -980,12 +985,12 @@ case 45:
     	}
   
 break;
-case 46:
+case 47:
  this.$ = 1
 break;
 }
 },
-table: [{3:1,5:5,6:2,7:[1,3],8:[1,4],9:14,10:$V0,11:$V1,16:6,17:7,18:12,19:$V2,20:$V3,30:9,31:10,32:11,40:8,41:$V4},{1:[3],4:[1,19],5:20,6:21,9:14,10:$V0,11:$V1,16:6,17:7,18:12,19:$V2,20:$V3,30:9,31:10,32:11,40:8,41:$V4},o($V5,[2,4]),o($V5,[2,5]),o($V5,[2,6]),{12:22,13:$V6,14:$V7,15:$V8},o($V9,[2,13]),o($V9,[2,14]),o($V9,[2,46],{9:14,44:26,32:27,10:$V0,11:$V1,45:[1,28]}),o($V9,[2,26],{21:29,29:34,22:[1,30],24:[1,31],26:[1,32],28:[1,33],33:$Va,34:$Vb,35:$Vc,36:$Vd,37:$Ve,38:$Vf,39:$Vg}),o($V9,[2,27]),o($Vh,[2,37],{29:42,33:$Va,34:$Vb,35:$Vc,36:$Vd,37:$Ve,38:$Vf,39:$Vg}),o($Vi,[2,24]),o($Vj,[2,42],{42:43}),o($Vk,[2,28]),o($Vi,[2,17]),o($Vi,[2,18]),o($Vl,[2,7]),o($Vl,[2,8]),o($V5,[2,1]),{4:[1,44],12:22,13:$V6,14:$V7,15:$V8},o($V5,[2,3]),o($V5,[2,9]),{9:14,10:$V0,11:$V1,12:45,14:$V7,15:$V8,16:46,17:47,18:12,19:$V2,20:$V3,30:9,31:10,32:11,40:8,41:$V4},o($V5,[2,11]),o($V5,[2,12]),o($V9,[2,43]),o($Vh,[2,38],{29:42,33:$Va,34:$Vb,35:$Vc,36:$Vd,37:$Ve,38:$Vf,39:$Vg}),{9:48,10:$V0,11:$V1},o($Vi,[2,25]),{9:49,10:$V0,11:$V1},{25:[1,50]},{27:[1,51]},{9:52,10:$V0,11:$V1},o($Vi,[2,23]),o($Vm,[2,30]),o($Vm,[2,31]),o($Vm,[2,32]),o($Vm,[2,33]),o($Vm,[2,34]),o($Vm,[2,35]),o($Vm,[2,36]),o($Vk,[2,29]),{9:14,10:$V0,11:$V1,29:55,32:11,33:$Va,34:$Vb,35:$Vc,36:$Vd,37:$Ve,38:$Vf,39:$Vg,40:53,43:[1,54]},o($V5,[2,2]),o($V5,[2,10]),o($V9,[2,15]),o($V9,[2,16]),o($V9,[2,44],{46:[1,56]}),{23:[1,57]},o($Vi,[2,20]),o($Vi,[2,21]),o($Vi,[2,22]),o($V9,[2,39],{9:14,32:27,10:$V0,11:$V1}),o($Vj,[2,40]),o($Vj,[2,41]),o($V9,[2,45]),{9:58,10:$V0,11:$V1},o($Vi,[2,19])],
+table: [{3:1,5:6,6:2,7:[1,3],8:[1,4],9:[1,5],10:15,11:$V0,12:$V1,17:7,18:8,19:13,20:$V2,21:$V3,31:10,32:11,33:12,41:9,42:$V4},{1:[3],4:[1,20],5:21,6:22,10:15,11:$V0,12:$V1,17:7,18:8,19:13,20:$V2,21:$V3,31:10,32:11,33:12,41:9,42:$V4},o($V5,[2,4]),o($V5,[2,5]),o($V5,[2,6]),o($V5,[2,7]),{13:23,14:$V6,15:$V7,16:$V8},o($V9,[2,14]),o($V9,[2,15]),o($V9,[2,47],{10:15,45:27,33:28,11:$V0,12:$V1,46:[1,29]}),o($V9,[2,27],{22:30,30:35,23:[1,31],25:[1,32],27:[1,33],29:[1,34],34:$Va,35:$Vb,36:$Vc,37:$Vd,38:$Ve,39:$Vf,40:$Vg}),o($V9,[2,28]),o($Vh,[2,38],{30:43,34:$Va,35:$Vb,36:$Vc,37:$Vd,38:$Ve,39:$Vf,40:$Vg}),o($Vi,[2,25]),o($Vj,[2,43],{43:44}),o($Vk,[2,29]),o($Vi,[2,18]),o($Vi,[2,19]),o($Vl,[2,8]),o($Vl,[2,9]),o($V5,[2,1]),{4:[1,45],13:23,14:$V6,15:$V7,16:$V8},o($V5,[2,3]),o($V5,[2,10]),{10:15,11:$V0,12:$V1,13:46,15:$V7,16:$V8,17:47,18:48,19:13,20:$V2,21:$V3,31:10,32:11,33:12,41:9,42:$V4},o($V5,[2,12]),o($V5,[2,13]),o($V9,[2,44]),o($Vh,[2,39],{30:43,34:$Va,35:$Vb,36:$Vc,37:$Vd,38:$Ve,39:$Vf,40:$Vg}),{10:49,11:$V0,12:$V1},o($Vi,[2,26]),{10:50,11:$V0,12:$V1},{26:[1,51]},{28:[1,52]},{10:53,11:$V0,12:$V1},o($Vi,[2,24]),o($Vm,[2,31]),o($Vm,[2,32]),o($Vm,[2,33]),o($Vm,[2,34]),o($Vm,[2,35]),o($Vm,[2,36]),o($Vm,[2,37]),o($Vk,[2,30]),{10:15,11:$V0,12:$V1,30:56,33:12,34:$Va,35:$Vb,36:$Vc,37:$Vd,38:$Ve,39:$Vf,40:$Vg,41:54,44:[1,55]},o($V5,[2,2]),o($V5,[2,11]),o($V9,[2,16]),o($V9,[2,17]),o($V9,[2,45],{47:[1,57]}),{24:[1,58]},o($Vi,[2,21]),o($Vi,[2,22]),o($Vi,[2,23]),o($V9,[2,40],{10:15,33:28,11:$V0,12:$V1}),o($Vj,[2,41]),o($Vj,[2,42]),o($V9,[2,46]),{10:59,11:$V0,12:$V1},o($Vi,[2,20])],
 defaultActions: {},
 parseError: function parseError(str, hash) {
     if (hash.recoverable) {
@@ -1469,23 +1474,23 @@ var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
 case 0:return yy_.yytext;
 break;
-case 1:this.begin('NOTE'); return 10;
+case 1:this.begin('NOTE'); return 11;
 break;
-case 2:this.begin('INITIAL'); return 14;
+case 2:this.begin('INITIAL'); return 15;
 break;
-case 3:this.begin('CTRL'); return 20;
+case 3:this.begin('CTRL'); return 21;
 break;
-case 4:this.begin('INITIAL'); return 14;
+case 4:this.begin('INITIAL'); return 15;
 break;
-case 5:this.begin('INITIAL'); return 15;
+case 5:this.begin('INITIAL'); return 16;
 break;
-case 6:this.begin('CTRL'); return 19;
+case 6:this.begin('CTRL'); return 20;
 break;
-case 7:this.begin('CHORD'); return 41;
+case 7:this.begin('CHORD'); return 42;
 break;
-case 8:return 25;
+case 8:return 26;
 break;
-case 9:this.begin('NOTE'); return 13;
+case 9:this.begin('NOTE'); return 14;
 break;
 case 10:/* skip */
 break;
@@ -1493,29 +1498,29 @@ case 11:/* skip */
 break;
 case 12:return yy_.yytext[0];
 break;
-case 13:return 28;
+case 13:return 29;
 break;
-case 14:return 26;
+case 14:return 27;
 break;
-case 15:return 10;
+case 15:return 11;
 break;
-case 16:return 27;
+case 16:return 28;
 break;
-case 17:return 43;
+case 17:return 44;
 break;
-case 18:return 10;
+case 18:return 11;
 break;
-case 19:return 11;
+case 19:return 12;
 break;
-case 20:this.begin('NOTE_DUR'); return 45;
+case 20:this.begin('NOTE_DUR'); return 46;
 break;
-case 21:return 37;
+case 21:return 38;
 break;
-case 22:return 34;
+case 22:return 35;
 break;
-case 23:return 39;
+case 23:return 40;
 break;
-case 24:return 38;
+case 24:return 39;
 break;
 case 25:return yy_.yytext;
 break;
@@ -1525,7 +1530,7 @@ case 27:console.log('Unrecognized token: ', yy_.yytext);
 break;
 }
 },
-rules: [/^(?:((melody|harmony)))/,/^(?:(([0-9])))/,/^(?:((\r|\n|\r\n)))/,/^(?:\|:)/,/^(?:\|)/,/^(?::\|)/,/^(?::)/,/^(?:@)/,/^(?:(([A-GR][#b]{0,2})))/,/^(?:(([ |\t|\f|\v]))+)/,/^(?:\s+)/,/^(?:((%[^\r\n]*((\r|\n|\r\n)))))/,/^(?:((key_sig|time_sig|instrument|[k|t|i])))/,/^(?:((rate|volume|ctrls|[r|c|v])))/,/^(?:((out|scale|[o|s])))/,/^(?:(([0-9]))+)/,/^(?:\{[a-z_]+\})/,/^(?:[i])/,/^(?:(([0-9])))/,/^(?:\{(([0-9]))+\})/,/^(?:,)/,/^(?:[n])/,/^(?:[b])/,/^(?:~!)/,/^(?:~)/,/^(?:((,|;|\{|\}|\+|-|#|\/|\^)))/,/^(?:$)/,/^(?:.)/],
+rules: [/^(?:((melody|harmony|percussion)))/,/^(?:(([0-9])))/,/^(?:((\r|\n|\r\n)))/,/^(?:\|:)/,/^(?:\|)/,/^(?::\|)/,/^(?::)/,/^(?:@)/,/^(?:(([A-GR][#b]{0,2})))/,/^(?:(([ |\t|\f|\v]))+)/,/^(?:\s+)/,/^(?:((%[^\r\n]*((\r|\n|\r\n)))))/,/^(?:((key_sig|time_sig|instrument|[k|t|i])))/,/^(?:((rate|volume|ctrls|[r|c|v])))/,/^(?:((out|scale|[o|s])))/,/^(?:(([0-9]))+)/,/^(?:\{[a-z_]+\})/,/^(?:[i])/,/^(?:(([0-9])))/,/^(?:\{(([0-9]))+\})/,/^(?:,)/,/^(?:[n])/,/^(?:[b])/,/^(?:~!)/,/^(?:~)/,/^(?:((,|;|\{|\}|\+|-|#|\/|\^)))/,/^(?:$)/,/^(?:.)/],
 conditions: {"CTRL":{"rules":[2,3,4,5,6,7,8,9,12,13,14,15,16,25,26,27],"inclusive":true},"NOTE":{"rules":[2,3,4,5,6,7,8,9,18,19,20,21,22,23,24,25,26,27],"inclusive":true},"NOTE_DUR":{"rules":[2,3,4,5,6,7,8,9,15,25,26,27],"inclusive":true},"CHORD":{"rules":[3,4,5,6,7,8,9,17,18,25,26,27],"inclusive":true},"INITIAL":{"rules":[0,1,3,4,5,6,7,8,10,11,19,25,26,27],"inclusive":true}}
 });
 return lexer;
@@ -2706,18 +2711,29 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
       refc = null;
       chorder = (function() {
-        var bass, c, chord, delta, forward, incr, process, refi;
-        c = harmony != null ? _.flatten(harmony, true) : [];
-        refi = -1;
+        var b_i, bass, chord, delta, forward, incr, m_i, process;
+        m_i = 0;
+        b_i = -1;
         delta = 0;
         bass = function(inv) {
-          return (c[refi][1] + c[refi][2][inv]) % 12;
+          var curchord;
+          curchord = harmony[m_i][b_i];
+          return (curchord[1] + curchord[2][inv]) % 12;
         };
         incr = function() {
-          return delta -= c[++refi][0];
+          b_i++;
+          if (b_i >= harmony[m_i].length) {
+            b_i = 0;
+            m_i++;
+            if (m_i >= harmony.length) {
+              m_i = harmony.length - 1;
+            }
+          }
+          delta -= harmony[m_i][b_i][0];
+          return delta;
         };
         chord = function(inv) {
-          return MG.inverted(c[refi][2], inv);
+          return MG.inverted(harmony[m_i][b_i][2], inv);
         };
         forward = function(d) {
           return delta += d;
@@ -2725,7 +2741,7 @@ if (typeof module !== 'undefined' && require.main === module) {
         process = function() {
           var results;
           results = [];
-          while (refi < c.length && delta >= 0) {
+          while (m_i < harmony.length && delta >= 0) {
             results.push(incr());
           }
           return results;
