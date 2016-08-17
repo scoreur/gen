@@ -157,13 +157,24 @@
                 </li>
                 <li role="separator" class="divider"></li>
                 <li><a id="keyboard_controls">
-                    <label for="amplitude">amplitude(0-127):</label>
+                    <label for="amplitude">amplitude (0 - 127):</label>
                     <input id="amplitude" type="range" min="0" max="127" value="100" style="width:200px;" class="form-control progress"></a></li>
               </ul>
             </li>
             <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Chords<span class="caret"></span></a>
               <ul style="width:240px" class="dropdown-menu">
                 <li><a id="mode_panel"></a></li>
+              </ul>
+            </li>
+            <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Drums<span class="caret"></span></a>
+              <ul style="width:200px" class="dropdown-menu">
+                <li>
+                  <form id="drum_panel"></form>
+                </li>
+                <li role="separator" class="divider"></li>
+                <li><a id="drum_controls">
+                    <lable for="drum_amplitude">amplitude (0 - 127):</lable>
+                    <input id="drum_amplitude" type="range" min="0" max="127" value="88" style="width:120px;" class="form-control progress"></a></li>
               </ul>
             </li>
             <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Console<span class="caret"></span></a>
