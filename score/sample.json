@@ -20,24 +20,8 @@
     "incomplete_measure": true
   },
   "schema": {
-    "blocks": {
-      "A": 16,
-      "B": 16,
-      "C": 16,
-      "A2": 16,
-      "B2": 16,
-      "C2": 16
-    },
-    "structure": [
-      "A",
-      "B",
-      "A",
-      "C",
-      "A2",
-      "B2",
-      "A2",
-      "C2"
-    ],
+
+
     "seeds": {
       "s1": {
         "dur": 16,
@@ -139,10 +123,21 @@
         "2,4"
       ]
     },
-    "melody": {
+    "structure": [
+      "A",
+      "B",
+      "A",
+      "C",
+      "A2",
+      "B2",
+      "A2",
+      "C2"
+    ],
+    "node": {
       "A": {
         "mode": "chord",
         "options": {
+          "dur": 16,
           "chords": [
             "Gb,4 Db,4",
             "Ebm,4 Bbm,4"
@@ -156,20 +151,12 @@
             "seed": "s2"
           },
           "range": [54, 80]
-        }
-      },
-      "B": {
-        "mode": "transpose",
-        "options": {
-          "src": "A",
-          "scale": "maj",
-          "offset": 0,
-          "interval": 3
         }
       },
       "C": {
         "mode": "chord",
         "options": {
+          "dur": 16,
           "chords": [
             "Cb,4 Gb,4",
             "Ab7,2 Db7,2 Gb,4"
@@ -182,12 +169,16 @@
             "chromatic": false,
             "seed": "s2"
           },
-          "range": [54, 80]
+          "range": [
+            54,
+            80
+          ]
         }
       },
       "A2": {
         "mode": "chord",
         "options": {
+          "dur": 16,
           "chords": [
             "Gb,4 Db,4",
             "Ebm,4 Bbm,4"
@@ -203,19 +194,10 @@
           "range": [54, 80]
         }
       },
-      "B2": {
-        "mode": "transpose",
-        "options": {
-          "src": "A2",
-          "scale": "maj",
-          "offset": 0,
-          "interval": 3
-        },
-        "range": [54, 80]
-      },
       "C2": {
         "mode": "chord",
         "options": {
+          "dur": 16,
           "chords": [
             "Cb,4 Gb,4",
             "Ab7,2 Db7,2 Gb,4"
@@ -230,8 +212,44 @@
           },
           "range": [54, 80]
         }
+      },
+
+
+      "B": {
+        "structure": ["A"],
+        "action":{
+          "A": {
+            "mode": "transpose",
+            "dur": 16,
+            "scale": "maj",
+            "offset": 0,
+            "interval": 3
+          }
+        }
+      },
+      "B2": {
+        "structure": [
+          "A2"
+        ],
+        "action": {
+          "A2": {
+            "mode": "transpose",
+            "dur": 16,
+            "scale": "maj",
+            "offset": 0,
+            "interval": 3
+          }
+        }
       }
+
     },
+    "action": {
+
+    },
+    "modification": {
+
+    },
+
     "harmony": {
       "A": [
         "Gb,4 Db,4",

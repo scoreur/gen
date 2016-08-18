@@ -66,36 +66,101 @@ class @Generator
 
     return info
 
+  top_sort = (dependency)->
+    n = Object.keys(dependency).length
+
+    remove_one = (o)->
+      for k,v of dependency
+        if o in v
+          v.splice(v.indexOf(o),1)
+      delete dependency[o]
+    get_one = ->
+      for k,v of dependency
+        if v.length <= 0
+          return k
+      return null
+    ret = []
+    while ret.length < n
+      tmp = get_one()
+      if tmp == null
+        console.log 'circular dependency', dependency
+        break
+      else
+        ret.push tmp
+        remove_one(tmp)
+    #console.log 'top sort', ret
+    return ret
+
+  obj_merge = (v)->
+    ret = {pitch:[], dur:[]}
+    if Array.isArray(v)
+      for i in v
+        ret.pitch = ret.pitch.concat (MG.circularClone(i.pitch))
+        ret.dur = ret.dur.concat (MG.circularClone(i.dur))
+    else
+        ret.pitch = MG.circularClone(v.pitch)
+        ret.dur = MG.circularClone(v.dur)
+    ret
+
+  # testing using dur
+  produce: (variable, global)->
+    if variable.mode? # terminal
+      return @gen_chord(variable.options)
+    variable.node ?= {}
+    variable.action ?= {}
+    #console.log 'action', variable.action
+    global ?= {}
+    local = _.keys(variable.node) # sort to top order
+    dependency = {}
+    for k,v of variable.node
+      dependency[k] = []
+      if v.mode?
+        continue
+      v.node ?= {}
+      for i in v.structure
+        if i not of v.node && i in local
+          dependency[k].push i # k depends on i
+    # console.log 'dependency', dependency
+    # top sort
+    local = top_sort(dependency)
+    next_global = Object.assign({}, global)
+
+    for k in local
+      next_global[k] = @produce(variable.node[k], next_global)
+    for k,v of variable.action
+      switch v.mode
+        when 'transpose'
+          next_global[k] = @gen_transpose(v,obj_merge(next_global[k]))
+        when 'reverse'
+          next_global[k] = @gen_reverse(v,obj_merge(next_global[k]))
+          
+
+
+    ret = []
+    for v in variable.structure
+      if v of next_global
+        ret.push obj_merge(next_global[v])
+      else
+        console.log 'miss', v
+    return ret
 
 
   # low_level / high_level
   generate: ->
-    for i,dur of @schema.blocks
-      mode = @schema.melody[i]
-      switch mode.mode
-        when 'random'
-          @res[i] = @gen_random(dur, mode.options)
-        when 'transpose'
-          @res[i] = @gen_transpose(dur, mode.options)
-        when 'chord'
-          @res[i] = @gen_chord(dur, mode.options)
-        when 'reverse'
-          @res[i] = @gen_reverse(mode.options)
-    console.log @res, 'res'
+
     sec = @settings.ctrl_per_beat * @settings.time_sig[0] # separate bar
-    res = {}
-    res_eval = {}
-    for e0, b of @res
-      res[e0] = @b2score(b, sec)
-      console.log res_eval[e0] = @evaluate(@b2score(b, @settings.ctrl_per_beat))
+    res_eval = []
+
+    @res2 =  @produce(@schema).map (b)=>
+      # res_eval.push @evaluate(@b2score(b, @settings.ctrl_per_beat))
+      @b2score(b, sec)
 
 
     # evaluation
 
+    console.log 'produce',@res2
 
-    res = @schema.structure.map (e)-> JSON.parse(JSON.stringify(res[e]))
-    @res2 = res
-    console.log res
+    res = @res2
 
     # between-block modification
     for i in [1...res.length] by 1
@@ -113,12 +178,12 @@ class @Generator
           last_measure[last_measure.length - 2][1] = last_note
           last_note = pre_note
           pre_note = last_measure[last_measure.length - 2][1]
-          console.log 'smooth', i, pre_note, last_note, first_note
+          #console.log 'smooth', i, pre_note, last_note, first_note
       if last_note - first_note <= -12
         last_note += 12
       else if last_note - first_note >= 12
         last_note -= 12
-      console.log i, last_note, first_note
+      #console.log i, last_note, first_note
       last_measure[last_measure.length - 1][1] = last_note
       res[i-1][res[i-1].length - 1] = last_measure
 
@@ -140,11 +205,11 @@ class @Generator
       pre_note = last_measure[last_measure.length - 2][1]
       if typeof pre_note == 'object'
         pre_note = pre_note[0]
-      console.log 'pre_note', pre_note
+      #console.log 'pre_note', pre_note
       if last_note - pre_note >= 12
         last_note -= 12;
       if last_note == pre_note
-        console.log 'may merge last two notes', last_note
+        #console.log 'may merge last two notes', last_note
         return
         #last_note = last_measure.pop()
         #last_measure[last_measure.length - 1][0] += last_note[0]
@@ -153,7 +218,6 @@ class @Generator
     last_measure[last_measure.length - 1][1] = last_note
 
     last_block[last_block.length - 1] = last_measure
-    console.log res
 
     # ornamentation
     return res
@@ -166,12 +230,16 @@ class @Generator
     return ret
 
 
-  gen_transpose: (dur, options) ->
+
+
+  gen_transpose: (options, src) ->
+
+    dur = options.dur
     res =
       dur: []
       pitch: []
     transpose = MG.transposer(options.scale, @settings.key_sig)
-    src = @res[options.src]
+    src ?= @res[options.src]
     interval = options.interval
     if typeof interval == 'number'
       interval = [interval]
@@ -199,12 +267,13 @@ class @Generator
       refd++
       res.dur.push tmp
       res.pitch.push tmp2
+    console.log src, 'transpose-> ', res
     res
-  gen_reverse: (options) ->
+  gen_reverse: (options, src) ->
     res =
       dur: []
       pitch: []
-    src = @res[options.src]
+    src ?= @res[options.src]
     # shallow version options.deep = false
     if options.deep? && options.deep == true
       res.dur = src.dur.slice().reverse().map (arr)->
@@ -214,8 +283,8 @@ class @Generator
     else
       res.dur = src.dur.slice().reverse()
       res.pitch = src.pitch.slice().reverse()
-    console.log res, 'reverse ' + options.src
-    return res
+    console.log res, 'reverse-> ', src
+    res
 
 
 
@@ -224,7 +293,8 @@ class @Generator
       dur: options.dur
       pitch: options.pitch
 
-  gen_random:  (dur, options) ->
+  gen_random:  (options) ->
+    dur = options.dur
     toPitch = @toPitch
     scale_len =@scale.length
     toScale = @toScale
@@ -283,7 +353,8 @@ class @Generator
     res
 
 
-  gen_chord: (dur, options) ->
+  gen_chord: (options) ->
+    dur = options.dur
     toPitch = @toPitch
     toScale = @toScale
     chords = _.flatten(ScoreObj::parseHarmony(options.chords), true)

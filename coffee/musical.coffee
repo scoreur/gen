@@ -33,6 +33,56 @@ MG.percussion =
   80 : "Mute Triangle", 81 : "Open Triangle", 82 : "Shaker", 83 : "Jingle Bell", 84 : "Bell Tree", 85 : "Castanets", 86 : "Mute Surdo", 87 : "Open Surdo"
 
 
+MG.arpeg = {
+  "123" : [
+    "123", # block, 1 onset
+    "13",
+
+    "123 123", # 2 onsets
+    "13 13",
+    "1 23",
+    "1,2 23",
+
+    "1 23 23",
+    "1 2 3",
+    "1 3 2",
+
+
+    "1 3 2 3",
+    "1 2 3 2",
+
+    "1 2 3 2 3 2"
+
+  ],
+  "1231+": [
+    "1234",
+    "134",
+
+    "1 234",
+
+    "1 2 3 4",
+    "1 3 4 3",
+
+
+    "1 2 3 4 3 2"
+
+  ],
+  "132+": [
+    "1 2 3 2 3 2 3 2",
+
+  ],
+  "1-131+": [
+    "12 3 4 3",
+    "12,2 2 3 4,2 3,2"
+  ]
+
+
+}
+
+MG.texture = (->
+
+)()
+
 
 
 # chord array
@@ -335,17 +385,88 @@ MG.chord_class_label =
     texture: "@-123 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@iii-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32".split('/')
 
 
-@gen_modes = ['random', 'transpose', 'chord', 'reverse', 'sequence']
+@gen_modes = ['random', 'transpose', 'chord', 'reverse']
+
+
 
 
 @schema_summer = MG.schema_summer =
-  blocks: ((a,b)->
-    res = {}
-    a.split('/').forEach (e,i)->
-      res[e] = b[i]
-    return res
-  )('c/A/B/Br/C',[32,32*8,16*8,16*8,28*8]),
   structure: "c/A/B/Br/A/C/c".split('/'),
+  node: {
+    'c':{ # terminal
+      mode: 'chord'
+      options:
+        dur: 4 * 8
+        chords : [
+          "E7,32"
+        ]
+        rhythm:
+          seed: 's1'
+          swarp: 0.5
+
+        interval:
+          chromatic: false
+          seed: 's2'
+    },
+    'A':{ # terminal
+      mode:'chord'
+      options:
+        dur: 32 * 8
+        chords: [
+          "Amin,64",
+          "Bb7,64",
+          "Amin,32 E7,32",
+          "Amin,32 A7,32"
+        ]
+        rhythm:
+          seed: 's1'
+          swarp: 0.5
+
+        interval:
+          chromatic: false
+          seed: 's2'
+        range: [56, 77],
+        dist: 'linear'
+
+    },
+    'B':{
+      structure: ['A'],
+      action: {
+        'A': {
+          mode:'transpose'
+          dur: 16 * 8
+          offset: 0,
+          scale: 'maj',
+          interval: 3
+        }
+      }
+    },
+    'Br':{
+      structure: ['B'],
+      action: {
+        'B': {
+          mode:'reverse',
+          deep: 'false'
+        }
+      }
+
+    },
+    'C':{ # terminal
+      mode: 'chord',
+      options:
+        dur: 28 * 8
+        chords: "C,32 Am,32/D7,32 E7,32/Am,32 D7,32/Bm7,32".split('/'),
+        rhythm:
+          seed: 's1'
+          swarp: 0.5
+        interval:
+          chromatic: false,
+          seed: 's2'
+        range: [56, 77],
+        dist: 'quadratic'
+    }
+
+  },
   scale:'maj',
   funcs:
     'A': "1,8/4,8/1,4 2,4/1,8".split('/'),
@@ -370,62 +491,6 @@ MG.chord_class_label =
           i-6
       )()
 
-
-  melody:
-    'c':
-      mode: 'random'
-      options:
-        rhythm:
-          seed: 's1'
-          swarp: 0.5
-
-        interval:
-          chromatic: false
-          seed: 's2'
-    'A':
-      mode:'chord'
-      options:
-        chords: [
-          "Amin,8",
-          "Bb7,8",
-          "Amin,4 E7,4",
-          "Amin,4 A7,4"
-        ]
-        rhythm:
-          seed: 's1'
-          swarp: 0.5
-
-        interval:
-          chromatic: false
-          seed: 's2'
-        range: [56, 77],
-        dist: 'quadratic'
-
-    'B':
-      mode:'transpose'
-      options:
-        src: "A",
-        offset: 0,
-        scale: 'maj',
-        interval: 1
-    'Br':
-      mode:'reverse',
-      options:
-        src: 'B',
-        deep: 'false'
-
-    'C':
-      mode: 'chord',
-      options:
-        chords: "C,4 Am,4/D7,4 E7,4/Am,4 D7,4/Bm7,4".split('/'),
-        rhythm:
-          seed: 's1'
-          swarp: 0.5
-        interval:
-          chromatic: false,
-          seed: 's2'
-        range: [56, 77],
-        dist: 'quadratic'
 
 ###
   utilities

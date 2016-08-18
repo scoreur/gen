@@ -28,7 +28,22 @@ You need to specify the following entry:
 * `seeds`: a dict of `seed_id: seed_option`, serve as the random source of the generator. The `seed_option` should contain `dur`, `choices` and `weights`;
 * `melody`: a dict of `block_id: generating_options`. The `generating_options` should contain `mode` (random with/without chord, transpose, reverse, etc). The other options depends on which mode it is for.
 
-Here is some samples for currently supported mode:
+For variables (non-terminals), `structure` (and `node`) should be specified. For example,
+```
+    {
+        "structure": ["A", "A2", "B", "A"],
+        "node": {
+            "A": {...},
+            "B": {...}
+        },
+        "action": {
+            "A": {...},
+            "B": {...}
+        }
+    }
+```
+
+Here is some samples for currently supported terminals:
 ```
     {
         "mode": "chord",
@@ -59,4 +74,6 @@ Here is some samples for currently supported mode:
     }
 
 ```
+
+
 
