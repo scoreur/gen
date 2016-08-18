@@ -1998,7 +1998,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
       ['melody', 'harmony', 'texture'].forEach((function(_this) {
         return function(e) {
-          return _this.contents[e] = _this.editor[e].getValue().split(/[\/\n]+/);
+          return _this.contents[e] = _this.editor[e].getValue().split(/[\n]+/);
         };
       })(this));
       this.obj = new ScoreObj(this.settings, this.contents);
@@ -2038,6 +2038,10 @@ if (typeof module !== 'undefined' && require.main === module) {
           }
           if (e[1] === 'noteOn' && e[3] !== 0) {
             tmp.push(e[2]);
+          } else if (e[1] === 'timeSignature') {
+            console.log('time_sig change', e);
+          } else if (e[1] === 'keySignature') {
+            console.log('key_sig change', e);
           }
         });
         res = _.unzip(res);
@@ -2612,13 +2616,25 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     Generator.prototype.toScoreObj = function() {
-      var obj, res;
+      var melody, obj, res;
       if (_.keys(this.res2).length === 0) {
         this.generate();
       }
       res = this.res2;
       obj = new ScoreObj(this.settings);
-      obj.setMelody(_.flatten(res, true), true);
+      melody = _.flatten(res, true);
+      melody.info = {
+        time_sigs: {
+          0: this.settings.time_sig
+        },
+        key_sigs: {
+          0: this.settings.key_sig
+        },
+        tempi: {
+          0: this.settings.tempo
+        }
+      };
+      obj.setMelody(melody, true);
       return obj;
     };
 
@@ -2773,13 +2789,14 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreObj.prototype.setMelody = function(melody, parsed) {
+      var options;
       if ((parsed != null) && parsed === true) {
         return this.tracks[0] = melody;
       } else {
-        return this.tracks[0] = this.parseMelody(melody, {
-          scale: MG.scale_class[this.scale],
-          init_ref: this.init_ref
-        });
+        options = this.getSettings();
+        options.scale = MG.scale_class[options.scale];
+        options.init_ref = this.init_ref;
+        return this.tracks[0] = this.parseMelody(melody, options);
       }
     };
 
@@ -2806,7 +2823,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreObj.prototype.parseMelody = function(m, options) {
-      var chorder, e, error, harmony, init_ref, obj, ornamental, ref, refc, res, scale;
+      var chorder, e, error, harmony, init_ref, key_sig_map, obj, ornamental, ref, refc, res, scale, tempo_map, time_sig_map;
       try {
         obj = parser.parse(m.join('\n') + '\n');
       } catch (error) {
@@ -2887,13 +2904,23 @@ if (typeof module !== 'undefined' && require.main === module) {
       if (scale == null) {
         scale = MG.scale_class['maj'];
       }
+      tempo_map = {
+        0: options.tempo
+      };
+      key_sig_map = {
+        0: options.key_sig
+      };
+      time_sig_map = {
+        0: options.time_sig
+      };
       if (init_ref == null) {
         init_ref = 60;
       }
       ref = init_ref;
       res = obj.data.map((function(_this) {
-        return function(m) {
+        return function(m, i) {
           var measure;
+          console.log('parse measure', i);
           measure = [];
           m.forEach(function(e) {
             var bass, chord, k, pitches, results, v;
@@ -2908,16 +2935,17 @@ if (typeof module !== 'undefined' && require.main === module) {
                     v = e[k];
                     switch (k) {
                       case 't':
-                        results.push(1);
+                        results.push(time_sig_map[i] = v);
                         break;
                       case 's':
                         results.push(scale = MG.scale_class[v]);
                         break;
                       case 'k':
-                        results.push(1);
+                        key_sig_map[i] = v;
+                        results.push(ref = init_ref = MG.keyToPitch(v + 4));
                         break;
                       case 'r':
-                        results.push(1);
+                        results.push(tempo_map[i] = v);
                         break;
                       case 'v':
                         results.push(1);
@@ -2973,6 +3001,11 @@ if (typeof module !== 'undefined' && require.main === module) {
           return measure;
         };
       })(this));
+      res.info = {
+        time_sigs: time_sig_map,
+        key_sigs: key_sig_map,
+        tempi: tempo_map
+      };
       return res;
     };
 
@@ -3204,17 +3237,19 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
     }
 
-    ScoreRenderer.prototype.newStave = function(m, k) {
+    ScoreRenderer.prototype.newStave = function(m, clef) {
       var i, j, w, x, y;
+      if (clef == null) {
+        clef = 'treble';
+      }
       i = m % this.layout.measure_per_system;
       j = (Math.floor(m / this.layout.measure_per_system)) % this.layout.system_per_page;
-      w = Math.floor((this.geo.system_width - this.geo.reserved_width) / this.layout.measure_per_system);
+      w = Math.floor(this.geo.system_width / this.layout.measure_per_system);
       x = this.geo.left_padding + i * w;
       y = this.geo.top_padding + j * (this.geo.system_height + this.geo.system_interval);
       if (i === 0) {
-        return new Vex.Flow.Stave(x, y, w + this.geo.reserved_width).addClef('treble').addKeySignature(k);
+        return new Vex.Flow.Stave(x, y, w).addClef(clef);
       } else {
-        x += this.geo.reserved_width;
         return new Vex.Flow.Stave(x, y, w);
       }
     };
@@ -3280,7 +3315,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreRenderer.prototype.renderPage = function(num) {
-      var c, ctx, e, i, l, last, ref, ref1, start;
+      var c, ctx, e, i, k, last, ref, ref1, start;
       if (num < 0 || num >= this.numPage) {
         return;
       }
@@ -3301,7 +3336,7 @@ if (typeof module !== 'undefined' && require.main === module) {
         last = this.measures.length;
       }
       ctx = this.ctx;
-      for (i = l = ref = start, ref1 = last; l < ref1; i = l += 1) {
+      for (i = k = ref = start, ref1 = last; k < ref1; i = k += 1) {
         e = this.measures[i];
         e.stave.setContext(ctx).draw();
         e.voices.forEach(function(v) {
@@ -3325,22 +3360,41 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreRenderer.prototype.render = function(s) {
-      var beams, err, error, formatter, i, l, later_tie, melody, notes, num_beats, raw_w, ref, sharp, stave, sum, ties, toScale, voice, w;
+      var beams, err, error, formatter, i, k, key_sig, later_tie, melody, notes, num_beats, ref, sharp, stave, sum, ties, time_sig, toScale, voice, w;
       this.s = s;
-      this.layout.measure_per_system = s.ctrl_per_beat >= 8 ? 3 : 4;
-      this.geo.reserved_width = 25 + 5 * Math.abs(MG.key_sig[s.key_sig]);
-      raw_w = Math.floor((this.geo.system_width - this.geo.reserved_width) / this.layout.measure_per_system);
-      sharp = MG.key_sig[s.key_sig] >= 0;
-      toScale = MG.pitchToScale(s.scale, s.key_sig);
+      this.layout.measure_per_system = s.ctrl_per_beat > 16 ? 2 : 3;
       this.measures = [];
       melody = s.tracks[0];
-      for (i = l = 0, ref = melody.length; l < ref; i = l += 1) {
+      time_sig = melody.info.time_sigs[0] = s.time_sig;
+      key_sig = melody.info.key_sigs[0] = s.key_sig;
+      sharp = MG.key_sig[key_sig] >= 0;
+      toScale = MG.pitchToScale(s.scale, key_sig);
+      this.geo.reserved_width = 30 + 5 * Math.abs(MG.key_sig[key_sig]);
+      console.log('info', melody.info);
+      for (i = k = 0, ref = melody.length; k < ref; i = k += 1) {
+        console.log('render measure', i);
+        stave = this.newStave(i);
+        w = Math.floor(this.geo.system_width / this.layout.measure_per_system);
+        if (melody.info.key_sigs[i] != null) {
+          key_sig = melody.info.key_sigs[i];
+          sharp = MG.key_sig[key_sig] >= 0;
+          toScale = MG.pitchToScale(s.scale, key_sig);
+          this.geo.reserved_width = 28 + 6 * Math.abs(MG.key_sig[key_sig]);
+          console.log('key_sig change', key_sig);
+          stave.addKeySignature(key_sig);
+          w -= this.geo.reserved_width;
+        }
+        if (melody.info.time_sigs[i] != null) {
+          time_sig = melody.info.time_sigs[i];
+          stave.addTimeSignature(time_sig.join('/'));
+          w -= 20;
+        }
         notes = [];
         ties = [];
         later_tie = [];
         sum = 0;
         melody[i].forEach(function(e) {
-          var dur, durs, ii, indices, keys, n, pd, ref1, ref2, rest, start, tie;
+          var dur, durs, ii, indices, keys, l, pd, ref1, ref2, rest, start, tie;
           ref1 = dur_obj(sum, 16 * e[0] / s.ctrl_per_beat), sum = ref1.sum, dur = ref1.dur;
           durs = [];
           pd = 0;
@@ -3348,7 +3402,7 @@ if (typeof module !== 'undefined' && require.main === module) {
             if (d === pd) {
               durs[durs.length - 1] += 'd';
             } else {
-              durs.push('' + (64 / d));
+              durs.push('' + (16 * time_sig[1] / d));
             }
             return pd = d / 2;
           });
@@ -3362,7 +3416,7 @@ if (typeof module !== 'undefined' && require.main === module) {
               return;
             }
             tmp = toScale(e1);
-            key = MG.scale_keys[s.key_sig][tmp[0]];
+            key = MG.scale_keys[key_sig][tmp[0]];
             key += '/' + ((Math.floor(e1 / 12)) - 1 + ({
               'Cb': 1,
               'B#': -1
@@ -3383,7 +3437,7 @@ if (typeof module !== 'undefined' && require.main === module) {
             });
           }
           durs.forEach(function(d) {
-            var iii, n, r, ref2, res;
+            var iii, l, r, ref2, res;
             res = new Vex.Flow.StaveNote({
               keys: keys,
               duration: d,
@@ -3391,7 +3445,7 @@ if (typeof module !== 'undefined' && require.main === module) {
             });
             r = /d+/.exec(d);
             if (r != null) {
-              for (iii = n = 0, ref2 = r[0].length; n < ref2; iii = n += 1) {
+              for (iii = l = 0, ref2 = r[0].length; l < ref2; iii = l += 1) {
                 res.addDotToAll();
               }
             }
@@ -3402,7 +3456,7 @@ if (typeof module !== 'undefined' && require.main === module) {
             indices = Array(keys.length).fill(0).map(function(ee, index) {
               return index;
             });
-            for (ii = n = 1, ref2 = durs.length; n < ref2; ii = n += 1) {
+            for (ii = l = 1, ref2 = durs.length; l < ref2; ii = l += 1) {
               tie = new Vex.Flow.StaveTie({
                 first_note: notes[start + ii - 1],
                 last_note: notes[start + ii],
@@ -3430,9 +3484,10 @@ if (typeof module !== 'undefined' && require.main === module) {
           ties.push(tie);
         });
         num_beats = Math.floor(sum / 16);
+        console.log('time_sig', time_sig, sum, notes);
         voice = new Vex.Flow.Voice({
           num_beats: num_beats,
-          beat_value: s.time_sig[1],
+          beat_value: time_sig[1],
           resolution: Vex.Flow.RESOLUTION
         });
         try {
@@ -3442,18 +3497,10 @@ if (typeof module !== 'undefined' && require.main === module) {
           console.log(err.message);
           continue;
         }
-        Vex.Flow.Accidental.applyAccidentals([voice], s.key_sig);
+        Vex.Flow.Accidental.applyAccidentals([voice], key_sig);
         beams = Vex.Flow.Beam.applyAndGetBeams(voice);
-        w = raw_w;
         if (i % this.layout.measure_per_system === 0) {
-          w -= this.geo.reserved_width;
-        }
-        if (i === 0) {
-          w -= 10;
-        }
-        stave = this.newStave(i, s.key_sig);
-        if (i === 0) {
-          stave.addTimeSignature(s.time_sig.join('/'));
+          w -= 20;
         }
         formatter = new Vex.Flow.Formatter().joinVoices([voice]).format([voice], w - 10);
         this.measures.push({
