@@ -133,7 +133,7 @@ class @Generator
           next_global[k] = @gen_transpose(v,obj_merge(next_global[k]))
         when 'reverse'
           next_global[k] = @gen_reverse(v,obj_merge(next_global[k]))
-          
+
 
 
     ret = []
@@ -442,7 +442,6 @@ class @Generator
       ++i
     # evaluation , optimization
 
-
     res
 
   # sperate into measures
@@ -478,10 +477,15 @@ class @Generator
 
     res = @res2
 
-
     obj = new ScoreObj(@settings)
+    melody = _.flatten(res, true)
+    melody.info = {
+      time_sigs:{0:@settings.time_sig},
+      key_sigs: {0: @settings.key_sig},
+      tempi: {0: @settings.tempo}
+    }
 
-    obj.setMelody  _.flatten(res, true), true
+    obj.setMelody  melody, true
     return obj
 
   rndPicker = (choices, weights) ->

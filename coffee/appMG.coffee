@@ -366,7 +366,7 @@ class @AppMG
     catch e
       $.notify('Bad score format!', 'warning')
     ['melody','harmony','texture'].forEach (e)=>
-      @contents[e] = @editor[e].getValue().split(/[/\n]+/)
+      @contents[e] = @editor[e].getValue().split(/[\n]+/)
     @obj = new ScoreObj(@settings, @contents)
     @player.fromScore(@obj)
     return @obj
@@ -403,8 +403,14 @@ class @AppMG
           #rest
           delta = e[0]
         # ignore 'noteOff' and velocity == 0
+
         if e[1] == 'noteOn' and e[3] != 0
           tmp.push e[2]
+        else if e[1] == 'timeSignature'
+          console.log 'time_sig change', e
+        else if e[1] == 'keySignature'
+          console.log 'key_sig change', e
+
         #noteNumber
         return
       res = _.unzip(res)

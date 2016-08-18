@@ -44,20 +44,20 @@ class @ScoreRenderer
       })
 
   # m-th measure
-  newStave: (m,k)->
+  newStave: (m, clef)->
+    clef ?= 'treble'
     i = m % @layout.measure_per_system;
     j = (m // @layout.measure_per_system) % @layout.system_per_page
-    w = (@geo.system_width - @geo.reserved_width) // @layout.measure_per_system
+    w = @geo.system_width // @layout.measure_per_system
     x = @geo.left_padding + i * w
     y = @geo.top_padding + j * (@geo.system_height + @geo.system_interval)
-    #console.log(x,y,w);
+    # console.log(x,y,w)
     if i == 0
-      return new Vex.Flow.Stave(x, y, w + @geo.reserved_width).addClef('treble').addKeySignature(k)
+      return new Vex.Flow.Stave(x, y, w).addClef(clef)
     else
-      x += @geo.reserved_width
       return new Vex.Flow.Stave(x, y, w)
 
-  # TODO: fix tie
+
 
   toBit = (i)->
     res = [];
@@ -153,17 +153,45 @@ class @ScoreRenderer
   render: (s)->
 
     @s = s
-    @layout.measure_per_system = if s.ctrl_per_beat >= 8 then 3 else 4
-    @geo.reserved_width = 25 + 5 * Math.abs(MG.key_sig[s.key_sig])
+    @layout.measure_per_system = if s.ctrl_per_beat > 16 then 2 else 3
 
-    raw_w = (@geo.system_width - @geo.reserved_width) // @layout.measure_per_system
-    sharp = MG.key_sig[s.key_sig] >= 0
-    toScale = MG.pitchToScale(s.scale, s.key_sig)
-    #console.log('render', s.tracks)
+
     @measures = []
     melody = s.tracks[0]
+    time_sig = melody.info.time_sigs[0] = s.time_sig
+    key_sig = melody.info.key_sigs[0] = s.key_sig
+    sharp = MG.key_sig[key_sig] >= 0
+    toScale = MG.pitchToScale(s.scale, key_sig)
+
+    @geo.reserved_width = 30 + 5 * Math.abs(MG.key_sig[key_sig])
+
+
+    console.log 'info', melody.info
     #console.log melody
     for  i in [0...melody.length] by 1
+      console.log 'render measure', i
+
+
+      stave = this.newStave(i)
+      w = @geo.system_width // @layout.measure_per_system
+      if melody.info.key_sigs[i]?
+        key_sig = melody.info.key_sigs[i]
+        sharp = MG.key_sig[key_sig] >= 0
+        toScale = MG.pitchToScale(s.scale, key_sig)
+        @geo.reserved_width = 28 + 6 * Math.abs(MG.key_sig[key_sig])
+        console.log 'key_sig change', key_sig
+        stave.addKeySignature(key_sig)
+        w -= @geo.reserved_width
+
+
+
+      if melody.info.time_sigs[i]?
+        time_sig = melody.info.time_sigs[i]
+        stave.addTimeSignature(time_sig.join('/'))
+        w -= 20
+
+
+
       notes = []
       ties = []
       later_tie = []
@@ -177,7 +205,7 @@ class @ScoreRenderer
           if d == pd
             durs[durs.length - 1] += 'd'
           else
-            durs.push(''+(64 / d))
+            durs.push(''+(16 * time_sig[1] / d))
           pd = d/2
 
         keys = []
@@ -189,7 +217,7 @@ class @ScoreRenderer
             return
           tmp = toScale(e1)
 
-          key = MG.scale_keys[s.key_sig][tmp[0]]
+          key = MG.scale_keys[key_sig][tmp[0]]
           # adjust
           key += '/' + ( (e1//12) - 1 + ({'Cb':1, 'B#':-1}[key] || 0))
           if tmp[2] != 0
@@ -230,7 +258,6 @@ class @ScoreRenderer
 
 
 
-
       later_tie.forEach (ii)->
         indices = Array(notes[ii].keys.length).fill(0).map (ee,index)->
           return index
@@ -245,10 +272,11 @@ class @ScoreRenderer
 
 
       num_beats = sum // 16
+      console.log 'time_sig', time_sig, sum, notes
 
       voice = new Vex.Flow.Voice {
         num_beats: num_beats,
-        beat_value: s.time_sig[1],
+        beat_value: time_sig[1],
         resolution: Vex.Flow.RESOLUTION
       }
       #voice.setStrict(true)
@@ -261,23 +289,16 @@ class @ScoreRenderer
       catch err
         console.log err.message
         continue
-      #console.log voice
+
       # Add accidental
-      Vex.Flow.Accidental.applyAccidentals([voice], s.key_sig)
+      Vex.Flow.Accidental.applyAccidentals([voice], key_sig)
       # Add beams
       beams = Vex.Flow.Beam.applyAndGetBeams(voice)
 
-      #Format and justify the notes
-      w = raw_w
       if i % @layout.measure_per_system == 0
-        w -= @geo.reserved_width
-      if i == 0
-        w -= 10
+        w -= 20 # minus space for clef
 
-      stave = this.newStave(i, s.key_sig)
-      if i==0
-        stave.addTimeSignature(s.time_sig.join('/'))
-
+      #Format and justify the notes
       formatter = new Vex.Flow.Formatter().
         joinVoices([voice]).
         format([voice], w - 10)

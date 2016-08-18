@@ -38,7 +38,10 @@ class @ScoreObj
      if parsed? && parsed==true
        @tracks[0] = melody
      else
-       @tracks[0] = @parseMelody(melody, {scale: MG.scale_class[@scale],init_ref: @init_ref})
+       options = @getSettings()
+       options.scale = MG.scale_class[options.scale]
+       options.init_ref = @init_ref
+       @tracks[0] = @parseMelody(melody, options)
 
   setTexture: (texture, harmony, parsed)->
     if parsed? && parsed == true
@@ -58,12 +61,15 @@ class @ScoreObj
       @setTexture(options.texture, options.harmony)
 
 
+  # @return: array of measures with info
   parseMelody: (m, options)->
     try
       obj = parser.parse(m.join('\n')+'\n')
     catch e
       console.log e.message
       return
+
+    #console.log 'parse melody', options
     ornamental = (pitch, ref, scale)->
       p = if typeof pitch is 'number' then pitch else pitch.original
       if p > scale.length
@@ -123,13 +129,19 @@ class @ScoreObj
     # do something
     # 1 set up states
     scale ?= MG.scale_class['maj']
+    tempo_map = {0:options.tempo}
+    key_sig_map = {0:options.key_sig}
+    time_sig_map = {0:options.time_sig}
+
     init_ref ?= 60 # C4
     ref = init_ref
     # 2 iterate obj.data
-    res = obj.data.map (m)=>
-      #console.log m
+    res = obj.data.map (m,i)=>
+      console.log 'parse measure', i
       measure = []
+
       m.forEach (e)->
+
         if e.ctrl?
           # set options
           switch e.ctrl
@@ -138,10 +150,15 @@ class @ScoreObj
             when 'normal','repeat_start'
               for k,v of e
                 switch k
-                  when 't' then 1 # set time_sig
+                  when 't' # set time_sig
+                    time_sig_map[i] = v
+
                   when 's' then scale = MG.scale_class[v]
-                  when 'k' then 1 # set key_sig
-                  when 'r' then 1 # set tempo
+                  when 'k'  # set key_sig
+                    key_sig_map[i] = v
+                    ref = init_ref = MG.keyToPitch(v+4)
+                  when 'r' # set tempo
+                    tempo_map[i] = v
                   when 'v' then 1 # set volume
                   when 'o' then 1 # set output instrument
                   when 'i' then 1 # inverse chord
@@ -176,6 +193,11 @@ class @ScoreObj
             measure.push([e.dur.original, pitches, true]);
             chorder.forward(e.dur.original)
       return measure
+    res.info = {
+      time_sigs: time_sig_map,
+      key_sigs: key_sig_map,
+      tempi: tempo_map
+    }
     return res
 
   parseHarmony: (measures, tatum) ->
