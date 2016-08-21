@@ -167,10 +167,5 @@ TEST.testStream = function (){
 }
 
 if(typeof module!='undefined'){
-	module.exports = function(t){
-		if(t){
-	        t.testStream = TEST.testStream;
-		}
-	    return Stream;
-	}
+	module.exports.Stream = Stream;
 }

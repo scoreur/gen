@@ -3,7 +3,7 @@ class to parse the .mid file format
 (depends on stream.js)
 */
 
-var Stream = Stream || (module && require && require('./stream')());
+var Stream = Stream || (module && require && require('./stream').Stream);
 
 var MIDI = MIDI || {};
 
@@ -627,18 +627,11 @@ TEST.testMidi = function(m){
 	return true;
 }
 
-
 if(typeof module!='undefined'){
-	module.exports = function(t){
-		if(t){
-			t.testMidi = TEST.testMidi;
-		}
-		return {
-			MidiFile: MidiFile,
-			MidiWriter: MidiWriter,
-			simpEvent: simpEvent,
-			simpMidi: simpMidi
-
-		}
-	}
+	(function(t){	
+		t.MidiFile = MidiFile;
+		t.MidiWriter = MidiWriter;
+		t.simpEvent = simpEvent;
+		t.simpMidi = simpMidi;
+	})(module.exports);
 }

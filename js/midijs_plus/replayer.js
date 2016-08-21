@@ -105,10 +105,5 @@ function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 };
 
 if(typeof module != 'undefined'){
-	module.exports = function(){
-
-		return {
-			Replayer: Replayer
-		};
-	}
+	module.exports.Replayer = Replayer;
 }

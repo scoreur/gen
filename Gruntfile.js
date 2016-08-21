@@ -32,9 +32,15 @@ module.exports = function(grunt){
             options: {
                 separator: ';'
             },
-            dist: {
+            gen: {
                 src: ['coffee/musical.js', 'js/parser.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js'],
                 dest: 'js/gen-build.js'
+            },
+            midijs_plus: {
+                src: 'stream,midifile,replayer,audioDetect,gm,plugin,loader,player'.split(',').map(function(e){
+                    return 'js/midijs_plus/' + e + '.js';
+                }),
+                dest: 'js/midijs_plus/midijs_plus.js'
             }
         }
     });
@@ -43,7 +49,7 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-jison');
     //grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.registerTask('default', ['jison']);
-    grunt.registerTask('web', ['jade:web', 'concat']);
+    grunt.registerTask('web', ['jade:web', 'concat:gen', 'concat:midijs_plus']);
     grunt.registerTask('app', ['jade:app']);
 
 }

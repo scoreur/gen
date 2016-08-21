@@ -4,6 +4,9 @@
     "index"
   ],
   "_coffee": [],
+  "_midijs_plus": [
+    "midijs_plus"
+  ],
   "stand_alone": false,
   "_instr": {
     "Piano": ["1 Acoustic Grand Piano", "2 Bright Acoustic Piano", "3 Electric Grand Piano", "4 Honky-tonk Piano", "5 Electric Piano 1", "6 Electric Piano 2", "7 Harpsichord", "8 Clavinet"],
