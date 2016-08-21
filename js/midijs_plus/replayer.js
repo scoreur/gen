@@ -1,6 +1,4 @@
 
-var MG = MG || {};
-
 function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 	var trackStates = [];
 	var ticksPerBeat = midiFile.header.ticksPerBeat;
@@ -109,6 +107,8 @@ function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 if(typeof module != 'undefined'){
 	module.exports = function(){
 
-		return Replayer;
+		return {
+			Replayer: Replayer
+		};
 	}
 }
