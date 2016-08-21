@@ -42,7 +42,7 @@ parser.produce = (obj)->
     ret = ''
     indent += '  ' # indent two spaces
     for k,v of nodes
-      console.log k
+      #console.log k
       if v.structure?
         ret += indent + k + ' -> '
         if v.node? && Object.keys(v.node).length > 0
@@ -50,7 +50,7 @@ parser.produce = (obj)->
           ret += produce(v.node, indent)
           ret += indent + '}'
         ret += '\n'
-        console.log v.structure
+        #console.log v.structure
         v.structure.forEach (e)->
           ret += indent + e + ' '
           if v.action? && e of v.action
@@ -85,8 +85,10 @@ class @Generator
     @toPitch = MG.scaleToPitch(@settings.scale, @settings.key_sig)
     @toScale = MG.pitchToScale(@settings.scale, @settings.key_sig)
 
-  parseSchema: parser.parse
-  produceSchema: parser.produce
+  parseSchema: (o)->
+    parser.parse(o)
+  produceSchema: (o)->
+    parser.produce(o)
 
 
 

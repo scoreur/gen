@@ -2879,7 +2879,6 @@ if (typeof module !== 'undefined' && require.main === module) {
       indent += '  ';
       for (k in nodes) {
         v = nodes[k];
-        console.log(k);
         if (v.structure != null) {
           ret += indent + k + ' -> ';
           if ((v.node != null) && Object.keys(v.node).length > 0) {
@@ -2888,7 +2887,6 @@ if (typeof module !== 'undefined' && require.main === module) {
             ret += indent + '}';
           }
           ret += '\n';
-          console.log(v.structure);
           v.structure.forEach(function(e) {
             ret += indent + e + ' ';
             if ((v.action != null) && e in v.action) {
@@ -2940,9 +2938,13 @@ if (typeof module !== 'undefined' && require.main === module) {
       this.toScale = MG.pitchToScale(this.settings.scale, this.settings.key_sig);
     }
 
-    Generator.prototype.parseSchema = parser.parse;
+    Generator.prototype.parseSchema = function(o) {
+      return parser.parse(o);
+    };
 
-    Generator.prototype.produceSchema = parser.produce;
+    Generator.prototype.produceSchema = function(o) {
+      return parser.produce(o);
+    };
 
     _seed = 6;
 
@@ -4338,7 +4340,6 @@ if (typeof module !== 'undefined' && require.main === module) {
           ties.push(tie);
         });
         num_beats = Math.floor(sum / 16);
-        console.log('time_sig', time_sig, sum, notes);
         voice = new Vex.Flow.Voice({
           num_beats: num_beats,
           beat_value: time_sig[1],

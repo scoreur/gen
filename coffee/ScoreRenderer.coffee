@@ -272,7 +272,7 @@ class @ScoreRenderer
 
 
       num_beats = sum // 16
-      console.log 'time_sig', time_sig, sum, notes
+      # console.log 'time_sig', time_sig, sum, notes
 
       voice = new Vex.Flow.Voice {
         num_beats: num_beats,
