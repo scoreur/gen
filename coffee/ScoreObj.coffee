@@ -49,7 +49,9 @@ class @ScoreObj
       @tracks[1] = texture
     else
       @harmony = @parseHarmony(harmony, @ctrl_per_beat * @time_sig[0])
-      @tracks[1] = @parseMelody(texture, {harmony: @harmony})
+      options = @getSettings()
+      options.harmony = @harmony
+      @tracks[1] = @parseMelody(texture, options)
 
 
   parse: (options) ->
@@ -90,6 +92,8 @@ class @ScoreObj
         {scale, init_ref, harmony} = options
       when 'harmony'
         harmony = options.harmony
+
+    tatum = options.ctrl_per_beat * options.time_sig[0]
     refc = null
     chorder = (()->
       m_i = 0
@@ -139,6 +143,7 @@ class @ScoreObj
     res = obj.data.map (m,i)=>
       console.log 'parse measure', i
       measure = []
+      dur_tot = 0
 
       m.forEach (e)->
 
@@ -152,6 +157,7 @@ class @ScoreObj
                 switch k
                   when 't' # set time_sig
                     time_sig_map[i] = v
+                    tatum = options.ctrl_per_beat * v[0]
 
                   when 's' then scale = MG.scale_class[v]
                   when 'k'  # set key_sig
@@ -189,9 +195,20 @@ class @ScoreObj
           if typeof e.dur == 'number'
             measure.push([e.dur, pitches])
             chorder.forward(e.dur)
+            dur_tot += e.dur
           else
             measure.push([e.dur.original, pitches, true]);
             chorder.forward(e.dur.original)
+            dur_tot += e.dur.original
+      # renormalize
+      if tatum?
+        r = tatum / dur_tot
+        dur_tot = 0
+
+        measure.forEach (ee)->
+          dur_tot += (ee[0] = Math.floor(ee[0] * r))
+          return
+        measure[measure.length - 1][0] += (tatum - dur_tot)
       return measure
     res.info = {
       time_sigs: time_sig_map,
@@ -213,7 +230,7 @@ class @ScoreObj
         dur =  if terms.length>=2 then parseInt(terms[1]) else 1
         durs.push dur
         [dur,chord_info[0],chord_info[1]]
-      if tatum? && durs[0] == 1
+      if tatum?
         r = tatum / math.sum(durs)
         durs = []
         ret.forEach (ee,ii)->
