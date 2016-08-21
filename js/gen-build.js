@@ -102,14 +102,20 @@
     "min": [0, 3, 7],
     "dim": [0, 3, 6],
     "aug": [0, 4, 8],
+    "sus2": [0, 2, 7],
+    "sus4": [0, 5, 7],
     "dom7": [0, 4, 7, 10],
     "dom7b5": [0, 4, 6, 10],
-    "maj7": [0, 4, 7, 11],
-    "maj7b5": [0, 4, 6, 11],
     "min7": [0, 3, 7, 10],
     "min7b5": [0, 3, 6, 10],
     "aug7": [0, 4, 8, 10],
-    "dim7": [0, 3, 6, 9]
+    "maj7": [0, 4, 7, 11],
+    "maj7b5": [0, 4, 6, 11],
+    "min7#": [0, 3, 7, 11],
+    "aug7#": [0, 4, 8, 11],
+    "dim7": [0, 3, 6, 9],
+    "add9": [0, 2, 4, 7],
+    "add11": [0, 4, 5, 7]
   };
 
   MG.inverted = function(arr, n) {
@@ -473,14 +479,13 @@
       key_sig: 'C',
       scale: 'maj',
       ctrl_per_beat: 16,
-      incomplete_measure: true,
       volumes: [110, 80],
       instrs: [66, 1]
     },
     contents: {
-      melody: ':+ 3,16 1,16/3,64^/3,16 2,8 1,8 2,8 3,8 1,16/:- 6,32 3,32^/3,32 :+ 3,16 1,16/2,8 2,56^/2,16 1,8 6-,8 1,8 6-,8 1,16/:- 7,64^/7,32 0,8 :+ 3,16 1,8/3,8 3,16 3,8^ 3,32^/3,16 2,8 1,8 2,8 3,8 1,16/:- 6,32 3,32^/3,48 3,16/5,16 3,8 5,8 6,16 :+ 1,16/3,8 2,24 1,32/:- 6,64^/6,32 :+ 3,16 1,16'.split('/'),
-      harmony: "E7,32/Amin,64/Bb7,64/Amin,32 E7,32/Amin,32 A7,32/Dmin,64/F7,64/F#min7,32 B7,32/E7,64/Am,64/Bb7,64/Am,64/D7,64/C,32 Am,32/D7,32 E7,32/Am,32 D7,32/Bm7,32 E7,32".split('/'),
-      texture: "@-123 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@iii-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32".split('/')
+      melody: ':+ 0,2 3 1/3,1^/3,2 2 1 2 3 1,2/:- 6 3,1^/3,2 :+ 3 1/2 2,7^/2,2 1 6- 1 6- 1,2/:- 7,1^/7,4 0 :+ 3,2 1/3 3,2 3,1^ 3,4^/3,2 2 1 2 3 1,2/:- 6 3,1^/3,3 3/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6,1^/6,2 :+ 3 1'.split('/'),
+      harmony: "E7/Amin/Bb7/Amin E7/Amin A7/Dmin/F7/F#min7 B7/E7/Am/Bb7/Am/D7/C Am/D7 E7/Am D7/Bm7 E7".split('/'),
+      texture: "@-123 0,32 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@iii-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32".split('/')
     }
   };
 
@@ -2801,14 +2806,15 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreObj.prototype.setTexture = function(texture, harmony, parsed) {
+      var options;
       if ((parsed != null) && parsed === true) {
         this.harmony = harmony;
         return this.tracks[1] = texture;
       } else {
         this.harmony = this.parseHarmony(harmony, this.ctrl_per_beat * this.time_sig[0]);
-        return this.tracks[1] = this.parseMelody(texture, {
-          harmony: this.harmony
-        });
+        options = this.getSettings();
+        options.harmony = this.harmony;
+        return this.tracks[1] = this.parseMelody(texture, options);
       }
     };
 
@@ -2823,7 +2829,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreObj.prototype.parseMelody = function(m, options) {
-      var chorder, e, error, harmony, init_ref, key_sig_map, obj, ornamental, ref, refc, res, scale, tempo_map, time_sig_map;
+      var chorder, e, error, harmony, init_ref, key_sig_map, obj, ornamental, ref, refc, res, scale, tatum, tempo_map, time_sig_map;
       try {
         obj = parser.parse(m.join('\n') + '\n');
       } catch (error) {
@@ -2857,6 +2863,7 @@ if (typeof module !== 'undefined' && require.main === module) {
         case 'harmony':
           harmony = options.harmony;
       }
+      tatum = options.ctrl_per_beat * options.time_sig[0];
       refc = null;
       chorder = (function() {
         var b_i, bass, chord, delta, forward, incr, m_i, process;
@@ -2919,9 +2926,10 @@ if (typeof module !== 'undefined' && require.main === module) {
       ref = init_ref;
       res = obj.data.map((function(_this) {
         return function(m, i) {
-          var measure;
+          var dur_tot, measure, r;
           console.log('parse measure', i);
           measure = [];
+          dur_tot = 0;
           m.forEach(function(e) {
             var bass, chord, k, pitches, results, v;
             if (e.ctrl != null) {
@@ -2935,7 +2943,8 @@ if (typeof module !== 'undefined' && require.main === module) {
                     v = e[k];
                     switch (k) {
                       case 't':
-                        results.push(time_sig_map[i] = v);
+                        time_sig_map[i] = v;
+                        results.push(tatum = options.ctrl_per_beat * v[0]);
                         break;
                       case 's':
                         results.push(scale = MG.scale_class[v]);
@@ -2991,13 +3000,23 @@ if (typeof module !== 'undefined' && require.main === module) {
               });
               if (typeof e.dur === 'number') {
                 measure.push([e.dur, pitches]);
-                return chorder.forward(e.dur);
+                chorder.forward(e.dur);
+                return dur_tot += e.dur;
               } else {
                 measure.push([e.dur.original, pitches, true]);
-                return chorder.forward(e.dur.original);
+                chorder.forward(e.dur.original);
+                return dur_tot += e.dur.original;
               }
             }
           });
+          if (tatum != null) {
+            r = tatum / dur_tot;
+            dur_tot = 0;
+            measure.forEach(function(ee) {
+              dur_tot += (ee[0] = Math.floor(ee[0] * r));
+            });
+            measure[measure.length - 1][0] += tatum - dur_tot;
+          }
           return measure;
         };
       })(this));
@@ -3027,7 +3046,7 @@ if (typeof module !== 'undefined' && require.main === module) {
           durs.push(dur);
           return [dur, chord_info[0], chord_info[1]];
         });
-        if ((tatum != null) && durs[0] === 1) {
+        if (tatum != null) {
           r = tatum / math.sum(durs);
           durs = [];
           ret.forEach(function(ee, ii) {
