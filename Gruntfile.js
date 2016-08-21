@@ -22,18 +22,22 @@ module.exports = function(grunt){
             }
         },
         jison: {
-            options: { moduleType: "commonjs" },
-            compile: {
+            options: { moduleType: "commonjs"},
+            score: {
+                options: { moduleName: "score_parser" },
                 files: [{src: 'js/parser.jison', dest: 'js/parser.js'}]
+            },
+            schema: {
+                options: { moduleName: "schema_parser" },
+                files: [{src: 'js/schema.jison', dest: 'js/schema_parser.js'}]
             }
-
         },
         concat: {
             options: {
                 separator: ';'
             },
             gen: {
-                src: ['coffee/musical.js', 'js/parser.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js'],
+                src: ['coffee/musical.js', 'js/parser.js', 'js/schema_parser.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js'],
                 dest: 'js/gen-build.js'
             },
             midijs_plus: {
@@ -48,7 +52,7 @@ module.exports = function(grunt){
     grunt.loadNpmTasks('grunt-contrib-jade');
     grunt.loadNpmTasks('grunt-jison');
     //grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.registerTask('default', ['jison']);
+    grunt.registerTask('default', ['jison:score', 'jison:schema']);
     grunt.registerTask('web', ['jade:web', 'concat:gen', 'concat:midijs_plus']);
     grunt.registerTask('app', ['jade:app']);
 

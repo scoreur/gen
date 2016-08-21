@@ -393,17 +393,17 @@ MG.chord_class_label =
     texture: "@-123 0,32 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@iii-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32".split('/')
 
 
-@gen_modes = ['random', 'transpose', 'chord', 'reverse']
+@gen_modes = ['random', 'transpose', 'chord', 'reverse', 'diminuation', 'augmentation']
 
 
 
 
 @schema_summer = MG.schema_summer =
-  structure: "c/A/B/Br/A/C/c".split('/'),
-  node: {
-    'c':{ # terminal
-      mode: 'chord'
-      options:
+  'S':
+    structure: "c/A/B/Br/A/C/c".split('/'),
+    node: {
+      'c':{ # terminal
+        mode: 'chord'
         dur: 4 * 8
         chords : [
           "E7,32"
@@ -415,10 +415,9 @@ MG.chord_class_label =
         interval:
           chromatic: false
           seed: 's2'
-    },
-    'A':{ # terminal
-      mode:'chord'
-      options:
+      },
+      'A':{ # terminal
+        mode:'chord'
         dur: 32 * 8
         chords: [
           "Amin,64",
@@ -435,33 +434,31 @@ MG.chord_class_label =
           seed: 's2'
         range: [56, 77],
         dist: 'linear'
-
-    },
-    'B':{
-      structure: ['A'],
-      action: {
-        'A': {
-          mode:'transpose'
-          dur: 16 * 8
-          offset: 0,
-          scale: 'maj',
-          interval: 3
+      },
+      'B':{
+        structure: ['A'],
+        action: {
+          'A': {
+            mode:'transpose'
+            dur: 16 * 8
+            offset: 0,
+            scale: 'maj',
+            interval: 3
+          }
         }
-      }
-    },
-    'Br':{
-      structure: ['B'],
-      action: {
-        'B': {
-          mode:'reverse',
-          deep: 'false'
+      },
+      'Br':{
+        structure: ['B'],
+        action: {
+          'B': {
+            mode:'reverse',
+            deep: false
+          }
         }
-      }
 
-    },
-    'C':{ # terminal
-      mode: 'chord',
-      options:
+      },
+      'C':{ # terminal
+        mode: 'chord',
         dur: 28 * 8
         chords: "C,32 Am,32/D7,32 E7,32/Am,32 D7,32/Bm7,32".split('/'),
         rhythm:
@@ -472,32 +469,27 @@ MG.chord_class_label =
           seed: 's2'
         range: [56, 77],
         dist: 'quadratic'
-    }
+      }
 
-  },
-  scale:'maj',
-  funcs:
-    'A': "1,8/4,8/1,4 2,4/1,8".split('/'),
-    'B':"4,8/6,8".split('/'),
-    'Br':"2,4 5,4/5,8".split('/'),
-    'C':"3,4 1,4/2,4 5,4/1,4 2,4/2,4".split('/'),
-    'c':"5,4"
-  ,
-  seeds:
-    's1':
-      dur: 16,
-      choices:
-        ('4 4 4 4/8 4 4/4 4 8/4 8 4/4 12/12 4/8 8/16'.split('/').map (e)->
-          e.split(/\s+/).map (e2)-> parseInt(e2)
-        )
-      weights:
-        [1,3,3,5,1,5,8,8]
-    's2':
-      weights: [1,2,5,12,6,30,  8,30,12,8,3,1,1],
-      choices: (->
-        Array(13).fill().map (e,i)->
-          i-6
-      )()
+    },
+
+  's1':
+    mode: "distribution",
+    dur: 16,
+    choices:
+      ('4 4 4 4/8 4 4/4 4 8/4 8 4/4 12/12 4/8 8/16'.split('/').map (e)->
+        e.split(/\s+/).map (e2)-> parseInt(e2)
+      )
+    weights:
+      [1,3,3,5,1,5,8,8]
+  's2':
+    mode: "distribution",
+    weights: [1,2,5,12,6,30,  8,30,12,8,3,1,1],
+    choices: (->
+      Array(13).fill().map (e,i)->
+        i-6
+    )()
+
 
 
 ###

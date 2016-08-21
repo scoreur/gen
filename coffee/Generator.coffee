@@ -2,6 +2,72 @@ MG = @MG ? {}
 
 MG.ref_midi_info = null
 
+parser = @schema_parser ? require('./js/schema_parser')
+
+
+# produce text for parsed obj
+parser.produce = (obj)->
+  produceVar = (o, indent)->
+    indent ?= ''
+    ret = ''
+    tmp = []
+    if Array.isArray(o)
+      ret += '[\n'
+      indent += '  '
+      for k in o
+        tmp.push indent + produceVar(k, indent)
+      ret += tmp.join(',\n')
+      indent = indent.substr(2)
+      ret += '\n' + indent + ']'
+    else if typeof o == 'object'
+      ret = '{\n'
+      indent += '  '
+      for k,v of o
+        if k == 'mode'
+          tmp.push indent + v.toString()
+        else
+          tmp.push indent + k + ' : ' + produceVar(v, indent)
+      ret += tmp.join(',\n')
+      indent = indent.substr(2)
+      ret += '\n' + indent + '}'
+    else if typeof o == 'string'
+      ret += '"' + o + '"'
+    else
+      ret += o.toString()
+    ret
+
+
+  produce = (nodes, indent)->
+    indent ?= ''
+    ret = ''
+    indent += '  ' # indent two spaces
+    for k,v of nodes
+      console.log k
+      if v.structure?
+        ret += indent + k + ' -> '
+        if v.node? && Object.keys(v.node).length > 0
+          ret += '{\n'
+          ret += produce(v.node, indent)
+          ret += indent + '}'
+        ret += '\n'
+        console.log v.structure
+        v.structure.forEach (e)->
+          ret += indent + e + ' '
+          if v.action? && e of v.action
+            ret += produceVar(v.action[e], indent) #nodes.action[k].toString()
+          ret += '\n'
+        ret += indent + ';\n'
+      else
+        ret += indent + k + ' = '
+        ret += produceVar(v, indent) + ';\n'
+    indent = indent.substr(2) # unindent
+    return ret
+
+
+  indent = ''
+  produce(obj, indent)
+
+
 class @Generator
   constructor: (@settings, @schema) ->
     @settings.key_sig ?= 'C'
@@ -9,11 +75,18 @@ class @Generator
     @settings.instrs ?= [1,1]
     @keyref = MG.keyToPitch[@settings.key_sig+'4'];
     @scale = MG.scale_class[@settings.scale]
-    @seeds = @schema.seeds
+
+    @seeds = {}
+    for k,v of @schema
+      if v.mode? && v.mode == 'distribution'
+        @seeds[k] = v
     @res = {}
 
     @toPitch = MG.scaleToPitch(@settings.scale, @settings.key_sig)
     @toScale = MG.pitchToScale(@settings.scale, @settings.key_sig)
+
+  parseSchema: parser.parse
+  produceSchema: parser.produce
 
 
 
@@ -105,7 +178,7 @@ class @Generator
   # testing using dur
   produce: (variable, global)->
     if variable.mode? # terminal
-      return @gen_chord(variable.options)
+      return @gen_chord(variable)
     variable.node ?= {}
     variable.action ?= {}
     #console.log 'action', variable.action
@@ -133,6 +206,8 @@ class @Generator
           next_global[k] = @gen_transpose(v,obj_merge(next_global[k]))
         when 'reverse'
           next_global[k] = @gen_reverse(v,obj_merge(next_global[k]))
+        when 'distribution'
+          next_global[k] = v
 
 
 
@@ -151,7 +226,7 @@ class @Generator
     sec = @settings.ctrl_per_beat * @settings.time_sig[0] # separate bar
     res_eval = []
 
-    @res2 =  @produce(@schema).map (b)=>
+    @res2 =  @produce(@schema.S).map (b)=>
       # res_eval.push @evaluate(@b2score(b, @settings.ctrl_per_beat))
       @b2score(b, sec)
 

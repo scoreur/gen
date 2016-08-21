@@ -348,7 +348,12 @@ class @AppMG
 
   updateEditor: ->
     _.flatten(@ui.editor).forEach (e) =>
-      ret = if @contents[e]? then @contents[e].join('\n') else JSON.stringify(@[e], null, 2)
+      if e == 'schema'
+        ret = Generator::produceSchema(@schema)
+      else if @contents[e]?
+        ret =  @contents[e].join('\n')
+      else
+        ret = JSON.stringify(@[e], null, 2)
       @editor[e].setValue ret, -1
       return
 
@@ -370,6 +375,16 @@ class @AppMG
     @obj = new ScoreObj(@settings, @contents)
     @player.fromScore(@obj)
     return @obj
+
+  generate: ->
+    @settings = JSON.parse(@editor.settings.getValue())
+    @schema = Generator::parseSchema(@editor.schema.getValue());
+    generator = new Generator(@settings, @schema);
+    generator.generate();
+    score = generator.toScoreObj()
+    console.log('to Text')
+    @contents.melody = score.toText();
+    @updateEditor();
 
   # analyze midi file
   analysis: (data, ctrl_per_beat) ->

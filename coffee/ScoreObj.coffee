@@ -1,5 +1,5 @@
 MG = @MG ? {}
-parser = @parser ? require('./js/parser.js')
+parser = @score_parser ? require('./js/parser.js')
 class @ScoreObj
   constructor: (options, contents) ->
     options ?= {}
@@ -68,6 +68,7 @@ class @ScoreObj
     try
       obj = parser.parse(m.join('\n')+'\n')
     catch e
+      $.notify('parsing error!', 'warning')
       console.log e.message
       return
 

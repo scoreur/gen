@@ -71,13 +71,13 @@
     recoverable: (boolean: TRUE when the parser has a error recovery rule available for this particular error)
   }
 */
-var score_parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,18],$V1=[1,19],$V2=[1,16],$V3=[1,17],$V4=[1,14],$V5=[1,4,11,12,20,21,42],$V6=[1,24],$V7=[1,25],$V8=[1,26],$V9=[4,14,15,16],$Va=[1,36],$Vb=[1,37],$Vc=[1,38],$Vd=[1,39],$Ve=[1,40],$Vf=[1,41],$Vg=[1,42],$Vh=[4,11,12,14,15,16,46],$Vi=[4,14,15,16,23,25,27,29,34,35,36,37,38,39,40],$Vj=[11,12,34,35,36,37,38,39,40,44],$Vk=[4,11,12,14,15,16,34,35,36,37,38,39,40,46],$Vl=[4,11,12,14,15,16,23,24,25,27,29,34,35,36,37,38,39,40,46,47],$Vm=[4,11,12,14,15,16,23,25,27,29,34,35,36,37,38,39,40,44,46];
+var schema_parser = (function(){
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[2,3],$V1=[1,2],$V2=[1,5],$V3=[1,4,8,13],$V4=[7,8],$V5=[1,23],$V6=[1,26],$V7=[11,13],$V8=[1,33],$V9=[1,35],$Va=[1,39],$Vb=[1,37],$Vc=[1,38],$Vd=[1,34],$Ve=[1,36],$Vf=[11,13,28],$Vg=[11,28];
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"e":3,"EOF":4,"M":5,"Measure":6,"melody":7,"harmony":8,"percussion":9,"NUMBER":10,"DIGIT":11,"DIGITS":12,"M_end":13,"M_SEP":14,"BAR":15,"REPEAT_END":16,"Note":17,"Ctrl":18,"C0":19,"CTRL_START":20,"REPEAT_START":21,"C1":22,"t":23,"/":24,"k":25,"KEY":26,"Op_string":27,"STRING":28,"Op_unary":29,"P1":30,"C":31,"Chord":32,"P":33,"#":34,"FLAT":35,"+":36,"-":37,"NATURAL":38,"TRILL_UP":39,"TRILL_DOWN":40,"Pitches":41,"CHORD_START":42,"Inverse":43,"i":44,"DUR":45,",":46,"^":47,"$accept":0,"$end":1},
-terminals_: {2:"error",4:"EOF",7:"melody",8:"harmony",9:"percussion",11:"DIGIT",12:"DIGITS",14:"M_SEP",15:"BAR",16:"REPEAT_END",20:"CTRL_START",21:"REPEAT_START",23:"t",24:"/",25:"k",26:"KEY",27:"Op_string",28:"STRING",29:"Op_unary",34:"#",35:"FLAT",36:"+",37:"-",38:"NATURAL",39:"TRILL_UP",40:"TRILL_DOWN",42:"CHORD_START",44:"i",46:",",47:"^"},
-productions_: [0,[3,2],[3,3],[3,2],[3,1],[3,1],[3,1],[3,1],[10,1],[10,1],[6,2],[6,3],[13,1],[13,1],[5,1],[5,1],[5,3],[5,3],[19,1],[19,1],[22,4],[22,2],[22,2],[22,2],[22,1],[31,1],[31,2],[18,1],[18,1],[33,1],[33,2],[30,1],[30,1],[30,1],[30,1],[30,1],[30,1],[30,1],[41,1],[41,2],[32,3],[43,2],[43,2],[43,0],[17,2],[45,2],[45,3],[45,2],[45,0]],
+symbols_: {"error":2,"e":3,"EOF":4,"RULE":5,"R":6,";":7,"IDENT":8,"=":9,"{":10,",":11,"OPTIONS":12,"}":13,"->":14,"NODES":15,"ACTION":16,"OPTION":17,":":18,"VAR":19,"NUMBER":20,"DIGITS":21,"BOOL":22,"true":23,"false":24,"STRING":25,"[":26,"LIST":27,"]":28,"$accept":0,"$end":1},
+terminals_: {2:"error",4:"EOF",7:";",8:"IDENT",9:"=",10:"{",11:",",13:"}",14:"->",18:":",21:"DIGITS",23:"true",24:"false",25:"STRING",26:"[",28:"]"},
+productions_: [0,[3,2],[3,2],[3,0],[5,2],[5,8],[6,3],[6,3],[6,2],[15,3],[15,0],[16,5],[17,3],[12,1],[12,3],[20,1],[22,1],[22,1],[19,1],[19,1],[19,1],[19,1],[19,2],[19,3],[19,3],[27,0],[27,1],[27,3]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -91,258 +91,108 @@ case 1:
 break;
 case 2:
 
-    $$[$0-1].push({
-      ctrl: 'normal_end'
-    });
-    $$[$0-2].data.push($$[$0-1]);
-    this.$ = $$[$0-2];
-    return this.$;
+    $$[$0-1][$$[$0][0]] = $$[$0][1];
+    this.$ = $$[$0-1];
   
 break;
 case 3:
 
-    /* push new measure */
-    $$[$0-1].data.push($$[$0])
-    this.$ = $$[$0-1]
+    this.$ = {};
   
 break;
-case 4:
+case 4: case 9:
 
-    /* default as melody */
-    this.$ = {
-      mode:'melody',
-      data: [$$[$0]]
-      };
+    this.$ = $$[$0-1];
   
 break;
 case 5:
 
-    /* create new track*/
-    this.$ = {mode:'melody'};
+    this.$ = [$$[$0-7], {mode: $$[$0-4]}];
+    Object.assign(this.$[1], $$[$0-2]);
   
 break;
 case 6:
 
-    this.$ = {mode:'harmony'};
+    this.$ = [$$[$0-2], {structure: [], node: $$[$0], action:{}}];
   
 break;
 case 7:
 
-    this.$ = {mode:'percussion'};
+    $$[$0-2][1].structure.push($$[$0-1]);
+    $$[$0-2][1].action[$$[$0-1]] = $$[$0];
   
 break;
 case 8:
 
-    this.$ = parseInt($$[$0]);
+    $$[$0-1][1].structure.push($$[$0]);
   
 break;
-case 9:
- /* remove brackets */
-    this.$ = parseInt($$[$0].substr(1,$$[$0].length-2));
-    console.log('braket number', this.$);
-  
-break;
-case 10: case 39:
+case 10:
 
-    $$[$0-1].push($$[$0]);
-    this.$ = $$[$0-1];
+    this.$ = {}
   
 break;
-case 11: case 16: case 17:
+case 11:
 
-    $$[$0-2].push($$[$0]);
-    this.$ = $$[$0-2];
+    this.$ = {};
+    this.$.mode = $$[$0-3];
+    Object.assign(this.$, $$[$0-1]);
   
 break;
 case 12:
 
-    this.$ = {
-      ctrl: 'normal_end'
-    };
+    this.$ = [$$[$0-2], $$[$0]];
   
 break;
 case 13:
-
-    this.$ = {
-      ctrl: 'repeat_end'
-    };
-  
-break;
-case 14: case 15: case 38:
-
-    this.$ = [$$[$0]];
-  
-break;
-case 18:
-
-    this.$ = ['ctrl', 'reset'];
-  
-break;
-case 19:
-
-    this.$ = ['ctrl', 'repeat_start'];
-  
-break;
-case 20:
-
-    this.$ = [$$[$0-3], [$$[$0-2], $$[$0]]];
-  
-break;
-case 21:
-
-    this.$ = [$$[$0-1], $$[$0]];
-  
-break;
-case 22:
-
-    this.$ = [$$[$0-1], $$[$0].substr(1, $$[$0].length-2)];
-  
-break;
-case 23:
-
-    this.$ = [$$[$0-1][0], $$[$0]];
-  
-break;
-case 24:
-
-    this.$ = ['p', $$[$0]];
-  
-break;
-case 25:
 
     this.$ = {};
     this.$[$$[$0][0]] = $$[$0][1];
   
 break;
+case 14:
+
+    $$[$0-2][$$[$0][0]] = $$[$0][1];
+    this.$ = $$[$0-2];
+  
+break;
+case 15:
+ this.$ = parseFloat($$[$0]);
+break;
+case 16:
+
+    this.$ = true;
+  
+break;
+case 17:
+
+    this.$ = false;
+  
+break;
+case 18: case 19: case 20:
+ this.$ = $$[$0];
+break;
+case 21:
+ this.$ = $$[$0].substr(1,$$[$0].length - 2);
+break;
+case 22:
+ this.$ = {};
+break;
+case 23: case 24:
+ this.$ = $$[$0-1];
+break;
+case 25:
+ this.$ = [];
+break;
 case 26:
-
-    $$[$0-1][$$[$0][0]] = $$[$0][1];
-    if($$[$0-1].ctrl == 'reset'){
-      $$[$0-1].ctrl = 'normal';
-    }
-    this.$ = $$[$0-1];
-  
+ this.$ = [$$[$0]];
 break;
-case 27: case 28: case 29:
-
-    this.$ = $$[$0];
-  
-break;
-case 30:
-
-    if(typeof $$[$0-1] == 'number'){
-      $$[$0-1] = {
-        original: $$[$0-1],
-        ornament: [$$[$0]]
-      };
-    }else{
-      $$[$0-1].ornament.push($$[$0]);
-    }
-    this.$ = $$[$0-1]
-  
-break;
-case 31:
-
-    this.$ = 1;
-  
-break;
-case 32:
-
-    this.$ = -1;
-  
-break;
-case 33:
-
-    this.$ = 12;
-  
-break;
-case 34:
-
-    this.$ = -12;
-  
-break;
-case 35:
-
-    this.$ = 0;
-  
-break;
-case 36:
-
-    this.$ = 'trill_up'
-  
-break;
-case 37:
-
-    this.$ = 'trill_down'
-  
-break;
-case 40:
-
-    this.$ = {};
-    this.$.ctrl = 'chord';
-    this.$.transpose = $$[$0-1].transpose;
-    this.$.inv = $$[$0-1].inv;
-    this.$.pitch = $$[$0];
-  
-break;
-case 41:
-
-    $$[$0-1].inv += 1;
-    this.$ = $$[$0-1];
-  
-break;
-case 42:
-
-    if(typeof $$[$0] == 'number'){
-      $$[$0-1].transpose += $$[$0];
-    }else{
-      // other ornament
-    }
-
-    this.$ = $$[$0-1];
-  
-break;
-case 43:
-
-    this.$ = {inv: 0, transpose: 0};
-  
-break;
-case 44:
-
-    this.$ = {
-      pitch:$$[$0-1],
-      dur: $$[$0]
-      };
-  
-break;
-case 45:
-
-    this.$ = $$[$0];
-
-  
-break;
-case 46:
-
-    this.$ = {
-      original: $$[$0-1],
-      ornament: 'tie'
-    	}
-  
-break;
-case 47:
-
-    this.$ = {
-      original: 1,
-      ornament: 'tie'
-    }
-  
-break;
-case 48:
- this.$ = 1
+case 27:
+ $$[$0-2].push($$[$0]); this.$ = $$[$0-2];
 break;
 }
 },
-table: [{3:1,5:6,6:2,7:[1,3],8:[1,4],9:[1,5],10:15,11:$V0,12:$V1,17:7,18:8,19:13,20:$V2,21:$V3,31:10,32:11,33:12,41:9,42:$V4},{1:[3],4:[1,20],5:21,6:22,10:15,11:$V0,12:$V1,17:7,18:8,19:13,20:$V2,21:$V3,31:10,32:11,33:12,41:9,42:$V4},o($V5,[2,4]),o($V5,[2,5]),o($V5,[2,6]),o($V5,[2,7]),{13:23,14:$V6,15:$V7,16:$V8},o($V9,[2,14]),o($V9,[2,15]),o($V9,[2,48],{10:15,45:27,33:28,11:$V0,12:$V1,46:[1,29]}),o($V9,[2,27],{22:30,30:35,23:[1,31],25:[1,32],27:[1,33],29:[1,34],34:$Va,35:$Vb,36:$Vc,37:$Vd,38:$Ve,39:$Vf,40:$Vg}),o($V9,[2,28]),o($Vh,[2,38],{30:43,34:$Va,35:$Vb,36:$Vc,37:$Vd,38:$Ve,39:$Vf,40:$Vg}),o($Vi,[2,25]),o($Vj,[2,43],{43:44}),o($Vk,[2,29]),o($Vi,[2,18]),o($Vi,[2,19]),o($Vl,[2,8]),o($Vl,[2,9]),o($V5,[2,1]),{4:[1,45],13:23,14:$V6,15:$V7,16:$V8},o($V5,[2,3]),o($V5,[2,10]),{10:15,11:$V0,12:$V1,13:46,15:$V7,16:$V8,17:47,18:48,19:13,20:$V2,21:$V3,31:10,32:11,33:12,41:9,42:$V4},o($V5,[2,12]),o($V5,[2,13]),o($V9,[2,44]),o($Vh,[2,39],{30:43,34:$Va,35:$Vb,36:$Vc,37:$Vd,38:$Ve,39:$Vf,40:$Vg}),{10:49,11:$V0,12:$V1,47:[1,50]},o($Vi,[2,26]),{10:51,11:$V0,12:$V1},{26:[1,52]},{28:[1,53]},{10:54,11:$V0,12:$V1},o($Vi,[2,24]),o($Vm,[2,31]),o($Vm,[2,32]),o($Vm,[2,33]),o($Vm,[2,34]),o($Vm,[2,35]),o($Vm,[2,36]),o($Vm,[2,37]),o($Vk,[2,30]),{10:15,11:$V0,12:$V1,30:57,33:12,34:$Va,35:$Vb,36:$Vc,37:$Vd,38:$Ve,39:$Vf,40:$Vg,41:55,44:[1,56]},o($V5,[2,2]),o($V5,[2,11]),o($V9,[2,16]),o($V9,[2,17]),o($V9,[2,45],{47:[1,58]}),o($V9,[2,47]),{24:[1,59]},o($Vi,[2,21]),o($Vi,[2,22]),o($Vi,[2,23]),o($V9,[2,40],{10:15,33:28,11:$V0,12:$V1}),o($Vj,[2,41]),o($Vj,[2,42]),o($V9,[2,46]),{10:60,11:$V0,12:$V1},o($Vi,[2,20])],
+table: [o([1,4,8],$V0,{3:1}),{1:[3],4:$V1,5:3,6:4,8:$V2},o($V3,[2,1]),o($V3,[2,2]),{7:[1,6],8:[1,7]},{9:[1,8],14:[1,9]},o($V3,[2,4]),o($V4,[2,8],{16:10,10:[1,11]}),{10:[1,12]},o($V4,[2,10],{15:13,10:[1,14]}),o($V4,[2,7]),{8:[1,15]},{8:[1,16]},o($V4,[2,6]),o([4,8,13],$V0,{3:17}),{11:[1,18]},{11:[1,19]},{4:$V1,5:3,6:4,8:$V2,13:[1,20]},{8:$V5,12:21,17:22},{8:$V5,12:24,17:22},o($V4,[2,9]),{11:$V6,13:[1,25]},o($V7,[2,13]),{18:[1,27]},{11:$V6,13:[1,28]},o($V4,[2,11]),{8:$V5,17:29},{8:$V8,10:$V9,19:30,20:32,21:$Va,22:31,23:$Vb,24:$Vc,25:$Vd,26:$Ve},{7:[1,40]},o($V7,[2,14]),o($V7,[2,12]),o($Vf,[2,18]),o($Vf,[2,19]),o($Vf,[2,20]),o($Vf,[2,21]),{8:$V5,12:42,13:[1,41],17:22},o($Vg,[2,25],{22:31,20:32,27:43,19:44,8:$V8,10:$V9,21:$Va,23:$Vb,24:$Vc,25:$Vd,26:$Ve}),o($Vf,[2,16]),o($Vf,[2,17]),o($Vf,[2,15]),o($V3,[2,5]),o($Vf,[2,22]),{11:$V6,13:[1,45]},{11:[1,47],28:[1,46]},o($Vg,[2,26]),o($Vf,[2,24]),o($Vf,[2,23]),{8:$V8,10:$V9,19:48,20:32,21:$Va,22:31,23:$Vb,24:$Vc,25:$Vd,26:$Ve},o($Vg,[2,27])],
 defaultActions: {},
 parseError: function parseError(str, hash) {
     if (hash.recoverable) {
@@ -495,7 +345,7 @@ parse: function parse(input) {
     return true;
 }};
 
-	
+
 /* generated by jison-lex 0.3.4 */
 var lexer = (function(){
 var lexer = ({
@@ -824,66 +674,28 @@ options: {},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0:return yy_.yytext;
+case 0:/* skip */
 break;
-case 1:this.begin('NOTE'); return 11;
+case 1:/* skip */
 break;
-case 2:this.begin('INITIAL'); return 15;
+case 2:return 25;
 break;
-case 3:this.begin('CTRL'); return 21;
+case 3:return yy_.yytext;
 break;
-case 4:this.begin('INITIAL'); return 15;
+case 4:return yy_.yytext;
 break;
-case 5:this.begin('INITIAL'); return 16;
+case 5:return 21;
 break;
-case 6:this.begin('CTRL'); return 20;
+case 6:return 8;
 break;
-case 7:this.begin('CHORD'); return 42;
+case 7:return 4;
 break;
-case 8:return 26;
-break;
-case 9:this.begin('NOTE'); return 14;
-break;
-case 10:/* skip */
-break;
-case 11:/* skip */
-break;
-case 12:return yy_.yytext[0];
-break;
-case 13:return 29;
-break;
-case 14:return 27;
-break;
-case 15:return 11;
-break;
-case 16:return 28;
-break;
-case 17:return 44;
-break;
-case 18:return 11;
-break;
-case 19:return 12;
-break;
-case 20:this.begin('NOTE_DUR'); return 46;
-break;
-case 21:return 38;
-break;
-case 22:return 35;
-break;
-case 23:return 40;
-break;
-case 24:return 39;
-break;
-case 25:return yy_.yytext;
-break;
-case 26:return 4;
-break;
-case 27:console.log('Unrecognized token: ', yy_.yytext);
+case 8:console.log('unrecognized token: ', yy_.yytext);
 break;
 }
 },
-rules: [/^(?:((melody|harmony|percussion)))/,/^(?:(([0-9])))/,/^(?:((\r|\n|\r\n)))/,/^(?:\|:)/,/^(?:\|)/,/^(?::\|)/,/^(?::)/,/^(?:@)/,/^(?:(([A-GR][#b]{0,2})))/,/^(?:(([ |\t|\f|\v]))+)/,/^(?:\s+)/,/^(?:((%[^\r\n]*((\r|\n|\r\n)))))/,/^(?:((key_sig|time_sig|instrument|[k|t|i])))/,/^(?:((rate|volume|ctrls|[r|c|v])))/,/^(?:((out|scale|[o|s])))/,/^(?:(([0-9]))+)/,/^(?:\{[a-z_]+\})/,/^(?:[i])/,/^(?:(([0-9])))/,/^(?:\{(([0-9]))+\})/,/^(?:,)/,/^(?:[n])/,/^(?:[b])/,/^(?:~!)/,/^(?:~)/,/^(?:((,|;|\{|\}|\+|-|#|\/|\^)))/,/^(?:$)/,/^(?:.)/],
-conditions: {"CTRL":{"rules":[2,3,4,5,6,7,8,9,12,13,14,15,16,25,26,27],"inclusive":true},"NOTE":{"rules":[2,3,4,5,6,7,8,9,18,19,20,21,22,23,24,25,26,27],"inclusive":true},"NOTE_DUR":{"rules":[2,3,4,5,6,7,8,9,15,25,26,27],"inclusive":true},"CHORD":{"rules":[3,4,5,6,7,8,9,17,18,25,26,27],"inclusive":true},"INITIAL":{"rules":[0,1,3,4,5,6,7,8,10,11,19,25,26,27],"inclusive":true}}
+rules: [/^(?:\s+)/,/^(?:((%[^\r\n]*((\r|\n|\r\n)))))/,/^(?:(("[^\"]+")))/,/^(?:((;|\{|\}|\[|\]|:|,|=|->)))/,/^(?:((true|false)))/,/^(?:(([+-]?[\d.]+)))/,/^(?:(([a-zA-z]\w*)))/,/^(?:$)/,/^(?:.)/],
+conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8],"inclusive":true}}
 });
 return lexer;
 })();
@@ -897,9 +709,9 @@ return new Parser;
 
 
 if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
-exports.parser = score_parser;
-exports.Parser = score_parser.Parser;
-exports.parse = function () { return score_parser.parse.apply(score_parser, arguments); };
+exports.parser = schema_parser;
+exports.Parser = schema_parser.Parser;
+exports.parse = function () { return schema_parser.parse.apply(schema_parser, arguments); };
 exports.main = function commonjsMain(args) {
     if (!args[1]) {
         console.log('Usage: '+args[0]+' FILE');

@@ -261,14 +261,7 @@ var click_event_list = {
 
 	},
 	'gen': function(){
-		app.schema = JSON.parse(app.editor.schema.getValue());
-		var generator = new Generator(app.settings, app.schema);
-		generator.generate();
-		var score = generator.toScoreObj()
-		console.log('to Text')
-		app.contents.melody = score.toText();
-		app.settings = score.getSettings()
-		app.updateEditor();
+		app.generate()
 		$.notify('Melody generated!', 'success');
 		click_event_list.parse();
 
@@ -362,11 +355,11 @@ var click_event_list = {
 		$('li[data-target="#midi_viewer"]').click();
 	},
 	'set_seed': function(){
-		var seeds = _.keys(app.schema.seeds);
+		var seeds = _.keys(app.schema);
 
 		var seed_id = $('#ctrl_seed').val();
-		if(seeds.indexOf(seed_id)<0){
-			return $.notify('seed id not exist!', 'warning');
+		if(seeds.indexOf(seed_id)<0 || app.schema[seed_id].mode != 'distribution'){
+			return $.notify('distribution id not exist!', 'warning');
 		}
 		if(MG.ref_midi_info == null){
 			if(MIDI.Player.currentData == null){
@@ -376,7 +369,7 @@ var click_event_list = {
 			}
 		}
 		// get data, transform duration
-		var seed = app.schema.seeds[seed_id];
+		var seed = app.schema[seed_id];
 		console.log (seed);
 
 		if ("dur" in seed){
@@ -407,12 +400,6 @@ var click_event_list = {
 		$.notify('seed '+seed_id+' set!', 'success');
 
 
-
-	},
-	'melody_absolute': function(){
-
-	},
-	'melody_relative': function(){
 
 	},
 	'harmony_absolute': function(){
@@ -561,7 +548,7 @@ function initUI(){
 
 	appUI = {
 		editor: [['melody','texture'], ['settings','schema', 'harmony',]],
-		modes: [['score', 'score'],['json', 'json', 'score']],
+		modes: [['score', 'score'],['json', 'text', 'score']],
 		renderer: ['midi_score', 'midi_pointer'],
 		playbtns: ['a[href="#track_0"]', 'a[href="#track_1"]'],
 		tracks_container: '#tracks_container',

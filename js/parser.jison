@@ -357,6 +357,13 @@ DUR :
       ornament: 'tie'
     	}
   }
+  | ',' '^'
+  {
+    $$ = {
+      original: 1,
+      ornament: 'tie'
+    }
+  }
   |
   { $$ = 1}
   ;
