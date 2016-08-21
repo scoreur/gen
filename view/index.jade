@@ -76,19 +76,9 @@ html
     .container-fluid
       // Viewer
       #score_viewer.row
-        // buttons
-        .nav.col-sr-1.col-xs-3
-          ul.list-group
-            li.list-group-item
-              #gen.btn.btn-info.btn-block Generate
-            li.list-group-item
-              #parse.btn.btn-primary.btn-block Parse
-            li.list-group-item
-              #play_MIDI.btn.btn-info.btn-block MIDI
-                span.glyphicon.glyphicon-play
         // score display
-        .tab-content.col-sr-10.col-xs-9
-          .tab-pane.in.active#img_viewer
+        .tab-content.col-sr-11.col-xs-12
+          .tab-pane#img_viewer
             .img-wrapper(style='height: 450px; overflow: scroll')
               img#score_img.img-responsive(src='')
           .tab-pane#pdf_viewer
@@ -96,33 +86,41 @@ html
               canvas#the-canvas(style='border:1px solid black')
             ul.pager#pdf_pager
               li
-                a.prev Previous
-              li
-                a.next Next
-                |  &nbsp; &nbsp;
+                a.prev.glyphicon.glyphicon-arrow-left
               li Page:
-                span.page_num 1
+                a.page_num 1
                 |  /
-                span.page_count 1
-          .tab-pane#midi_viewer
+                a.page_count 1
+              li
+                a.next.glyphicon.glyphicon-arrow-right
+
+          .tab-pane.in.active#midi_viewer
             .canvas-wrapper(style='height: 400px; overflow: scroll')
               // canvas#midi_pointer(style='width: 100%; height:100%;left: 0; top: 0; z-index:0;')
               canvas#midi_score(style='width: 100%;left: 0; top: 0; z-index: 1;border:1px solid black;')
             ul.pager#midi_pager
               li
-                a.prev Previous
+                #gen.btn.btn-info Generate
               li
-                a.next Next
+                #parse.btn.btn-primary Parse
                 |  &nbsp; &nbsp;
+              li
+                a.prev.glyphicon.glyphicon-arrow-left
               li Page:
-                span.page_num 1
+                a.page_num 1
                 |  /
-                span.page_count 1
+                a.page_count 1
+              li
+                a.next.glyphicon.glyphicon-arrow-right
+
+
         .col-sr-1.sr-only
       // Player
       .row
         .col-sr-1.col-xs-1
-        .col-sr-7.col-xs-9
+          #play_MIDI.btn.btn-info.btn-block
+            span.glyphicon.glyphicon-play
+        .col-sr-6.col-xs-8
           progress#midi_progress.progress.hidden.progress-info(max='100', value='0', style='width: 100%;') 
           input#play_slider.progress(type='range', min='0', max='100', value='0') 
         .col-sr-3.col-xs-2
@@ -133,18 +131,21 @@ html
 
       // Editor 1
       .row
-        .col-sr-6.col-xs-10.col-md-6#options_container
-          ul.nav.nav-tabs.nav-justified.nav-pills
-            li.xs-only.tab_plus
-              a +
-          .tab-content
-        .xs-only.col-xs-2
         .col-sr-6.col-xs-10.col-md-6#tracks_container
           ul.nav.nav-tabs.nav-justified.nav-pills
             li.xs-only.tab_plus
-              a +
+              a
+                span.glyphicon.glyphicon-plus
           .tab-content
         .xs-only.col-xs-2
+        .col-sr-6.col-xs-10.col-md-6#options_container
+          ul.nav.nav-tabs.nav-justified.nav-pills
+            li.xs-only.tab_plus
+              a
+                span.glyphicon.glyphicon-plus
+          .tab-content
+        .xs-only.col-xs-2
+
 
 
 

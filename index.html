@@ -669,23 +669,9 @@ You need to specify the following entry:</p>
     <div class="container-fluid">
       <!-- Viewer-->
       <div id="score_viewer" class="row">
-        <!-- buttons-->
-        <div class="nav col-sr-1 col-xs-3">
-          <ul class="list-group">
-            <li class="list-group-item">
-              <div id="gen" class="btn btn-info btn-block">Generate</div>
-            </li>
-            <li class="list-group-item">
-              <div id="parse" class="btn btn-primary btn-block">Parse</div>
-            </li>
-            <li class="list-group-item">
-              <div id="play_MIDI" class="btn btn-info btn-block">MIDI<span class="glyphicon glyphicon-play"></span></div>
-            </li>
-          </ul>
-        </div>
         <!-- score display-->
-        <div class="tab-content col-sr-10 col-xs-9">
-          <div id="img_viewer" class="tab-pane in active">
+        <div class="tab-content col-sr-11 col-xs-12">
+          <div id="img_viewer" class="tab-pane">
             <div style="height: 450px; overflow: scroll" class="img-wrapper"><img id="score_img" src="" class="img-responsive"></div>
           </div>
           <div id="pdf_viewer" class="tab-pane">
@@ -693,20 +679,26 @@ You need to specify the following entry:</p>
               <canvas id="the-canvas" style="border:1px solid black"></canvas>
             </div>
             <ul id="pdf_pager" class="pager">
-              <li><a class="prev">Previous</a></li>
-              <li><a class="next">Next</a> &nbsp; &nbsp;</li>
-              <li>Page:<span class="page_num">1</span> /<span class="page_count">1</span></li>
+              <li><a class="prev glyphicon glyphicon-arrow-left"></a></li>
+              <li>Page:<a class="page_num">1</a> /<a class="page_count">1</a></li>
+              <li><a class="next glyphicon glyphicon-arrow-right"></a></li>
             </ul>
           </div>
-          <div id="midi_viewer" class="tab-pane">
+          <div id="midi_viewer" class="tab-pane in active">
             <div style="height: 400px; overflow: scroll" class="canvas-wrapper">
               <!-- canvas#midi_pointer(style='width: 100%; height:100%;left: 0; top: 0; z-index:0;')-->
               <canvas id="midi_score" style="width: 100%;left: 0; top: 0; z-index: 1;border:1px solid black;"></canvas>
             </div>
             <ul id="midi_pager" class="pager">
-              <li><a class="prev">Previous</a></li>
-              <li><a class="next">Next</a> &nbsp; &nbsp;</li>
-              <li>Page:<span class="page_num">1</span> /<span class="page_count">1</span></li>
+              <li>
+                <div id="gen" class="btn btn-info">Generate</div>
+              </li>
+              <li>
+                <div id="parse" class="btn btn-primary">Parse</div> &nbsp; &nbsp;
+              </li>
+              <li><a class="prev glyphicon glyphicon-arrow-left"></a></li>
+              <li>Page:<a class="page_num">1</a> /<a class="page_count">1</a></li>
+              <li><a class="next glyphicon glyphicon-arrow-right"></a></li>
             </ul>
           </div>
         </div>
@@ -714,8 +706,10 @@ You need to specify the following entry:</p>
       </div>
       <!-- Player-->
       <div class="row">
-        <div class="col-sr-1 col-xs-1"></div>
-        <div class="col-sr-7 col-xs-9">
+        <div class="col-sr-1 col-xs-1">
+          <div id="play_MIDI" class="btn btn-info btn-block"><span class="glyphicon glyphicon-play"></span></div>
+        </div>
+        <div class="col-sr-6 col-xs-8">
           <progress id="midi_progress" max="100" value="0" style="width: 100%;" class="progress hidden progress-info"> </progress>
           <input id="play_slider" type="range" min="0" max="100" value="0" class="progress">
         </div>
@@ -723,16 +717,16 @@ You need to specify the following entry:</p>
       </div>
       <!-- Editor 1-->
       <div class="row">
-        <div id="options_container" class="col-sr-6 col-xs-10 col-md-6">
+        <div id="tracks_container" class="col-sr-6 col-xs-10 col-md-6">
           <ul class="nav nav-tabs nav-justified nav-pills">
-            <li class="xs-only tab_plus"><a>+</a></li>
+            <li class="xs-only tab_plus"><a><span class="glyphicon glyphicon-plus"></span></a></li>
           </ul>
           <div class="tab-content"></div>
         </div>
         <div class="xs-only col-xs-2"></div>
-        <div id="tracks_container" class="col-sr-6 col-xs-10 col-md-6">
+        <div id="options_container" class="col-sr-6 col-xs-10 col-md-6">
           <ul class="nav nav-tabs nav-justified nav-pills">
-            <li class="xs-only tab_plus"><a>+</a></li>
+            <li class="xs-only tab_plus"><a><span class="glyphicon glyphicon-plus"></span></a></li>
           </ul>
           <div class="tab-content"></div>
         </div>

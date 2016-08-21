@@ -562,7 +562,7 @@ function initUI(){
 
 	app.tapper = tapper;
 	// ace editor
-	$('#score_img').attr('src','./score/summertime.png');
+	//$('#score_img').attr('src','./score/summertime.png');
 	$( "#tracks_resizable" ).resizable({
 		handles: "s",
 		resize: function() {
@@ -595,7 +595,7 @@ $( document ).ready( function() {
 
 	initUI();
 	registerEvents();
-	
+	click_event_list.parse();
 
 });
 
