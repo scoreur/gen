@@ -25,7 +25,7 @@ module.exports = function(grunt){
             options: { moduleType: "commonjs"},
             score: {
                 options: { moduleName: "score_parser" },
-                files: [{src: 'js/parser.jison', dest: 'js/parser.js'}]
+                files: [{src: 'js/score.jison', dest: 'js/score_parser.js'}]
             },
             schema: {
                 options: { moduleName: "schema_parser" },
@@ -37,7 +37,7 @@ module.exports = function(grunt){
                 separator: ';'
             },
             gen: {
-                src: ['js/parser.js', 'js/schema_parser.js', 'coffee/musical.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js'],
+                src: ['js/score_parser.js', 'js/schema_parser.js', 'coffee/musical.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js'],
                 dest: 'js/gen-build.js'
             },
             midijs_plus: {

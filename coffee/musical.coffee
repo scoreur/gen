@@ -109,6 +109,7 @@ MG.chord_class =
   "add9":[0,2,4,7], # add2
   "add11": [0,4,5,7] # add4
 
+
 # return inverted chord
 MG.inverted = (arr,n) ->
   n ?= 1
@@ -129,6 +130,20 @@ MG.chords = ( ->
       ci += 'i'
   return res;
 )()
+
+MG.chord_finder = (->
+  #console.log 'find chord', Object.keys(MG.chords).length
+  ret = {}
+  for k,v of MG.chords
+    if v.toString() of ret
+      #console.log k,v, ret[v.toString()]
+    else
+      ret[v.toString()] = k
+  ret[[0, 5, 7].toString()] = 'sus4'
+  #console.log 'uninque', Object.keys(ret).length
+  return ret
+)()
+
 
 # intervals
 MG.interval_class =
@@ -624,6 +639,7 @@ MG.parseHarmony = (measures, key_sig, tatum) ->
       ret[ret.length - 1][0] += (tatum - math.sum(durs))
     ret
 MG.harmony_progresser = (harmony)->
+  harmony ?= []
   m_i = 0
   b_i = -1
   delta = 0
@@ -659,7 +675,7 @@ MG.harmony_progresser = (harmony)->
   forward: forward
   }
 
-MG.score_parser = @score_parser ? require('./js/parser')
+MG.score_parser = @score_parser ? require('./js/score_parser')
 MG.schema_parser =  @schema_parser ? require('./js/schema_parser')
 # produce text for parsed obj
 MG.schema_parser.produce = (obj)->
@@ -740,7 +756,7 @@ MG.parseMelody = (m, options)->
       console.log 'exceed scale length'
       p = scale.length
     else if p == 0
-# rest
+      # rest
       return 0
     p = ref + scale[p-1]
     if typeof pitch isnt  'number'
@@ -769,14 +785,14 @@ MG.parseMelody = (m, options)->
   ref = init_ref
   # 2 iterate obj.data
   res = obj.data.map (m,i)->
-#console.log 'parse measure', i
+    #console.log 'parse measure', i
     measure = []
     dur_tot = 0
 
     m.forEach (e)->
 
       if e.ctrl?
-# set options
+        # set options
         switch e.ctrl
           when 'reset'
             ref = init_ref
@@ -808,12 +824,12 @@ MG.parseMelody = (m, options)->
             refc = e.pitch.map (p)->
               return ornamental(p,bass,chord)
       else
-# add notes
+        # add notes
         pitches = []
         e.pitch.forEach (p)->
 
           if typeof p == 'string'
-# handle barline
+          # handle barline
           else if refc?
             if refc[p-1]?
               pitches.push(refc[p-1])

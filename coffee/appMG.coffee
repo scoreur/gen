@@ -384,6 +384,7 @@ class @AppMG
     score = generator.toScoreObj()
     console.log('to Text')
     @contents.melody = score.toText();
+    @contents.harmony = score.harmony_text
     @updateEditor();
 
   # analyze midi file

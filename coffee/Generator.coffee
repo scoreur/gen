@@ -88,7 +88,8 @@ class @Generator
     @snippet =  @produce(@schema.S)
     @snippet.cadence(@settings.key_sig)
     console.log @snippet
-    @res2 = @snippet.toScore()
+    @res2 = @snippet.toScore(@settings.key_sig)
+    console.log @res2
 
     # evaluation
 
@@ -154,6 +155,9 @@ class @Generator
         cur_i = (cur_i+1)%interval.length
         console.log 'shift to next interval'
       tmp = new Measure(src[0].time_sig, src[0].tatum)
+      tmp.harmony = MG.clone(src[refd].harmony)
+      tmp.harmony.forEach (e)->
+        e[1] = transpose(e[1], interval[cur_i])
       # pitch
       src[refd].dur.forEach (e, i) ->
         if dur - e >= 0
@@ -165,8 +169,10 @@ class @Generator
           tmp.pitch.push transpose(src[refd].pitch[i], interval[cur_i])
           dur = 0
         return
-      refd++
+
       res.data.push tmp
+      refd++
+
     console.log acted, 'transpose-> ', res
     res
   act_reverse: (options, acted) ->
@@ -176,6 +182,8 @@ class @Generator
       res.data.reverse().forEach (arr)->
         arr.pitch.reverse()
         arr.dur.reverse()
+        if arr.harmony?
+          arr.harmony.reverse()
     else
       res.data.reverse()
     console.log acted, 'reverse-> ', res
@@ -344,13 +352,19 @@ class @Generator
     op = {time_sig:@settings.time_sig, tatum:@settings.ctrl_per_beat}
     if options.incomplete_start?
       op.incomplete_start = options.incomplete_start
-    res = new Snippet(res.pitch, res.dur, op)
+
+    # TODO: convert later
+    harmony.forEach (e1)->
+      e1.forEach (e)->
+
+        e[2] = MG.chord_finder[e[2].toString()] || 'maj'
+    res = new Snippet(res.pitch, res.dur, harmony, op)
     #res.data
 
   # separate into measures
   b2score: (b, sec) ->
     dur = _.flatten(b.dur, true)
-    pitch = flatten(b.pitch, true)
+    pitch = _.flatten(b.pitch, true)
     # console.log dur.length == pitch.length
     ret = []
     # separate measure, add ties
@@ -380,6 +394,9 @@ class @Generator
 
     res = @res2
 
+    harmony = @res2.map (e)->
+      e.harmony
+
     obj = new ScoreObj(@settings)
     melody = res
     melody.info = {
@@ -389,6 +406,8 @@ class @Generator
     }
 
     obj.setMelody  melody, true
+    obj.harmony_text = harmony
+    #console.log harmony.join('\n')
     return obj
 
   rndPicker = (choices, weights) ->

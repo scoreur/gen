@@ -18,14 +18,14 @@ class @Measure
       measure = new Measure(MG.clone(@time_sig), @tatum)
       measure.pitch = MG.clone(@pitch)
       measure.dur = MG.clone(@dur)
-      MG.condCopy(@, measure, ['tie', 'incomplete_start'])
+      MG.condCopy(@, measure, ['tie', 'incomplete_start', 'harmony'])
       return measure
     # copy from other measure
     @time_sig = MG.clone(measure.time_sig)
     @tatum = measure.tatum
     @pitch = MG.clone(measure.pitch)
     @dur = MG.clone(measure.dur)
-    MG.condCopy(measure, @, ['tie','incomplete_start'])
+    MG.condCopy(measure, @, ['tie','incomplete_start', 'harmony'])
 
   add: (pitch, dur)->
     @pitch.push pitch
@@ -73,13 +73,14 @@ class @Measure
   data: array of measures
 ###
 class @Snippet
-  constructor: (pitch, dur, options)->
+  constructor: (pitch, dur, harmony, options)->
     if arguments.length == 0
       @data = []
       return
     while typeof dur[0] != 'number'
       dur = _.flatten(dur, true)
       pitch = _.flatten(pitch, true)
+
     tatum = options.tatum ? 8
     time_sig = options.time_sig ? [4,4]
     sec = tatum * time_sig[0]
@@ -89,6 +90,7 @@ class @Snippet
     delta = @incomplete_start ? sec
 
     m_i = 0
+    console.log harmony.length, 'harmony length'
     measure = new Measure(time_sig, tatum)
     res = []
     dur.forEach (e,i)=>
@@ -98,14 +100,19 @@ class @Snippet
         measure.dur.push e
         delta -= e
         if delta == 0
+          measure.harmony = harmony[m_i]
           res.push measure
+          m_i++
           measure = new Measure(time_sig, tatum)
+
+
           delta = sec
       else #tie
         while delta < e
           measure.dur.push delta
           measure.pitch.push pitch[i]
           measure.tie = true
+          measure.harmony = harmony[m_i]
           res.push measure
           e -= delta
           delta = sec
@@ -113,6 +120,7 @@ class @Snippet
           m_i++
     if delta < sec
       @incomplete_end = sec - delta
+      measure.harmony = harmony[m_i]
       res.push measure
     @data = res
     return
@@ -132,7 +140,7 @@ class @Snippet
       return s
 
     @data = s.data.map (e)-> e.copy()
-    condCopy(s, @, ['incomplete_start', 'tie'])
+    MG.condCopy(s, @, ['incomplete_start', 'tie'])
 
 
 
@@ -140,7 +148,6 @@ class @Snippet
   join: (s, modify)->
     ret = @copy()
     s = s.copy()
-
 
     if ret.data.length > 0
       if modify? && modify.smooth?
@@ -169,8 +176,13 @@ class @Snippet
       measure = null
       if @incomplete_end? && s.incomplete_start?
         measure = new Measure()
+        measure.harmony = MG.clone(tmp.harmony)
+        measure.harmony ?= []
         measure.pitch = tmp.pitch.concat(s.data[0].pitch)
         measure.dur = tmp.dur.concat(s.data[0].dur)
+
+        if s.data[0].harmony?
+          measure.harmony = measure.harmony.concat(s.data[0].harmony)
         if s.data[0].tie? && s.data[0].tie == true
           measure.tie = s.data[0].tie
         s.data.shift()
@@ -204,12 +216,20 @@ class @Snippet
         #console.log 'may merge last two notes', last_note
         return
     last_measure.setNote(last_measure.len() - 1, last_note)
-  toScore: ()->
+  toScore: (key_sig)->
+    key_sig ?= 'C'
+    sharp = MG.key_sig[key_sig] >= 0
     @data.map (measure)->
+
       ret = _.zip(measure.dur, measure.pitch)
       if measure.tie? && measure.tie = true
         ret[ret.length - 1].push(true)
+      ret.harmony = (measure.harmony.map (e)->
+        MG.pitchToKey(e[1],sharp,true) + e[2] + ',' + e[0]
+      ).join(' ')
       ret
+
+
 
 
 ###
@@ -254,24 +274,32 @@ class @ScoreObj
       instrs: @instrs
     }
 
+  setTrack: (i,track)->
+    if i>@tracks.length
+      console.log 'track number overflow'
+
+    @tracks[i] = track
+
   setMelody: (melody, parsed)->
      if parsed? && parsed==true
-       @tracks[0] = melody
+       @setTrack 0, melody
      else
        options = @getSettings()
        options.scale = MG.scale_class[options.scale]
        options.init_ref = @init_ref
-       @tracks[0] = MG.parseMelody(melody, options)
+       @setTrack 0, MG.parseMelody(melody, options)
 
   setTexture: (texture, harmony, parsed)->
     if parsed? && parsed == true
       @harmony = harmony
-      @tracks[1] = texture
+      @setTrack 1, texture
     else
       @harmony = MG.parseHarmony(harmony, @key_sig, @ctrl_per_beat * @time_sig[0])
       options = @getSettings()
       options.harmony = @harmony
-      @tracks[1] = MG.parseMelody(texture, options)
+      @setTrack 1, MG.parseMelody(texture, options)
+
+  setPercussion: (percussion, parsed)->
 
 
   toText: (m)->
