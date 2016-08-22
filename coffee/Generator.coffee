@@ -92,48 +92,8 @@ class @Generator
 
     # evaluation
 
-    console.log 'produce',@res2
-
     res = @res2
 
-    # between-block modification
-    for i in [1...res.length] by 1
-      #smooth
-      last_measure = res[i-1][res[i-1].length-1]
-      first_measure = res[i][0]
-
-      last_note = last_measure[last_measure.length-1][1]
-      first_note = first_measure[0][1]
-
-    ### cadence
-    last_block = res[res.length-1]
-    last_measure = last_block[last_block.length-1].slice()
-
-    last_measure.sort (a,b)->
-      a[0] - b[0]
-    tonic = MG.key_class[@settings.key_sig]
-    last_note = last_measure[last_measure.length-1][1]
-    if typeof last_note == 'object'
-      last_note = last_note[0]
-    adjust = (tonic - (last_note % 12)) %% 12
-    last_note += adjust
-    console.log adjust, 'adjust', last_note, 'last_note'
-
-    if last_measure.length > 1
-      pre_note = last_measure[last_measure.length - 2][1]
-      if typeof pre_note == 'object'
-        pre_note = pre_note[0]
-      #console.log 'pre_note', pre_note
-      if last_note - pre_note >= 12
-        last_note -= 12;
-      if last_note == pre_note
-        #console.log 'may merge last two notes', last_note
-        return
-
-    last_measure[last_measure.length - 1][1] = last_note
-
-    last_block[last_block.length - 1] = last_measure
-    ###
     # ornamentation
     return res
 
@@ -180,8 +140,6 @@ class @Generator
     dur = options.dur
     res = new Snippet()
     src = acted.data
-
-    console.log src
 
     transpose = MG.transposer(options.scale, @settings.key_sig)
     interval = options.interval
@@ -391,8 +349,8 @@ class @Generator
 
   # separate into measures
   b2score: (b, sec) ->
-    dur = b.dur
-    pitch = b.pitch
+    dur = _.flatten(b.dur, true)
+    pitch = flatten(b.pitch, true)
     # console.log dur.length == pitch.length
     ret = []
     # separate measure, add ties
@@ -448,53 +406,6 @@ class @Generator
         if r < p[i]
           return choices[i]
       return choices[p.length-1]
-
-  gen_random_new: (end_pos, states, start, constraint)->
-    # start from states[0]
-    res = []
-    cur = state: start.state, pos: start: start.pos, val: start.val
-    while cur.pos < end_pos
-      nexts = states[cur.state].choices.map (func)->
-        val = func(cur.pos, cur.val)
-        weight = constraint(cur.pos, cur.val, val)
-        return [val, weight]
-
-      merge = _.unzip(nexts)
-      picker = rndPicker(merge[0], merge[1])
-      val = picker.gen()
-      if cur.pos + val.dur >= end_pos
-        val.dur = end_pos - cur.pos
-      # transition
-      cur.state = states.transition(cur.pos,val)
-      cur.pos += val.dur
-      cur.val = val
-      res.push(val)
-    return res
-
-  sample_start:
-    state: 'start',
-    pos: 0,
-    val:
-      dur: 2
-      val: 60 # 'number' or 'object array' for terminal, otherwise subtree
-      weight: [] # optional
-
-  sample_states:
-    transition: (pos, val)->
-
-    'start':
-      choices: (pos, val)->
-
-
-    'middle':
-      choices: (pos, val)->
-
-    'other':
-      choices: (pos, val)->
-
-  sample_constraint: (pos, preval, val)->
-    weights = [4,2,4,6,6,8, 1,8,6,6,2,2]
-    return weights[(val.val-preval.val)%%12]
 
 
 

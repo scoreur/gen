@@ -453,7 +453,7 @@ MG.chord_class_label =
         action: {
           'B': {
             mode:'reverse',
-            deep: false
+            deep: true
           }
         }
 
@@ -584,6 +584,12 @@ MG.lcm = ()->
     ret = lcm(ret, arguments[i])
   ret
 
+MG.condCopy = (src, dest, props)->
+  for i in props
+    if src[i]?
+      dest[i] = src[i]
+  return
+
 # reproducable random number generator
 _seed = 6
 MG.seededRandom = (max, min) ->
@@ -593,6 +599,11 @@ MG.seededRandom = (max, min) ->
   rnd = _seed / 233280
   return min + rnd * (max - min)
 
+
+
+###
+  parsers
+###
 MG.parseHarmony = (measures, key_sig, tatum) ->
   if typeof measures == 'undefined'
     console.log 'empty harmony'
@@ -712,6 +723,128 @@ MG.schema_parser.produce = (obj)->
 
   indent = ''
   produce(obj, indent)
+
+# @return: array of measures with info
+MG.parseMelody = (m, options)->
+  try
+    obj = MG.score_parser.parse(m.join('\n')+'\n')
+  catch e
+    $.notify('parsing error!', 'warning')
+    console.log e.message
+    return
+
+  #console.log 'parse melody', options
+  ornamental = (pitch, ref, scale)->
+    p = if typeof pitch is 'number' then pitch else pitch.original
+    if p > scale.length
+      console.log 'exceed scale length'
+      p = scale.length
+    else if p == 0
+# rest
+      return 0
+    p = ref + scale[p-1]
+    if typeof pitch isnt  'number'
+      pitch.ornament.forEach (e)->
+        if typeof e == 'number'
+          p += e
+    return p
+
+  switch obj.mode
+    when 'melody'
+      {scale, init_ref, harmony} = options
+    when 'harmony'
+      harmony = options.harmony
+
+  tatum = options.ctrl_per_beat * options.time_sig[0]
+  refc = null
+  chorder = MG.harmony_progresser(harmony)
+  # do something
+  # 1 set up states
+  scale ?= MG.scale_class['maj']
+  tempo_map = {0:options.tempo}
+  key_sig_map = {0:options.key_sig}
+  time_sig_map = {0:options.time_sig}
+
+  init_ref ?= 60 # C4
+  ref = init_ref
+  # 2 iterate obj.data
+  res = obj.data.map (m,i)->
+#console.log 'parse measure', i
+    measure = []
+    dur_tot = 0
+
+    m.forEach (e)->
+
+      if e.ctrl?
+# set options
+        switch e.ctrl
+          when 'reset'
+            ref = init_ref
+          when 'normal','repeat_start'
+            for k,v of e
+              switch k
+                when 't' # set time_sig
+                  time_sig_map[i] = v
+                  tatum = options.ctrl_per_beat * v[0]
+
+                when 's' then scale = MG.scale_class[v]
+                when 'k'  # set key_sig
+                  key_sig_map[i] = v
+                  ref = init_ref = MG.keyToPitch(v+4)
+                when 'r' # set tempo
+                  tempo_map[i] = v
+                when 'v' then 1 # set volume
+                when 'o' then 1 # set output instrument
+                when 'i' then 1 # inverse chord
+                when 'p' then ref += v
+          when 'chord'
+            ref = MG.keyToPitch('C3') # 48
+            chorder.process()
+            bass = chorder.bass(e.inv)
+            chord = chorder.chord(e.inv)
+
+            ref += e.transpose
+            bass += ref
+            refc = e.pitch.map (p)->
+              return ornamental(p,bass,chord)
+      else
+# add notes
+        pitches = []
+        e.pitch.forEach (p)->
+
+          if typeof p == 'string'
+# handle barline
+          else if refc?
+            if refc[p-1]?
+              pitches.push(refc[p-1])
+          else
+            pitches.push(ornamental(p, ref, scale))
+        #console.log 'add pitch', pitches
+        if typeof e.dur == 'number'
+          measure.push([e.dur, pitches])
+          chorder.forward(e.dur)
+          dur_tot += e.dur
+        else
+          measure.push([e.dur.original, pitches, true]);
+          chorder.forward(e.dur.original)
+          dur_tot += e.dur.original
+    # renormalize
+    if tatum?
+      r = tatum / dur_tot
+      dur_tot = 0
+
+      measure.forEach (ee)->
+        dur_tot += (ee[0] = Math.floor(ee[0] * r))
+        return
+      measure[measure.length - 1][0] += (tatum - dur_tot)
+    return measure
+  # TODO: move info to tracks
+  res.info = {
+    time_sigs: time_sig_map,
+    key_sigs: key_sig_map,
+    tempi: tempo_map
+  }
+  return res
 
 
 @MG = MG

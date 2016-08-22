@@ -169,7 +169,7 @@ class @ScoreRenderer
     @geo.reserved_width = 30 + 5 * Math.abs(MG.key_sig[key_sig])
 
 
-    console.log 'info', melody.info
+    #console.log 'info', melody.info
     #console.log melody
     for  i in [0...melody.length] by 1
       #console.log 'render measure', i
