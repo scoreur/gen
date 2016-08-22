@@ -675,7 +675,7 @@ You need to specify the following entry:</p>
             <div style="height: 450px; overflow: scroll" class="img-wrapper"><img id="score_img" src="" class="img-responsive"></div>
           </div>
           <div id="pdf_viewer" class="tab-pane">
-            <div id="canvas-wrapper" style="height:400px; overflow: scroll">
+            <div id="canvas-wrapper" style="height:400px; overflow: scroll;">
               <canvas id="the-canvas" style="border:1px solid black"></canvas>
             </div>
             <ul id="pdf_pager" class="pager">
@@ -685,9 +685,9 @@ You need to specify the following entry:</p>
             </ul>
           </div>
           <div id="midi_viewer" class="tab-pane in active">
-            <div style="height: 400px; overflow: scroll" class="canvas-wrapper">
+            <div style="height: 400px; overflow: scroll; border:1px solid black;" class="canvas-wrapper">
               <!-- canvas#midi_pointer(style='width: 100%; height:100%;left: 0; top: 0; z-index:0;')-->
-              <canvas id="midi_score" style="width: 100%;left: 0; top: 0; z-index: 1;border:1px solid black;"></canvas>
+              <canvas id="midi_score" style="width: 100%;left: 0; top: 0; z-index: 1;"></canvas>
             </div>
             <ul id="midi_pager" class="pager">
               <li>
@@ -713,7 +713,7 @@ You need to specify the following entry:</p>
           <progress id="midi_progress" max="100" value="0" style="width: 100%;" class="progress hidden progress-info"> </progress>
           <input id="play_slider" type="range" min="0" max="100" value="0" class="progress">
         </div>
-        <div class="col-sr-3 col-xs-2"><a class="pager"><span id="currentTime"> </span>/ <span id="endTime"></span></a></div>
+        <div class="col-sr-3 col-xs-2"><a class="pager"><span id="currentTime">0</span>/<span id="endTime">0</span></a></div>
       </div>
       <!-- Editor 1-->
       <div class="row">

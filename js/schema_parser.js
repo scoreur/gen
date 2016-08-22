@@ -118,8 +118,9 @@ case 6:
 break;
 case 7:
 
+    $$[$0-2][1].action[ '_' + $$[$0-2][1].structure.length + "_" + $$[$0-1]] = $$[$0];
     $$[$0-2][1].structure.push($$[$0-1]);
-    $$[$0-2][1].action[$$[$0-1]] = $$[$0];
+
   
 break;
 case 8:
