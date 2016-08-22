@@ -579,7 +579,7 @@ $( document ).ready( function() {
 	
 	MIDI.loadPlugin({
 		soundfontUrl: pre + "soundfont/",
-		instrument: ["trumpet","acoustic_grand_piano", "percussion"],
+		instrument: ["acoustic_grand_piano", "percussion"],
 		onprogress: function(state, progress) {
 			//console.log(state, progress);
 		},
@@ -595,7 +595,7 @@ $( document ).ready( function() {
 
 	initUI();
 	registerEvents();
-	click_event_list.parse();
+	//click_event_list.parse();
 
 });
 

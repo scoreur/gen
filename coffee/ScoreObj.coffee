@@ -334,46 +334,44 @@ class @ScoreObj
   toMidi: ->
     #console.log('to midi')
     ctrlTicks = @init_ctrlTicks
-    q = _.flatten(@tracks[0], true)
-    t = if @tracks[1] then _.flatten(@tracks[1], true) else null
     m = new simpMidi()
-    delta = 0
-    vol = @volumes[0]
-    m.addEvent 1, 0, 'programChange', 0, @instrs[0]-1
-    i = 0
-    while i < q.length
-      e = q[i]
-      if typeof e[1] == 'number' && e[1] < 21 && e[1] > 108
-        delta += e[0] # skip invalid note
-      else
-        dur = e[0]
-        while q[i][2] == true && i+1 < q.length # tied
-          dur += q[++i][0]
-        m.addNotes 1, dur * ctrlTicks, q[i][1], vol, 0, delta * ctrlTicks
-        delta = 0
-      ++i
-
     m.setTimeSignature @time_sig...
     m.setKeySignature MG.key_sig[@key_sig], 'maj'
     m.setTempo @tempo
     m.setDefaultTempo @tempo
+    # TODO: reserve channel 0x9
+    nTrack = @tracks.length
+    if nTrack > 9
+      nTrack = 9
 
-    MIDI.programChange(0,@instrs[0]-1)
-
-    if t == null
-      m.finish()
-      return m
-
-    l = m.addTrack() - 1
-    vol = @volumes[l-1]
-    m.addEvent l, 0, 'programChange', l-1, @instrs[l-1]-1
-    MIDI.programChange(l-1,@instrs[l-1]-1)
-    t.forEach (e) ->
-      m.addNotes l, e[0]*ctrlTicks, e[1], vol
+    for t_i in [0...nTrack] by 1
+      if t_i != 0
+        m.addTrack()
+        console.log 'add track', t_i
+      delta = 0
+      t = _.flatten(@tracks[t_i], true)
+      vol = @volumes[t_i] ? @volumes[0]
+      MIDI.programChange(t_i, @instrs[t_i] - 1)
+      m.addEvent t_i + 1, 0, 'programChange', t_i, @instrs[t_i]-1
+      i = 0
+      while i < t.length
+        e = t[i]
+        notes = []
+        if typeof e[1] == 'number'
+          if e[1] >= 21 && e[1] <= 108
+            notes.push = e[1]
+        else
+            e[1].forEach (pitch)->
+              if pitch >= 21 && pitch <= 108
+                notes.push pitch
+        if notes.length == 0
+          delta += e[0] # skip invalid note
+        else
+          dur = e[0]
+          while t[i][2] == true && i+1 < t.length # tied
+            dur += t[++i][0]
+          m.addNotes t_i + 1, dur * ctrlTicks, notes, vol, 0, delta * ctrlTicks
+          delta = 0
+        ++i
     m.finish()
     return m
-
-
-
-
-
