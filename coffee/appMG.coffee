@@ -349,7 +349,7 @@ class @AppMG
   updateEditor: ->
     _.flatten(@ui.editor).forEach (e) =>
       if e == 'schema'
-        ret = Generator::produceSchema(@schema)
+        ret = MG.schema_parser.produce(@schema)
       else if @contents[e]?
         ret =  @contents[e].join('\n')
       else
@@ -378,7 +378,7 @@ class @AppMG
 
   generate: ->
     @settings = JSON.parse(@editor.settings.getValue())
-    @schema = Generator::parseSchema(@editor.schema.getValue());
+    @schema = MG.schema_parser.parse(@editor.schema.getValue());
     generator = new Generator(@settings, @schema);
     generator.generate();
     score = generator.toScoreObj()

@@ -2,72 +2,11 @@ MG = @MG ? {}
 
 MG.ref_midi_info = null
 
-parser = @schema_parser ? require('./js/schema_parser')
+parser = MG.schema_parser
 
-
-# produce text for parsed obj
-parser.produce = (obj)->
-  produceVar = (o, indent)->
-    indent ?= ''
-    ret = ''
-    tmp = []
-    if Array.isArray(o)
-      ret += '[\n'
-      indent += '  '
-      for k in o
-        tmp.push indent + produceVar(k, indent)
-      ret += tmp.join(',\n')
-      indent = indent.substr(2)
-      ret += '\n' + indent + ']'
-    else if typeof o == 'object'
-      ret = '{\n'
-      indent += '  '
-      for k,v of o
-        if k == 'mode'
-          tmp.push indent + v.toString()
-        else
-          tmp.push indent + k + ' : ' + produceVar(v, indent)
-      ret += tmp.join(',\n')
-      indent = indent.substr(2)
-      ret += '\n' + indent + '}'
-    else if typeof o == 'string'
-      ret += '"' + o + '"'
-    else
-      ret += o.toString()
-    ret
-
-
-  produce = (nodes, indent)->
-    indent ?= ''
-    ret = ''
-    indent += '  ' # indent two spaces
-    for k,v of nodes
-      #console.log k
-      if v.structure?
-        ret += indent + k + ' -> '
-        if v.node? && Object.keys(v.node).length > 0
-          ret += '{\n'
-          ret += produce(v.node, indent)
-          ret += indent + '}'
-        ret += '\n'
-        #console.log v.structure
-        v.structure.forEach (e)->
-          ret += indent + e + ' '
-          if v.action? && e of v.action
-            ret += produceVar(v.action[e], indent) #nodes.action[k].toString()
-          ret += '\n'
-        ret += indent + ';\n'
-      else
-        ret += indent + k + ' = '
-        ret += produceVar(v, indent) + ';\n'
-    indent = indent.substr(2) # unindent
-    return ret
-
-
-  indent = ''
-  produce(obj, indent)
-
-
+###
+  generating music from schema
+###
 class @Generator
   constructor: (@settings, @schema) ->
     @settings.key_sig ?= 'C'
@@ -85,102 +24,18 @@ class @Generator
     @toPitch = MG.scaleToPitch(@settings.scale, @settings.key_sig)
     @toScale = MG.pitchToScale(@settings.scale, @settings.key_sig)
 
-  parseSchema: (o)->
-    parser.parse(o)
-  produceSchema: (o)->
-    parser.produce(o)
+  seededRandom = MG.seededRandom
 
-
-
-
-  # reproducable random number generator
-  _seed = 6
-  seededRandom = (max, min) ->
-    max = max || 1
-    min = min || 0
-    _seed = (_seed * 9301 + 49297) % 233280;
-    rnd = _seed / 233280
-    return min + rnd * (max - min)
-  MG.seededRandom = seededRandom
-
-
-  evaluate: (data)->
-    info = MG.midi_statistics(data)
-    console.log 'eval', data, info
-
-    report = {}
-
-    if(info.rhythm.length == 0)
-      return
-    r_all = 0
-    info.rhythm.forEach (e)->
-      r_all += e[1]
-    report.simp = (info.rhythm[0][1]/r_all )
-    report.range = _.max(info.range)
-    console.log 'report', report.simp, report.range
-
-
-    if MG.ref_midi_info != null
-      ref_beat_dur = MG.ref_midi_info.rhythm[0][0].split(',').map (ee)->
-        parseInt(ee)
-      ref_beat_dur = _.reduce(ref_beat_dur, (a,b)->
-        a+b
-      ,0)
-      info_dur =  info.rhythm[0][0].split(',').map (ee)->
-        parseInt(ee)
-      info_dur =  _.reduce(info_dur, (a,b)->
-        a+b
-      ,0)
-      console.log 'compare',info_dur, ref_beat_dur
-
-
-      # compare with existing midi
-
-
-    # optimize
-
-    return info
-
-  top_sort = (dependency)->
-    n = Object.keys(dependency).length
-
-    remove_one = (o)->
-      for k,v of dependency
-        if o in v
-          v.splice(v.indexOf(o),1)
-      delete dependency[o]
-    get_one = ->
-      for k,v of dependency
-        if v.length <= 0
-          return k
-      return null
-    ret = []
-    while ret.length < n
-      tmp = get_one()
-      if tmp == null
-        console.log 'circular dependency', dependency
-        break
-      else
-        ret.push tmp
-        remove_one(tmp)
-    #console.log 'top sort', ret
-    return ret
-
-  obj_merge = (v)->
-    ret = {pitch:[], dur:[]}
-    if Array.isArray(v)
-      for i in v
-        ret.pitch = ret.pitch.concat (MG.circularClone(i.pitch))
-        ret.dur = ret.dur.concat (MG.circularClone(i.dur))
-    else
-        ret.pitch = MG.circularClone(v.pitch)
-        ret.dur = MG.circularClone(v.dur)
-    ret
-
-  # testing using dur
+  # traverse the parsed tree
   produce: (variable, global)->
     if variable.mode? # terminal
-      return @gen_chord(variable)
+      switch variable.mode
+        when 'chord'
+          return @gen_chord(variable)
+        when 'random'
+          return @gen_random(variable)
+        when 'distribution'
+          return variable
     variable.node ?= {}
     variable.action ?= {}
     #console.log 'action', variable.action
@@ -197,26 +52,28 @@ class @Generator
           dependency[k].push i # k depends on i
     # console.log 'dependency', dependency
     # top sort
-    local = top_sort(dependency)
+    local = MG.top_sort(dependency)
     next_global = Object.assign({}, global)
 
     for k in local
       next_global[k] = @produce(variable.node[k], next_global)
-    for k,v of variable.action
-      switch v.mode
-        when 'transpose'
-          next_global[k] = @gen_transpose(v,obj_merge(next_global[k]))
-        when 'reverse'
-          next_global[k] = @gen_reverse(v,obj_merge(next_global[k]))
-        when 'distribution'
-          next_global[k] = v
 
+    ret = new Snippet()
 
-
-    ret = []
-    for v in variable.structure
+    variable.structure.forEach (v,i) =>
       if v of next_global
-        ret.push obj_merge(next_global[v])
+        tmp = next_global[v]
+        if "_#{i}_#{v}" of variable.action
+          options = variable.action["_#{i}_#{v}"]
+          console.log 'ACT', options.mode
+
+          switch options.mode
+            when 'transpose'
+              tmp = @act_transpose(options, tmp)
+            when 'reverse'
+              tmp = @act_reverse(options, tmp)
+        ret = ret.join(tmp, {smooth:'true'})
+        console.log 'concat', v, ret.data.length
       else
         console.log 'miss', v
     return ret
@@ -228,10 +85,10 @@ class @Generator
     sec = @settings.ctrl_per_beat * @settings.time_sig[0] # separate bar
     res_eval = []
 
-    @res2 =  @produce(@schema.S).map (b)=>
-      # res_eval.push @evaluate(@b2score(b, @settings.ctrl_per_beat))
-      @b2score(b, sec)
-
+    @snippet =  @produce(@schema.S)
+    @snippet.cadence(@settings.key_sig)
+    console.log @snippet
+    @res2 = @snippet.toScore()
 
     # evaluation
 
@@ -241,30 +98,14 @@ class @Generator
 
     # between-block modification
     for i in [1...res.length] by 1
+      #smooth
       last_measure = res[i-1][res[i-1].length-1]
       first_measure = res[i][0]
 
       last_note = last_measure[last_measure.length-1][1]
       first_note = first_measure[0][1]
 
-
-      if last_measure.length > 1
-        pre_note = last_measure[last_measure.length - 2][1]
-        if (last_note > pre_note && last_note > first_note) || (last_note < pre_note && last_note < first_note)
-          # swap, make smooth
-          last_measure[last_measure.length - 2][1] = last_note
-          last_note = pre_note
-          pre_note = last_measure[last_measure.length - 2][1]
-          #console.log 'smooth', i, pre_note, last_note, first_note
-      if last_note - first_note <= -12
-        last_note += 12
-      else if last_note - first_note >= 12
-        last_note -= 12
-      #console.log i, last_note, first_note
-      last_measure[last_measure.length - 1][1] = last_note
-      res[i-1][res[i-1].length - 1] = last_measure
-
-    # cadence
+    ### cadence
     last_block = res[res.length-1]
     last_measure = last_block[last_block.length-1].slice()
 
@@ -288,16 +129,41 @@ class @Generator
       if last_note == pre_note
         #console.log 'may merge last two notes', last_note
         return
-        #last_note = last_measure.pop()
-        #last_measure[last_measure.length - 1][0] += last_note[0]
-        #last_note = last_note[1]
 
     last_measure[last_measure.length - 1][1] = last_note
 
     last_block[last_block.length - 1] = last_measure
-
+    ###
     # ornamentation
     return res
+
+  evaluate: (data)->
+    info = MG.midi_statistics(data)
+    console.log 'eval', data, info
+
+    report = {}
+
+    if(info.rhythm.length == 0)
+      return
+    r_all = 0
+    info.rhythm.forEach (e)->
+      r_all += e[1]
+    report.simp = (info.rhythm[0][1]/r_all )
+    report.range = _.max(info.range)
+    console.log 'report', report.simp, report.range
+
+
+    if MG.ref_midi_info != null
+      ref_beat_dur = math.sum(MG.ref_midi_info.rhythm[0][0].split(','))
+      info_dur =  math.sum(info.rhythm[0][0].split(','))
+      console.log 'compare',info_dur, ref_beat_dur
+
+    # compare with existing midi
+
+
+    # optimize
+
+    return info
 
   newChoices = (pre, choices, weights)->
     ret = {}
@@ -309,14 +175,15 @@ class @Generator
 
 
 
-  gen_transpose: (options, src) ->
+  act_transpose: (options, acted) ->
 
     dur = options.dur
-    res =
-      dur: []
-      pitch: []
+    res = new Snippet()
+    src = acted.data
+
+    console.log src
+
     transpose = MG.transposer(options.scale, @settings.key_sig)
-    src ?= @res[options.src]
     interval = options.interval
     if typeof interval == 'number'
       interval = [interval]
@@ -324,44 +191,42 @@ class @Generator
     refd = 0
     cur_i = 0
     while dur > 0
-      if refd >= src.dur.length
-        refd -= src.dur.length
+      if refd >= src.length
+        refd -= src.length
         cur_i = (cur_i+1)%interval.length
         console.log 'shift to next interval'
-      tmp = []
-      tmp2 = []
+      tmp = new Measure(src[0].time_sig, src[0].tatum)
       # pitch
-      src.dur[refd].forEach (e, i) ->
+      src[refd].dur.forEach (e, i) ->
         if dur - e >= 0
-          tmp.push e
-          tmp2.push transpose(src.pitch[refd][i], interval[cur_i])
+          tmp.dur.push e
+          tmp.pitch.push transpose(src[refd].pitch[i], interval[cur_i])
           dur -= e
         else if dur > 0
-          tmp.push dur
-          tmp2.push transpose(src.pitch[refd][i], interval[cur_i])
+          tmp.dur.push dur
+          tmp.pitch.push transpose(src[refd].pitch[i], interval[cur_i])
           dur = 0
         return
       refd++
-      res.dur.push tmp
-      res.pitch.push tmp2
-    console.log src, 'transpose-> ', res
+      res.data.push tmp
+    console.log acted, 'transpose-> ', res
     res
-  gen_reverse: (options, src) ->
-    res =
-      dur: []
-      pitch: []
-    src ?= @res[options.src]
+  act_reverse: (options, acted) ->
+    res = acted.copy();
     # shallow version options.deep = false
     if options.deep? && options.deep == true
-      res.dur = src.dur.slice().reverse().map (arr)->
-        return arr.slice().reverse()
-      res.pitch = src.pitch.slice().reverse().map (arr)->
-        return arr.slice().reverse()
+      res.data.reverse().forEach (arr)->
+        arr.pitch.reverse()
+        arr.dur.reverse()
     else
-      res.dur = src.dur.slice().reverse()
-      res.pitch = src.pitch.slice().reverse()
-    console.log res, 'reverse-> ', src
+      res.data.reverse()
+    console.log acted, 'reverse-> ', res
     res
+
+  act_aug: (options, acted)->
+
+
+  act_dim: (options, acted)->
 
 
 
@@ -371,6 +236,7 @@ class @Generator
       pitch: options.pitch
 
   gen_random:  (options) ->
+    console.log 'deprecated!!'
     dur = options.dur
     toPitch = @toPitch
     scale_len =@scale.length
@@ -434,11 +300,10 @@ class @Generator
     dur = options.dur
     toPitch = @toPitch
     toScale = @toScale
-    chords = _.flatten(ScoreObj::parseHarmony(options.chords), true)
+    harmony = MG.parseHarmony(options.chords, @settings.key_sig)
+    chorder = MG.harmony_progresser(harmony)
+
     scale_len = @scale.length
-    refc = 0
-    refdur = chords[refc][0]
-    # obtain chords pitch
     # not chromatic
     res =
       dur: []
@@ -490,19 +355,20 @@ class @Generator
       tmp = []
       j = 0
       while j < res.dur[i].length
-        if refc + 1 < chords.length and refdur < 0
-          refdur += chords[++refc][0]
-        cur_chord = chords[refc]
+        chorder.process()
+        cur_chord = chorder.chord()
+        bass = chorder.bass()
         raw_choices = newChoices(pre, seed2.choices, seed2.weights)
         choices = {}
+        # TODO: add chord tone within one octave
         for k,v of raw_choices
           if k >= 0 && k <= scale_len * 8
             k = toPitch(k)
             v *= range_dist(k)
-            cur_chord[2].forEach (ee,ii)->
-              if (k - cur_chord[1]) %% 12 == ee
+            cur_chord.forEach (ee,ii)->
+              if (k - bass) %% 12 == ee
                 console.log 'chord tone'
-                v *= 2
+                v *= 4
             choices[k] = v
         rc2 = rndPicker(_.keys(choices), _.values(choices))
         pre = parseInt(rc2.gen())
@@ -512,19 +378,21 @@ class @Generator
 
         pre = pre[0] + pre[1] * scale_len
 
-
-        refdur -= options.rhythm[0]
+        chorder.forward(res.dur[i][j])
         ++j
       res.pitch.push tmp
       ++i
     # evaluation , optimization
+    op = {time_sig:@settings.time_sig, tatum:@settings.ctrl_per_beat}
+    if options.incomplete_start?
+      op.incomplete_start = options.incomplete_start
+    res = new Snippet(res.pitch, res.dur, op)
+    #res.data
 
-    res
-
-  # sperate into measures
-  b2score: (b, sec, flat) ->
-    dur = if flat then b.dur else _.flatten(b.dur, true);
-    pitch = if flat then b.pitch else _.flatten(b.pitch, true);
+  # separate into measures
+  b2score: (b, sec) ->
+    dur = b.dur
+    pitch = b.pitch
     # console.log dur.length == pitch.length
     ret = []
     # separate measure, add ties
@@ -555,7 +423,7 @@ class @Generator
     res = @res2
 
     obj = new ScoreObj(@settings)
-    melody = _.flatten(res, true)
+    melody = res
     melody.info = {
       time_sigs:{0:@settings.time_sig},
       key_sigs: {0: @settings.key_sig},

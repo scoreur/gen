@@ -405,6 +405,7 @@ MG.chord_class_label =
       'c':{ # terminal
         mode: 'chord'
         dur: 4 * 8
+        incomplete_start: 32
         chords : [
           "E7,32"
         ]
@@ -460,6 +461,7 @@ MG.chord_class_label =
       'C':{ # terminal
         mode: 'chord',
         dur: 28 * 8
+        incomplete_end: 32
         chords: "C,32 Am,32/D7,32 E7,32/Am,32 D7,32/Bm7,32".split('/'),
         rhythm:
           seed: 's1'
@@ -495,6 +497,18 @@ MG.chord_class_label =
 ###
   utilities
 ###
+MG.clone = (->
+  clone = (o)->
+    if typeof o != 'object' or o == null
+      return o
+    else
+      ret = if Array.isArray(o) then [] else {}
+      for i of o
+        ret[i] = clone(o[i])
+      return ret
+  return (o)-> clone(o)
+)()
+
 
 MG.circularClone = (obj) ->
   visited = []
@@ -523,6 +537,31 @@ MG.circularClone = (obj) ->
 
   clone obj
 
+MG.top_sort = (dependency)->
+  n = Object.keys(dependency).length
+
+  remove_one = (o)->
+    for k,v of dependency
+      if o in v
+        v.splice(v.indexOf(o),1)
+    delete dependency[o]
+  get_one = ->
+    for k,v of dependency
+      if v.length <= 0
+        return k
+    return null
+  ret = []
+  while ret.length < n
+    tmp = get_one()
+    if tmp == null
+      console.log 'circular dependency', dependency
+      break
+    else
+      ret.push tmp
+      remove_one(tmp)
+  #console.log 'top sort', ret
+  return ret
+
 # greatest common divisor
 gcd = (a,b)->
   while b > 0
@@ -544,6 +583,136 @@ MG.lcm = ()->
   for i in [2...arguments.length] by 1
     ret = lcm(ret, arguments[i])
   ret
+
+# reproducable random number generator
+_seed = 6
+MG.seededRandom = (max, min) ->
+  max = max || 1
+  min = min || 0
+  _seed = (_seed * 9301 + 49297) % 233280;
+  rnd = _seed / 233280
+  return min + rnd * (max - min)
+
+MG.parseHarmony = (measures, key_sig, tatum) ->
+  if typeof measures == 'undefined'
+    console.log 'empty harmony'
+    return
+  measures.map (e) ->
+    durs = []
+    ret = e.trim().split(/\s+/).map (e2) ->
+      terms = e2.split(',')
+      chord_info = MG.getChords(terms[0],3,key_sig)
+      dur =  if terms.length>=2 then parseInt(terms[1]) else 1
+      durs.push dur
+      [dur,chord_info[0],chord_info[1]]
+    if tatum?
+      r = tatum / math.sum(durs)
+      durs = []
+      ret.forEach (ee,ii)->
+        durs.push(ret[ii][0] = Math.floor(ee[0] * r))
+      ret[ret.length - 1][0] += (tatum - math.sum(durs))
+    ret
+MG.harmony_progresser = (harmony)->
+  m_i = 0
+  b_i = -1
+  delta = 0
+  bass = (inv)->
+    inv ?= 0
+    curchord = harmony[m_i][b_i]
+    return (curchord[1] + curchord[2][inv]) % 12
+  incr = ()->
+    b_i++
+    if b_i >= harmony[m_i].length
+      b_i = 0
+      m_i++
+      if m_i >= harmony.length
+        m_i = harmony.length - 1
+    delta -= harmony[m_i][b_i][0]
+
+    return delta
+
+  chord = (inv) ->
+    inv ?= 0
+    return MG.inverted(harmony[m_i][b_i][2],inv)
+  forward = (d)->
+    delta += d
+
+  process = ()->
+    while m_i < harmony.length && delta >= 0
+      incr()
+
+  return {
+  bass: bass,
+  chord: chord,
+  process: process,
+  forward: forward
+  }
+
+MG.score_parser = @score_parser ? require('./js/parser')
+MG.schema_parser =  @schema_parser ? require('./js/schema_parser')
+# produce text for parsed obj
+MG.schema_parser.produce = (obj)->
+  produceVar = (o, indent)->
+    indent ?= ''
+    ret = ''
+    tmp = []
+    if Array.isArray(o)
+      ret += '[\n'
+      indent += '  '
+      for k in o
+        tmp.push indent + produceVar(k, indent)
+      ret += tmp.join(',\n')
+      indent = indent.substr(2)
+      ret += '\n' + indent + ']'
+    else if typeof o == 'object'
+      ret = '{\n'
+      indent += '  '
+      for k,v of o
+        if k == 'mode'
+          tmp.push indent + v.toString()
+        else
+          tmp.push indent + k + ' : ' + produceVar(v, indent)
+      ret += tmp.join(',\n')
+      indent = indent.substr(2)
+      ret += '\n' + indent + '}'
+    else if typeof o == 'string'
+      ret += '"' + o + '"'
+    else
+      ret += o.toString()
+    ret
+
+
+  produce = (nodes, indent)->
+    indent ?= ''
+    ret = ''
+    indent += '  ' # indent two spaces
+    for k,v of nodes
+      #console.log k
+      if v.structure?
+        ret += indent + k + ' -> '
+        if v.node? && Object.keys(v.node).length > 0
+          ret += '{\n'
+          ret += produce(v.node, indent)
+          ret += indent + '}'
+        ret += '\n'
+        #console.log v.structure
+        v.structure.forEach (e, i)->
+          ret += indent + e + ' '
+          if v.action?
+            tgt = v.action[e] ? v.action["_#{i}_#{e}"]
+            if tgt?
+              ret += produceVar(tgt, indent) #nodes.action[k].toString()
+          ret += '\n'
+        ret += indent + ';\n'
+      else
+        ret += indent + k + ' = '
+        ret += produceVar(v, indent) + ';\n'
+    indent = indent.substr(2) # unindent
+    return ret
+
+  indent = ''
+  produce(obj, indent)
+
 
 @MG = MG
 

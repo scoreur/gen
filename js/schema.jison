@@ -73,8 +73,9 @@ R :
   }
   | R IDENT ACTION
   {
+    $1[1].action[ '_' + $1[1].structure.length + "_" + $2] = $3;
     $1[1].structure.push($2);
-    $1[1].action[$2] = $3;
+
   }
   | R IDENT
   {

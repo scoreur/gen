@@ -579,9 +579,9 @@ $( document ).ready( function() {
 	
 	MIDI.loadPlugin({
 		soundfontUrl: pre + "soundfont/",
-		instrument: ["trumpet","acoustic_grand_piano"],
+		instrument: ["trumpet","acoustic_grand_piano", "percussion"],
 		onprogress: function(state, progress) {
-			console.log(state, progress);
+			//console.log(state, progress);
 		},
 		onsuccess: function() {
 			// At this point the MIDI system is ready to be used

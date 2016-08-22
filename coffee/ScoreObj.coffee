@@ -1,5 +1,222 @@
 MG = @MG ? {}
-parser = @score_parser ? require('./js/parser.js')
+parser = MG.score_parser
+
+condCopy = (src, dest, props)->
+  for i in props
+    if src[i]?
+      dest[i] = src[i]
+  return
+
+###
+  measure with data(pitch, dur) and property
+###
+class @Measure
+  constructor: (@time_sig, @tatum)->
+    @pitch = []
+    @dur = []
+    @time_sig ?= [4,4]
+    @tatum ?= 8
+
+  copy: (measure)->
+    if(arguments.length == 0)
+      measure = new Measure(MG.clone(@time_sig), @tatum)
+      measure.pitch = MG.clone(@pitch)
+      measure.dur = MG.clone(@dur)
+      condCopy(@, measure, ['tie', 'incomplete_start'])
+      return measure
+
+    @time_sig = MG.clone(measure.time_sig)
+    @tatum = measure.tatum
+    @pitch = MG.clone(measure.pitch)
+    @dur = MG.clone(measure.dur)
+    condCopy(measure, @, ['tie','incomplete_start'])
+  add: (pitch, dur)->
+    @pitch.push pitch
+    @dur.push dur
+    return
+
+  note: (i)->
+    [@dur[i], @pitch[i]]
+  last: ->
+    @note(@len() - 1)
+
+  first: ->
+    @note(0)
+
+  setNote: (i, note)->
+    @dur[i] = note[0]
+    @pitch[i] = note[1]
+
+  len: ->
+    @dur.length
+
+  incomplete: ->
+    return math.sum(@dur) < @tatum * @time_sig[0]
+  overflow: ->
+    return math.sum(@dur) > @tatum * @time_sig[0]
+  # get pitch at pos
+  pos: (beat, tatum)->
+    if @dur.length == 0
+      return null
+    tatum ?= 0
+    offset = beat * @tatum + tatum
+    d_i = 0
+    while d_i < @dur.length && offset > 0
+      offset -= @dur[d_i]
+      d_i++
+    if offset < 0
+      d_i--
+
+    if d_i >= @dur.length
+      d_i = @dur.length - 1
+    return @pitch[d_i]
+
+###
+  snippet of track, array of measures
+###
+class @Snippet
+  constructor: (pitch, dur, options)->
+    if arguments.length == 0
+      @data = []
+      return
+    while typeof dur[0] != 'number'
+      dur = _.flatten(dur, true)
+      pitch = _.flatten(pitch, true)
+    tatum = options.tatum ? 8
+    time_sig = options.time_sig ? [4,4]
+    sec = tatum * time_sig[0]
+
+    condCopy(options, @, ['incomplete_start', 'tie'])
+
+    delta = @incomplete_start ? sec
+
+    m_i = 0
+    measure = new Measure(time_sig, tatum)
+    res = []
+    dur.forEach (e,i)=>
+
+      if delta - e >= 0
+        measure.pitch.push pitch[i]
+        measure.dur.push e
+        delta -= e
+        if delta == 0
+          res.push measure
+          measure = new Measure(time_sig, tatum)
+          delta = sec
+      else #tie
+        while delta < e
+          measure.dur.push delta
+          measure.pitch.push pitch[i]
+          measure.tie = true
+          res.push measure
+          e -= delta
+          delta = sec
+          measure = new Measure(time_sig, tatum)
+          m_i++
+    if delta < sec
+      @incomplete_end = sec - delta
+      res.push measure
+    @data = res
+    return
+  last: ->
+    if @data.length == 0
+      return null
+    @data[@data.length - 1]
+  first: ->
+    if @data.length == 0
+      return null
+    @data[0]
+  copy: (s)->
+    if arguments.length == 0
+      s = new Snippet()
+      s.data = @data.map (e)-> e.copy()
+      condCopy(@, s, ['incomplete_start', 'tie'])
+      return s
+
+    @data = s.data.map (e)-> e.copy()
+    condCopy(s, @, ['incomplete_start', 'tie'])
+
+
+
+  # concat with other snippet
+  join: (s, modify)->
+    ret = @copy()
+    s = s.copy()
+
+
+    if ret.data.length > 0
+      if modify? && modify.smooth?
+        last_measure = ret.last()
+        first_measure = s.first()
+        console.log 'new smooth', last_measure, first_measure
+        last_note = last_measure.last()
+        first_note = first_measure.first()
+        if last_measure.len() > 1
+          pre_note = last_measure.note(last_measure.len() - 2)
+          if (last_note[1] > pre_note[1] && last_note[1] > first_note[1]) || (last_note[1] < pre_note[1] && last_note[1] < first_note[1])
+            # swap, make smooth
+            last_measure.setNote(last_measure.len() - 2, last_note)
+            last_note = pre_note
+            pre_note = last_measure.note(last_measure.len() - 2)
+
+        if last_note[1] - first_note[1] <= -12
+          last_note[1] += 12
+        else if last_note[1] - first_note[1] >= 12
+          last_note[1] -= 12
+        #console.log i, last_note, first_note
+        last_measure.setNote(last_measure.len() - 1, last_note)
+        console.log 'smooth', last_measure, first_measure
+
+      tmp = ret.data.pop()
+      measure = null
+      if @incomplete_end? && s.incomplete_start?
+        measure = new Measure()
+        measure.pitch = tmp.pitch.concat(s.data[0].pitch)
+        measure.dur = tmp.dur.concat(s.data[0].dur)
+        if s.data[0].tie? && s.data[0].tie == true
+          measure.tie = s.data[0].tie
+        s.data.shift()
+      else
+        measure = tmp.copy()
+      ret.data.push measure
+
+    ret.data = ret.data.concat(s.data)
+    condCopy(s, ret, ['incomplete_end'])
+
+    return ret
+
+
+  cadence: (key)->
+    last_measure = @last()
+    last_measure.dur.sort()
+    tonic = MG.key_class[key]
+    last_note = last_measure.last()
+    adjust = (tonic - (last_note[1] % 12)) %% 12
+    if adjust > 6
+      adjust -= 12
+    last_note[1] += adjust
+    console.log adjust, 'adjust->', last_note
+    if last_measure.len() > 1
+      pre_note = last_measure.note(last_measure.len() - 2)
+
+      #console.log 'pre_note', pre_note
+      if last_note[1] - pre_note[1] >= 12
+        last_note[1] -= 12;
+      if last_note[1] == pre_note[1]
+        #console.log 'may merge last two notes', last_note
+        return
+    last_measure.setNote(last_measure.len() - 1, last_note)
+  toScore: ()->
+    @data.map (measure)->
+      ret = _.zip(measure.dur, measure.pitch)
+      if measure.tie? && measure.tie = true
+        ret[ret.length - 1].push(true)
+      ret
+
+
+###
+  score object, with tracks and settings
+###
 class @ScoreObj
   constructor: (options, contents) ->
     options ?= {}
@@ -48,7 +265,7 @@ class @ScoreObj
       @harmony = harmony
       @tracks[1] = texture
     else
-      @harmony = @parseHarmony(harmony, @ctrl_per_beat * @time_sig[0])
+      @harmony = MG.parseHarmony(harmony, @key_sig, @ctrl_per_beat * @time_sig[0])
       options = @getSettings()
       options.harmony = @harmony
       @tracks[1] = @parseMelody(texture, options)
@@ -96,41 +313,7 @@ class @ScoreObj
 
     tatum = options.ctrl_per_beat * options.time_sig[0]
     refc = null
-    chorder = (()->
-      m_i = 0
-      b_i = -1
-      delta = 0
-      bass = (inv)->
-        curchord = harmony[m_i][b_i]
-        return (curchord[1] + curchord[2][inv]) % 12
-      incr = ()->
-        b_i++
-        if b_i >= harmony[m_i].length
-          b_i = 0
-          m_i++
-          if m_i >= harmony.length
-            m_i = harmony.length - 1
-        delta -= harmony[m_i][b_i][0]
-
-        return delta
-
-      chord = (inv) ->
-        return MG.inverted(harmony[m_i][b_i][2],inv)
-      forward = (d)->
-        delta += d
-
-      process = ()->
-        while m_i < harmony.length && delta >= 0
-          incr()
-
-      return {
-        bass: bass,
-        chord: chord,
-        process: process,
-        forward: forward
-      }
-
-    )()
+    chorder = MG.harmony_progresser(harmony)
     # do something
     # 1 set up states
     scale ?= MG.scale_class['maj']
@@ -142,7 +325,7 @@ class @ScoreObj
     ref = init_ref
     # 2 iterate obj.data
     res = obj.data.map (m,i)=>
-      console.log 'parse measure', i
+      #console.log 'parse measure', i
       measure = []
       dur_tot = 0
 
@@ -217,27 +400,6 @@ class @ScoreObj
       tempi: tempo_map
     }
     return res
-
-  parseHarmony: (measures, tatum) ->
-    if typeof measures == 'undefined'
-      console.log 'empty harmony'
-      return
-    key_sig = @key_sig
-    measures.map (e) ->
-      durs = []
-      ret = e.trim().split(/\s+/).map (e2) ->
-        terms = e2.split(',')
-        chord_info = MG.getChords(terms[0],3,key_sig)
-        dur =  if terms.length>=2 then parseInt(terms[1]) else 1
-        durs.push dur
-        [dur,chord_info[0],chord_info[1]]
-      if tatum?
-        r = tatum / math.sum(durs)
-        durs = []
-        ret.forEach (ee,ii)->
-          durs.push(ret[ii][0] = Math.floor(ee[0] * r))
-        ret[ret.length - 1][0] += (tatum - math.sum(durs))
-      ret
 
 
 

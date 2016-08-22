@@ -37,7 +37,7 @@ module.exports = function(grunt){
                 separator: ';'
             },
             gen: {
-                src: ['coffee/musical.js', 'js/parser.js', 'js/schema_parser.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js'],
+                src: ['js/parser.js', 'js/schema_parser.js', 'coffee/musical.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js'],
                 dest: 'js/gen-build.js'
             },
             midijs_plus: {

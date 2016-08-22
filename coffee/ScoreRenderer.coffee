@@ -133,8 +133,11 @@ class @ScoreRenderer
       last = @measures.length
     ctx = @ctx
     for i in [start...last] by 1
-
       e = @measures[i]
+      #Format and justify the notes
+      formatter = new Vex.Flow.Formatter().
+        joinVoices(e.voices).
+        format(e.voices, e.w)
       e.stave.setContext(ctx).draw()
       e.voices.forEach (v) -> v.draw(ctx, e.stave)
       e.beams.forEach (v)-> v.setContext(ctx).draw()
@@ -169,17 +172,21 @@ class @ScoreRenderer
     console.log 'info', melody.info
     #console.log melody
     for  i in [0...melody.length] by 1
-      console.log 'render measure', i
+      #console.log 'render measure', i
 
 
       stave = this.newStave(i)
+      add_key_sig = false
       w = @geo.system_width // @layout.measure_per_system
       if melody.info.key_sigs[i]?
         key_sig = melody.info.key_sigs[i]
         sharp = MG.key_sig[key_sig] >= 0
         toScale = MG.pitchToScale(s.scale, key_sig)
-        @geo.reserved_width = 28 + 6 * Math.abs(MG.key_sig[key_sig])
         console.log 'key_sig change', key_sig
+        add_key_sig = true
+
+      if add_key_sig || i % @layout.measure_per_system == 0
+        @geo.reserved_width = 28 + 6 * Math.abs(MG.key_sig[key_sig])
         stave.addKeySignature(key_sig)
         w -= @geo.reserved_width
 
@@ -281,8 +288,6 @@ class @ScoreRenderer
       }
       #voice.setStrict(true)
 
-
-
       # Add notes to voice
       try
         voice.addTickables(notes)
@@ -298,11 +303,7 @@ class @ScoreRenderer
       if i % @layout.measure_per_system == 0
         w -= 20 # minus space for clef
 
-      #Format and justify the notes
-      formatter = new Vex.Flow.Formatter().
-        joinVoices([voice]).
-        format([voice], w - 10)
-      @measures.push {voices:[voice],stave:stave, beams:beams, ties:ties}
+      @measures.push {w: w - 10, voices:[voice],stave:stave, beams:beams, ties:ties}
 
     @numPage = Math.ceil(@measures.length / @layout.measure_per_system / @layout.system_per_page)
     @UI.page_count.html(@numPage)
