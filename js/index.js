@@ -341,8 +341,8 @@ var click_event_list = {
 	},
 	'export': function(){
 		var ext = JSON.stringify(app.export());
-		var file = new File([ext],'sample.json',{type:"application/json"});
-		saveAs(file);
+		var blob = new Blob([ext],{type:"application/json"});
+		saveAs(blob, 'sample.json');
 		$.notify('JSON exported!', 'success');
 
 	},

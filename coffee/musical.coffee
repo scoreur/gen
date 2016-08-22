@@ -605,6 +605,18 @@ MG.condCopy = (src, dest, props)->
       dest[i] = src[i]
   return
 
+MG.obj_sort = (data, decending, map)->
+  decending ?= false
+  map ?= (e)->e
+  kv = _.zip(_.keys(data), _.values(data))
+  if decending
+    kv.sort (a, b) ->
+      map(b[1]) - map(a[1])
+  else
+    kv.sort (a, b) ->
+      map(a[1]) - map(b[1])
+  kv
+  
 # reproducable random number generator
 _seed = 6
 MG.seededRandom = (max, min) ->
@@ -861,6 +873,7 @@ MG.parseMelody = (m, options)->
     tempi: tempo_map
   }
   return res
+
 
 
 @MG = MG

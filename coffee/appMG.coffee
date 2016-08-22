@@ -79,7 +79,9 @@ class seqPlayer
     return
 
   # to note sequence, array of [dur, [pitches], vol] (single voice)
+  # TODO: consider tempo change
   toQ: (arr, ctrlTicks, vol) ->
+    info = arr.info ? {}
     vol ?= 110
     m = _.flatten(arr, true)
     res = []
@@ -99,7 +101,7 @@ class seqPlayer
   # pause track n
   pause: (n) ->
     n ?= 0
-    if n >= @tracks.length
+    if n >= @tracks.length || n < 0
       return
     @playing[n] = false
     return
@@ -116,23 +118,19 @@ class seqPlayer
   fromScore: (obj) ->
 
     ctrlTicks = obj.init_ctrlTicks
-
-    q = @toQ(obj.tracks[0], ctrlTicks, obj.volumes[0])
-    t = @toQ(obj.tracks[1], ctrlTicks, obj.volumes[1])
     @tracks = []
-    @instrs = obj.instrs
-    @tracks.push q, t
-    @playing = [
-      false
-      false
-    ]
-    @cur_i = [
-      0
-      0
-    ]
+    @instrs = MG.clone(obj.instrs)
+    @playing = []
+    @cur_i = []
     @harmony = obj.harmony
     @midi = obj.toMidi()
     @raw_midi = MidiWriter(@midi)
+
+    for i in [0...obj.tracks.length] by 1
+      @tracks.push @toQ(obj.tracks[i], ctrlTicks, obj.volumes[i])
+      @playing.push false
+      @cur_i.push 0
+
     return
   saveMidi: ->
     if @raw_midi.length < 1
@@ -140,7 +138,7 @@ class seqPlayer
     bf = new Uint8Array(@raw_midi.split('').map((e) ->
       e.charCodeAt 0
     ))
-    saveAs new File([ bf ], 'sample.mid', type: 'audio/midi')
+    saveAs new Blob([ bf ], type: 'audio/midi'), 'sample.mid'
     return
 
 class Analyzer
@@ -170,11 +168,7 @@ class Analyzer
     return info
 
 obj_sort = (data) ->
-  kv = _.zip(_.keys(data), _.values(data))
-  kv.sort (a, b) ->
-    b[1] - (a[1])
-  # decending
-  kv
+  MG.obj_sort(data, true)
 
 MG.midi_statistics = midi_statistics = (obj) ->
   info =
@@ -223,10 +217,10 @@ MG.midi_statistics = midi_statistics = (obj) ->
       ++i
     return
   info =
-    rhythm: obj_sort(info.rhythm)
+    rhythm: MG.obj_sort(info.rhythm, true)
     melody:
-      one: obj_sort(one)
-      two: obj_sort(two)
+      one: MG.obj_sort(one, true)
+      two: MG.obj_sort(two, true)
       n: [
         0
         n_one
@@ -239,7 +233,6 @@ MG.midi_statistics = midi_statistics = (obj) ->
 
 class @AppMG
   constructor: (@ui, options) ->
-
     tracks_container = $(@ui.tracks_container)
     options_container = $(@ui.options_container)
     @tracks_tabs = tracks_container.children('.nav-tabs')
@@ -382,7 +375,7 @@ class @AppMG
     generator = new Generator(@settings, @schema);
     generator.generate();
     score = generator.toScoreObj()
-    console.log('to Text')
+    # console.log('to Text')
     @contents.melody = score.toText();
     @contents.harmony = score.harmony_text
     @updateEditor();
@@ -447,7 +440,7 @@ class @AppMG
     @editor.melody.setValue(@obj.toText().join('\n'), -1);
     #@renderer.render(@obj)
     info =  tracks.map (e)-> e.info
-    console.log info
+    #console.log info
     MG.ref_midi_info = info[0]
     return info
 
