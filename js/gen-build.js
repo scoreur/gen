@@ -1758,32 +1758,66 @@ if (typeof module !== 'undefined' && require.main === module) {
     "add11": [0, 4, 5, 7]
   };
 
+  MG.chord_class_label = {
+    "maj": "Major triad",
+    "min": "Minor triad",
+    "aug": "Augmented triad",
+    "dim": "Diminished triad",
+    "dom7": "Dominant seventh chord",
+    "maj7": "Major seventh chord",
+    "min7": "Minor seventh chord",
+    "aug7": "Augmented seventh chord",
+    "dim7": "Diminished seventh chord",
+    "min7b5": "Half diminished chord",
+    "min7#": "Minor seventh shart fifth chord",
+    "sus2": "Suspended second chord",
+    "sus4": "Suspended fourth chord",
+    "add9": "Add ninth chord",
+    "add11": "Add eleventh chord"
+  };
+
   MG.inverted = function(arr, n) {
-    var i, m, ref2, ret;
+    var i, q, ref2, ret;
     if (n == null) {
       n = 1;
     }
     n = modulo(n, arr.length);
     ret = new Array(arr.length);
-    for (i = m = 0, ref2 = arr.length; m < ref2; i = m += 1) {
+    for (i = q = 0, ref2 = arr.length; q < ref2; i = q += 1) {
       ret[i] = modulo(arr[(n + i) % arr.length] - arr[n], 12);
     }
     return ret;
   };
 
   MG.chords = (function() {
-    var c, ci, i, m, ref2, ref3, res, v;
+    var c, ci, i, q, ref2, ref3, res, v;
     res = {};
     ref2 = MG.chord_class;
     for (c in ref2) {
       v = ref2[c];
       ci = c + '';
-      for (i = m = 0, ref3 = v.length; m < ref3; i = m += 1) {
+      for (i = q = 0, ref3 = v.length; q < ref3; i = q += 1) {
         res[ci] = MG.inverted(v, i);
         ci += 'i';
       }
     }
     return res;
+  })();
+
+  MG.chord_finder = (function() {
+    var k, ref2, ret, v;
+    ret = {};
+    ref2 = MG.chords;
+    for (k in ref2) {
+      v = ref2[k];
+      if (v.toString() in ret) {
+
+      } else {
+        ret[v.toString()] = k;
+      }
+    }
+    ret[[0, 5, 7].toString()] = 'sus4';
+    return ret;
   })();
 
   MG.interval_class = {
@@ -1856,11 +1890,11 @@ if (typeof module !== 'undefined' && require.main === module) {
     scale = (ref2 = MG.scale_class[mode]) != null ? ref2 : MG.scale_class['maj'];
     ref = (ref3 = MG.key_class[tonic]) != null ? ref3 : 0;
     return function(pitch) {
-      var i, m, oct, ref4;
+      var i, oct, q, ref4;
       pitch -= ref;
       oct = Math.floor(pitch / 12) - 1;
       pitch = modulo(pitch, 12);
-      for (i = m = ref4 = scale.length - 1; m >= 0; i = m += -1) {
+      for (i = q = ref4 = scale.length - 1; q >= 0; i = q += -1) {
         if (pitch >= scale[i]) {
           return [i, oct, pitch - scale[i]];
         }
@@ -1870,7 +1904,7 @@ if (typeof module !== 'undefined' && require.main === module) {
   };
 
   MG.testPitchScaleConversion = function() {
-    var flag, i, j, m, mode, ref2, scale, tmp, toPitch, toScale, tonic;
+    var flag, i, j, mode, q, ref2, scale, tmp, toPitch, toScale, tonic;
     ref2 = MG.scale_class;
     for (scale in ref2) {
       mode = ref2[scale];
@@ -1878,7 +1912,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       for (tonic in MG.key_class) {
         toPitch = MG.scaleToPitch(scale, tonic);
         toScale = MG.pitchToScale(scale, tonic);
-        for (i = m = 21; m <= 108; i = ++m) {
+        for (i = q = 21; q <= 108; i = ++q) {
           tmp = toScale(i);
           j = toPitch(tmp[0] + mode.length * tmp[1]) + tmp[2];
           if (j !== i) {
@@ -1923,9 +1957,9 @@ if (typeof module !== 'undefined' && require.main === module) {
   };
 
   MG.testPitchKeyConversion = function() {
-    var flag, i, j, m, tmp;
+    var flag, i, j, q, tmp;
     flag = true;
-    for (i = m = 21; m <= 108; i = ++m) {
+    for (i = q = 21; q <= 108; i = ++q) {
       tmp = MG.pitchToKey(i, true);
       j = MG.keyToPitch(tmp[0] + tmp[1]);
       if (j !== i) {
@@ -2029,10 +2063,10 @@ if (typeof module !== 'undefined' && require.main === module) {
   MG.key_sig_rev = {};
 
   MG.key_sig = (function() {
-    var i, j, kn, l, m, res;
+    var i, j, kn, l, q, res;
     kn = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
     res = {};
-    for (i = m = 0; m < 12; i = m += 1) {
+    for (i = q = 0; q < 12; i = q += 1) {
       j = (i * 7) % 12;
       l = (i + 6) % 12 - 6;
       res[kn[j]] = l;
@@ -2066,13 +2100,13 @@ if (typeof module !== 'undefined' && require.main === module) {
     res['C'] = "CDEFGAB".split("");
     ref = MG.scale_class['maj'];
     kn.forEach(function(e, i) {
-      var j, k, m, notes, pitch, ref2, results, v;
+      var j, k, notes, pitch, q, ref2, results, v;
       if (e === 'C') {
         return;
       }
       res[e] = [e];
       results = [];
-      for (j = m = 1, ref2 = ref.length; m < ref2; j = m += 1) {
+      for (j = q = 1, ref2 = ref.length; q < ref2; j = q += 1) {
         pitch = (i + ref[j]) % 12;
         notes = MG.keyNames[pitch];
         results.push((function() {
@@ -2095,18 +2129,6 @@ if (typeof module !== 'undefined' && require.main === module) {
     return res;
   })();
 
-  MG.chord_class_label = {
-    "maj": "Major triad",
-    "min": "Minor triad",
-    "aug": "Augmented triad",
-    "dim": "Diminished triad",
-    "dom7": "Dominant seventh chord",
-    "maj7": "Major seventh chord",
-    "min7": "Minor seventh chord",
-    "aug7": "Augmented seventh chord",
-    "dim7": "Diminished seventh chord"
-  };
-
 
   /*
       sample data
@@ -2125,7 +2147,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     contents: {
       melody: ':+ 0,2 3 1/3,1^/3,2 2 1 2 3 1,2/:- 6 3,1^/3,2 :+ 3 1/2 2,7^/2,2 1 6- 1 6- 1,2/:- 7,1^/7,4 0 :+ 3,2 1/3 3,2 3,1^ 3,4^/3,2 2 1 2 3 1,2/:- 6 3,1^/3,3 3/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6,1^/6,2 :+ 3 1'.split('/'),
       harmony: "E7/Amin/Bb7/Amin E7/Amin A7/Dmin/F7/F#min7 B7/E7/Am/Bb7/Am/D7/C Am/D7 E7/Am D7/Bm7 E7".split('/'),
-      texture: "@-123 0,32 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@iii-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32".split('/')
+      texture: "@-123 0 123/@-11-32+ 12 3 4 3/@iii-11-32+ 12 3 4 3/@-123 123 @-123 123/@-123 123 @-123 123/@-11-32+ 12 3 4 3/@-11-32+ 12 3 4 3/@-123 123 123/@-11-32+ 12 3 4 3/@-123 123 123/@-123 123 123/@-123 123 123/@-123 123 123/@-123 123 @-123 123/@-123 123 @-123 123/@-123 123 @-123 123/@-123 123 @-123 123".split('/')
     }
   };
 
@@ -2136,10 +2158,12 @@ if (typeof module !== 'undefined' && require.main === module) {
       structure: "c/A/B/Br/A/C/c".split('/'),
       node: {
         'c': {
-          mode: 'chord',
+          mode: 'random',
           dur: 4 * 8,
           incomplete_start: 32,
-          chords: ["E7,32"],
+          chord_tone: 4,
+          scale_tone: [2, 1, 1, 0.5, 2, 1, 0.5],
+          chords: ["E7"],
           rhythm: {
             seed: 's1',
             swarp: 0.5
@@ -2150,9 +2174,11 @@ if (typeof module !== 'undefined' && require.main === module) {
           }
         },
         'A': {
-          mode: 'chord',
+          mode: 'random',
           dur: 32 * 8,
-          chords: ["Amin,64", "Bb7,64", "Amin,32 E7,32", "Amin,32 A7,32"],
+          chord_tone: 4,
+          chromatic_tone: 0.5,
+          chords: ["Amin", "Bb7", "Amin E7", "Amin A7"],
           rhythm: {
             seed: 's1',
             swarp: 0.5
@@ -2181,15 +2207,16 @@ if (typeof module !== 'undefined' && require.main === module) {
           action: {
             'B': {
               mode: 'reverse',
-              deep: false
+              deep: true
             }
           }
         },
         'C': {
-          mode: 'chord',
+          mode: 'random',
           dur: 28 * 8,
           incomplete_end: 32,
-          chords: "C,32 Am,32/D7,32 E7,32/Am,32 D7,32/Bm7,32".split('/'),
+          chord_tone: 4,
+          chords: "C Am/D7 E7/Am D7/Bm7".split('/'),
           rhythm: {
             seed: 's1',
             swarp: 0.5
@@ -2223,6 +2250,12 @@ if (typeof module !== 'undefined' && require.main === module) {
       })()
     }
   };
+
+  MG.score_dance = {
+    key_sig: 'C'
+  };
+
+  MG.schema_dance = 'S';
 
 
   /*
@@ -2333,21 +2366,54 @@ if (typeof module !== 'undefined' && require.main === module) {
   };
 
   MG.gcd = function() {
-    var i, m, ref2, ret;
+    var i, q, ref2, ret;
     ret = gcd(arguments[0], arguments[1]);
-    for (i = m = 2, ref2 = arguments.length; m < ref2; i = m += 1) {
+    for (i = q = 2, ref2 = arguments.length; q < ref2; i = q += 1) {
       ret = gcd(ret, arguments[i]);
     }
     return ret;
   };
 
   MG.lcm = function() {
-    var i, m, ref2, ret;
+    var i, q, ref2, ret;
     ret = lcm(arguments[0], arguments[1]);
-    for (i = m = 2, ref2 = arguments.length; m < ref2; i = m += 1) {
+    for (i = q = 2, ref2 = arguments.length; q < ref2; i = q += 1) {
       ret = lcm(ret, arguments[i]);
     }
     return ret;
+  };
+
+  MG.condCopy = function(src, dest, props) {
+    var i, len, q;
+    for (q = 0, len = props.length; q < len; q++) {
+      i = props[q];
+      if (src[i] != null) {
+        dest[i] = src[i];
+      }
+    }
+  };
+
+  MG.obj_sort = function(data, decending, map) {
+    var kv;
+    if (decending == null) {
+      decending = false;
+    }
+    if (map == null) {
+      map = function(e) {
+        return e;
+      };
+    }
+    kv = _.zip(_.keys(data), _.values(data));
+    if (decending) {
+      kv.sort(function(a, b) {
+        return map(b[1]) - map(a[1]);
+      });
+    } else {
+      kv.sort(function(a, b) {
+        return map(a[1]) - map(b[1]);
+      });
+    }
+    return kv;
   };
 
   _seed = 6;
@@ -2360,6 +2426,11 @@ if (typeof module !== 'undefined' && require.main === module) {
     rnd = _seed / 233280;
     return min + rnd * (max - min);
   };
+
+
+  /*
+    parsers
+   */
 
   MG.parseHarmony = function(measures, key_sig, tatum) {
     if (typeof measures === 'undefined') {
@@ -2391,6 +2462,9 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   MG.harmony_progresser = function(harmony) {
     var b_i, bass, chord, delta, forward, incr, m_i, process;
+    if (harmony == null) {
+      harmony = [];
+    }
     m_i = 0;
     b_i = -1;
     delta = 0;
@@ -2439,14 +2513,14 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
   };
 
-  MG.score_parser = (ref2 = this.score_parser) != null ? ref2 : require('./js/parser');
+  MG.score_parser = (ref2 = this.score_parser) != null ? ref2 : require('./js/score_parser');
 
   MG.schema_parser = (ref3 = this.schema_parser) != null ? ref3 : require('./js/schema_parser');
 
   MG.schema_parser.produce = function(obj) {
     var indent, produce, produceVar;
     produceVar = function(o, indent) {
-      var k, len, m, ret, tmp, v;
+      var k, len, q, ret, tmp, v;
       if (indent == null) {
         indent = '';
       }
@@ -2455,8 +2529,8 @@ if (typeof module !== 'undefined' && require.main === module) {
       if (Array.isArray(o)) {
         ret += '[\n';
         indent += '  ';
-        for (m = 0, len = o.length; m < len; m++) {
-          k = o[m];
+        for (q = 0, len = o.length; q < len; q++) {
+          k = o[q];
           tmp.push(indent + produceVar(k, indent));
         }
         ret += tmp.join(',\n');
@@ -2522,6 +2596,183 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
     indent = '';
     return produce(obj, indent);
+  };
+
+  MG.parseMelody = function(m, options) {
+    var chorder, e, error, harmony, init_ref, key_sig_map, obj, ornamental, ref, refc, res, scale, tatum, tempo_map, time_sig_map;
+    try {
+      obj = MG.score_parser.parse(m.join('\n') + '\n');
+    } catch (error) {
+      e = error;
+      $.notify('parsing error!', 'warning');
+      console.log(e.message);
+      return;
+    }
+    ornamental = function(pitch, ref, scale) {
+      var p;
+      p = typeof pitch === 'number' ? pitch : pitch.original;
+      if (p > scale.length) {
+        console.log('exceed scale length');
+        p = scale.length;
+      } else if (p === 0) {
+        return 0;
+      }
+      p = ref + scale[p - 1];
+      if (typeof pitch !== 'number') {
+        pitch.ornament.forEach(function(e) {
+          if (typeof e === 'number') {
+            return p += e;
+          }
+        });
+      }
+      return p;
+    };
+    switch (obj.mode) {
+      case 'melody':
+        scale = options.scale, init_ref = options.init_ref, harmony = options.harmony;
+        break;
+      case 'harmony':
+        harmony = options.harmony;
+    }
+    tatum = options.ctrl_per_beat * options.time_sig[0];
+    refc = null;
+    chorder = MG.harmony_progresser(harmony);
+    if (scale == null) {
+      scale = MG.scale_class['maj'];
+    }
+    tempo_map = {
+      0: options.tempo
+    };
+    key_sig_map = {
+      0: options.key_sig
+    };
+    time_sig_map = {
+      0: options.time_sig
+    };
+    if (init_ref == null) {
+      init_ref = 60;
+    }
+    ref = init_ref;
+    res = obj.data.map(function(m, i) {
+      var dur_tot, durs, measure, r;
+      measure = [];
+      dur_tot = 0;
+      durs = [];
+      m.forEach(function(e) {
+        if (e.ctrl == null) {
+          if (typeof e.dur === 'number') {
+            dur_tot += e.dur;
+            return durs.push(e.dur);
+          } else {
+            dur_tot += e.dur.original;
+            return durs.push(e.dur.original);
+          }
+        }
+      });
+      if (tatum != null) {
+        r = Math.floor(tatum / dur_tot);
+        dur_tot = 0;
+        m.forEach(function(e) {
+          if (e.ctrl == null) {
+            if (typeof e.dur === 'number') {
+              e.dur *= r;
+              return dur_tot += e.dur;
+            } else {
+              e.dur.original *= r;
+              return dur_tot += e.dur.original;
+            }
+          }
+        });
+      }
+      m.forEach(function(e) {
+        var bass, chord, k, pitches, results, v;
+        if (e.ctrl != null) {
+          switch (e.ctrl) {
+            case 'reset':
+              return ref = init_ref;
+            case 'normal':
+            case 'repeat_start':
+              results = [];
+              for (k in e) {
+                v = e[k];
+                switch (k) {
+                  case 't':
+                    time_sig_map[i] = v;
+                    results.push(tatum = options.ctrl_per_beat * v[0]);
+                    break;
+                  case 's':
+                    results.push(scale = MG.scale_class[v]);
+                    break;
+                  case 'k':
+                    key_sig_map[i] = v;
+                    results.push(ref = init_ref = MG.keyToPitch(v + 4));
+                    break;
+                  case 'r':
+                    results.push(tempo_map[i] = v);
+                    break;
+                  case 'v':
+                    results.push(1);
+                    break;
+                  case 'o':
+                    results.push(1);
+                    break;
+                  case 'i':
+                    results.push(1);
+                    break;
+                  case 'p':
+                    results.push(ref += v);
+                    break;
+                  default:
+                    results.push(void 0);
+                }
+              }
+              return results;
+              break;
+            case 'chord':
+              ref = MG.keyToPitch('C3');
+              chorder.process();
+              bass = chorder.bass(e.inv);
+              chord = chorder.chord(e.inv);
+              ref += e.transpose;
+              bass += ref;
+              return refc = e.pitch.map(function(p) {
+                return ornamental(p, bass, chord);
+              });
+          }
+        } else {
+          pitches = [];
+          e.pitch.forEach(function(p) {
+            if (typeof p === 'string') {
+
+            } else if (refc != null) {
+              if (refc[p - 1] != null) {
+                return pitches.push(refc[p - 1]);
+              }
+            } else {
+              return pitches.push(ornamental(p, ref, scale));
+            }
+          });
+          if (typeof e.dur === 'number') {
+            measure.push([e.dur, pitches]);
+            return chorder.forward(e.dur);
+          } else {
+            measure.push([e.dur.original, pitches, true]);
+            return chorder.forward(e.dur.original);
+          }
+        }
+      });
+      if ((tatum != null) && dur_tot < tatum) {
+        console.log('not enough');
+        measure[measure.length - 1][0] += tatum - dur_tot;
+      }
+      return measure;
+    });
+    res.info = {
+      time_sigs: time_sig_map,
+      key_sigs: key_sig_map,
+      tempi: tempo_map
+    };
+    return res;
   };
 
   this.MG = MG;
@@ -2628,7 +2879,8 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     seqPlayer.prototype.toQ = function(arr, ctrlTicks, vol) {
-      var delta, j, m, res;
+      var delta, info, j, m, ref, res;
+      info = (ref = arr.info) != null ? ref : {};
       if (vol == null) {
         vol = 110;
       }
@@ -2651,7 +2903,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       if (n == null) {
         n = 0;
       }
-      if (n >= this.tracks.length) {
+      if (n >= this.tracks.length || n < 0) {
         return;
       }
       this.playing[n] = false;
@@ -2669,18 +2921,20 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     seqPlayer.prototype.fromScore = function(obj) {
-      var ctrlTicks, q, t;
+      var ctrlTicks, i, k, ref;
       ctrlTicks = obj.init_ctrlTicks;
-      q = this.toQ(obj.tracks[0], ctrlTicks, obj.volumes[0]);
-      t = this.toQ(obj.tracks[1], ctrlTicks, obj.volumes[1]);
       this.tracks = [];
-      this.instrs = obj.instrs;
-      this.tracks.push(q, t);
-      this.playing = [false, false];
-      this.cur_i = [0, 0];
+      this.instrs = MG.clone(obj.instrs);
+      this.playing = [];
+      this.cur_i = [];
       this.harmony = obj.harmony;
       this.midi = obj.toMidi();
       this.raw_midi = MidiWriter(this.midi);
+      for (i = k = 0, ref = obj.tracks.length; k < ref; i = k += 1) {
+        this.tracks.push(this.toQ(obj.tracks[i], ctrlTicks, obj.volumes[i]));
+        this.playing.push(false);
+        this.cur_i.push(0);
+      }
     };
 
     seqPlayer.prototype.saveMidi = function() {
@@ -2691,9 +2945,9 @@ if (typeof module !== 'undefined' && require.main === module) {
       bf = new Uint8Array(this.raw_midi.split('').map(function(e) {
         return e.charCodeAt(0);
       }));
-      saveAs(new File([bf], 'sample.mid', {
+      saveAs(new Blob([bf], {
         type: 'audio/midi'
-      }));
+      }), 'sample.mid');
     };
 
     return seqPlayer;
@@ -2745,12 +2999,7 @@ if (typeof module !== 'undefined' && require.main === module) {
   })();
 
   obj_sort = function(data) {
-    var kv;
-    kv = _.zip(_.keys(data), _.values(data));
-    kv.sort(function(a, b) {
-      return b[1] - a[1];
-    });
-    return kv;
+    return MG.obj_sort(data, true);
   };
 
   MG.midi_statistics = midi_statistics = function(obj) {
@@ -2795,10 +3044,10 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
     });
     return info = {
-      rhythm: obj_sort(info.rhythm),
+      rhythm: MG.obj_sort(info.rhythm, true),
       melody: {
-        one: obj_sort(one),
-        two: obj_sort(two),
+        one: MG.obj_sort(one, true),
+        two: MG.obj_sort(two, true),
         n: [0, n_one, n_two]
       },
       range: info.range
@@ -2979,8 +3228,8 @@ if (typeof module !== 'undefined' && require.main === module) {
       generator = new Generator(this.settings, this.schema);
       generator.generate();
       score = generator.toScoreObj();
-      console.log('to Text');
       this.contents.melody = score.toText();
+      this.contents.harmony = score.harmony_text;
       return this.updateEditor();
     };
 
@@ -3040,7 +3289,6 @@ if (typeof module !== 'undefined' && require.main === module) {
       info = tracks.map(function(e) {
         return e.info;
       });
-      console.log(info);
       MG.ref_midi_info = info[0];
       return info;
     };
@@ -3107,11 +3355,14 @@ if (typeof module !== 'undefined' && require.main === module) {
       if (variable.mode != null) {
         switch (variable.mode) {
           case 'chord':
-            return this.gen_chord(variable);
+            console.log('DEPRECATED!!');
+            return this.gen_random(variable);
           case 'random':
             return this.gen_random(variable);
           case 'distribution':
             return variable;
+          case 'exact':
+            return this.gen_exact(variable);
         }
       }
       if (variable.node == null) {
@@ -3164,6 +3415,12 @@ if (typeof module !== 'undefined' && require.main === module) {
                   break;
                 case 'reverse':
                   tmp = _this.act_reverse(options, tmp);
+                  break;
+                case 'dim':
+                  tmp = _this.act_dim(options, tmp);
+                  break;
+                case 'aug':
+                  tmp = _this.act_aug(options, tmp);
               }
             }
             ret = ret.join(tmp, {
@@ -3179,51 +3436,15 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     Generator.prototype.generate = function() {
-      var first_measure, first_note, i, l, last_measure, last_note, ref1, res, res_eval, sec;
+      var res, res_eval, sec;
       sec = this.settings.ctrl_per_beat * this.settings.time_sig[0];
       res_eval = [];
       this.snippet = this.produce(this.schema.S);
       this.snippet.cadence(this.settings.key_sig);
       console.log(this.snippet);
-      this.res2 = this.snippet.toScore();
-      console.log('produce', this.res2);
+      this.res2 = this.snippet.toScore(this.settings.key_sig);
+      console.log(this.res2);
       res = this.res2;
-      for (i = l = 1, ref1 = res.length; l < ref1; i = l += 1) {
-        last_measure = res[i - 1][res[i - 1].length - 1];
-        first_measure = res[i][0];
-        last_note = last_measure[last_measure.length - 1][1];
-        first_note = first_measure[0][1];
-      }
-
-      /* cadence
-      last_block = res[res.length-1]
-      last_measure = last_block[last_block.length-1].slice()
-      
-      last_measure.sort (a,b)->
-        a[0] - b[0]
-      tonic = MG.key_class[@settings.key_sig]
-      last_note = last_measure[last_measure.length-1][1]
-      if typeof last_note == 'object'
-        last_note = last_note[0]
-      adjust = (tonic - (last_note % 12)) %% 12
-      last_note += adjust
-      console.log adjust, 'adjust', last_note, 'last_note'
-      
-      if last_measure.length > 1
-        pre_note = last_measure[last_measure.length - 2][1]
-        if typeof pre_note == 'object'
-          pre_note = pre_note[0]
-        #console.log 'pre_note', pre_note
-        if last_note - pre_note >= 12
-          last_note -= 12;
-        if last_note == pre_note
-          #console.log 'may merge last two notes', last_note
-          return
-      
-      last_measure[last_measure.length - 1][1] = last_note
-      
-      last_block[last_block.length - 1] = last_measure
-       */
       return res;
     };
 
@@ -3264,7 +3485,6 @@ if (typeof module !== 'undefined' && require.main === module) {
       dur = options.dur;
       res = new Snippet();
       src = acted.data;
-      console.log(src);
       transpose = MG.transposer(options.scale, this.settings.key_sig);
       interval = options.interval;
       if (typeof interval === 'number') {
@@ -3279,6 +3499,10 @@ if (typeof module !== 'undefined' && require.main === module) {
           console.log('shift to next interval');
         }
         tmp = new Measure(src[0].time_sig, src[0].tatum);
+        tmp.harmony = MG.clone(src[refd].harmony);
+        tmp.harmony.forEach(function(e) {
+          return e[1] = transpose(e[1], interval[cur_i]);
+        });
         src[refd].dur.forEach(function(e, i) {
           if (dur - e >= 0) {
             tmp.dur.push(e);
@@ -3290,8 +3514,8 @@ if (typeof module !== 'undefined' && require.main === module) {
             dur = 0;
           }
         });
-        refd++;
         res.data.push(tmp);
+        refd++;
       }
       console.log(acted, 'transpose-> ', res);
       return res;
@@ -3303,7 +3527,10 @@ if (typeof module !== 'undefined' && require.main === module) {
       if ((options.deep != null) && options.deep === true) {
         res.data.reverse().forEach(function(arr) {
           arr.pitch.reverse();
-          return arr.dur.reverse();
+          arr.dur.reverse();
+          if (arr.harmony != null) {
+            return arr.harmony.reverse();
+          }
         });
       } else {
         res.data.reverse();
@@ -3318,86 +3545,15 @@ if (typeof module !== 'undefined' && require.main === module) {
 
     Generator.prototype.gen_exact = function(options) {
       var res;
-      return res = {
-        dur: options.dur,
-        pitch: options.pitch
-      };
+      return res = MG.parseMelody(options.score, options);
     };
 
     Generator.prototype.gen_random = function(options) {
-      var choices, dur, i, j, k, n, new_dur, pre, raw_choices, rc1, rc2, res, scale_len, seed, seed2, swarp, tmp, toPitch, toScale, v;
-      console.log('deprecated!!');
-      dur = options.dur;
-      toPitch = this.toPitch;
-      scale_len = this.scale.length;
-      toScale = this.toScale;
-      res = {
-        dur: [],
-        pitch: []
-      };
-      seed = {};
-      if ((options.rhythm.seed != null) && (this.seeds != null)) {
-        seed = this.seeds[options.rhythm.seed];
-      } else {
-        seed.dur = options.rhythm[0];
-        seed.choices = options.rhythm[1];
-        seed.weights = options.rhythm[2];
-      }
-      swarp = options.rhythm.swarp;
-      if (swarp == null) {
-        swarp = 1;
-      }
-      seed2 = {};
-      if ((options.interval.seed != null) && (this.seeds != null)) {
-        seed2 = this.seeds[options.interval.seed];
-      } else {
-        seed2 = options.interval;
-      }
-      n = Math.floor(dur / (seed.dur / swarp));
-      rc1 = rndPicker(seed.choices, seed.weights);
-      pre = scale_len * 4;
-      i = 0;
-      while (i < n) {
-        new_dur = rc1.gen().map(function(d) {
-          return Math.floor(d / swarp);
-        });
-        res.dur.push(new_dur);
-        tmp = [];
-        j = 0;
-        while (j < res.dur[i].length) {
-          raw_choices = newChoices(pre, seed2.choices, seed2.weights);
-          choices = {};
-          for (k in raw_choices) {
-            v = raw_choices[k];
-            if (k >= 0 && k <= scale_len * 8) {
-              k = toPitch(k);
-              if (k < 48 || k > 84) {
-                v /= 2;
-                console.log('less');
-              }
-              choices[k] = v;
-            }
-          }
-          rc2 = rndPicker(_.keys(choices), _.values(choices));
-          pre = parseInt(rc2.gen());
-          tmp.push(pre);
-          pre = toScale(pre);
-          pre = pre[0] + pre[1] * scale_len;
-          ++j;
-        }
-        console.log(tmp);
-        res.pitch.push(tmp);
-        ++i;
-      }
-      return res;
-    };
-
-    Generator.prototype.gen_chord = function(options) {
       var bass, choices, chorder, cur_chord, dur, harmony, i, j, k, n, new_dur, op, pre, pre2, range, range_dist, raw_choices, rc1, rc2, res, scale_len, seed, seed2, swarp, tmp, toPitch, toScale, v;
       dur = options.dur;
       toPitch = this.toPitch;
       toScale = this.toScale;
-      harmony = MG.parseHarmony(options.chords, this.settings.key_sig);
+      harmony = MG.parseHarmony(options.chords, this.settings.key_sig, this.settings.time_sig[0] * this.settings.ctrl_per_beat);
       chorder = MG.harmony_progresser(harmony);
       scale_len = this.scale.length;
       res = {
@@ -3465,12 +3621,16 @@ if (typeof module !== 'undefined' && require.main === module) {
             if (k >= 0 && k <= scale_len * 8) {
               k = toPitch(k);
               v *= range_dist(k);
-              cur_chord.forEach(function(ee, ii) {
-                if (modulo(k - bass, 12) === ee) {
-                  console.log('chord tone');
-                  return v *= 4;
-                }
-              });
+              if (options.chord_tone != null) {
+                cur_chord.forEach(function(ee, ii) {
+                  if (modulo(k - bass, 12) === ee) {
+                    return v *= options.chord_tone;
+                  }
+                });
+              }
+              if (options.scale_tone != null) {
+                console.log('scale tone');
+              }
               choices[k] = v;
             }
           }
@@ -3492,13 +3652,18 @@ if (typeof module !== 'undefined' && require.main === module) {
       if (options.incomplete_start != null) {
         op.incomplete_start = options.incomplete_start;
       }
-      return res = new Snippet(res.pitch, res.dur, op);
+      harmony.forEach(function(e1) {
+        return e1.forEach(function(e) {
+          return e[2] = MG.chord_finder[e[2].toString()] || 'maj';
+        });
+      });
+      return res = new Snippet(res.pitch, res.dur, harmony, op);
     };
 
     Generator.prototype.b2score = function(b, sec) {
       var delta, dur, pitch, ret, tmp;
-      dur = b.dur;
-      pitch = b.pitch;
+      dur = _.flatten(b.dur, true);
+      pitch = _.flatten(b.pitch, true);
       ret = [];
       tmp = [];
       delta = 0;
@@ -3525,11 +3690,14 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     Generator.prototype.toScoreObj = function() {
-      var melody, obj, res;
+      var harmony, melody, obj, res;
       if (_.keys(this.res2).length === 0) {
         this.generate();
       }
       res = this.res2;
+      harmony = this.res2.map(function(e) {
+        return e.harmony;
+      });
       obj = new ScoreObj(this.settings);
       melody = res;
       melody.info = {
@@ -3544,6 +3712,7 @@ if (typeof module !== 'undefined' && require.main === module) {
         }
       };
       obj.setMelody(melody, true);
+      obj.harmony_text = harmony;
       return obj;
     };
 
@@ -3573,66 +3742,6 @@ if (typeof module !== 'undefined' && require.main === module) {
       };
     };
 
-    Generator.prototype.gen_random_new = function(end_pos, states, start, constraint) {
-      var cur, merge, nexts, picker, res, val;
-      res = [];
-      cur = {
-        state: start.state,
-        pos: {
-          start: start.pos,
-          val: start.val
-        }
-      };
-      while (cur.pos < end_pos) {
-        nexts = states[cur.state].choices.map(function(func) {
-          var val, weight;
-          val = func(cur.pos, cur.val);
-          weight = constraint(cur.pos, cur.val, val);
-          return [val, weight];
-        });
-        merge = _.unzip(nexts);
-        picker = rndPicker(merge[0], merge[1]);
-        val = picker.gen();
-        if (cur.pos + val.dur >= end_pos) {
-          val.dur = end_pos - cur.pos;
-        }
-        cur.state = states.transition(cur.pos, val);
-        cur.pos += val.dur;
-        cur.val = val;
-        res.push(val);
-      }
-      return res;
-    };
-
-    Generator.prototype.sample_start = {
-      state: 'start',
-      pos: 0,
-      val: {
-        dur: 2,
-        val: 60,
-        weight: []
-      }
-    };
-
-    Generator.prototype.sample_states = {
-      transition: function(pos, val) {},
-      'start': {
-        choices: function(pos, val) {}
-      },
-      'middle': {
-        choices: function(pos, val) {}
-      },
-      'other': {
-        choices: function(pos, val) {}
-      }
-    };
-
-    Generator.prototype.sample_constraint = function(pos, preval, val) {
-      var weights;
-      weights = [4, 2, 4, 6, 6, 8, 1, 8, 6, 6, 2, 2];
-      return weights[modulo(val.val - preval.val, 12)];
-    };
-
     return Generator;
 
   })();
@@ -3642,26 +3751,16 @@ if (typeof module !== 'undefined' && require.main === module) {
 //# sourceMappingURL=Generator.js.map
 ;// Generated by CoffeeScript 1.10.0
 (function() {
-  var MG, condCopy, parser, ref1,
+  var MG, parser, ref,
     modulo = function(a, b) { return (+a % (b = +b) + b) % b; };
 
-  MG = (ref1 = this.MG) != null ? ref1 : {};
+  MG = (ref = this.MG) != null ? ref : {};
 
   parser = MG.score_parser;
 
-  condCopy = function(src, dest, props) {
-    var i, j, len;
-    for (j = 0, len = props.length; j < len; j++) {
-      i = props[j];
-      if (src[i] != null) {
-        dest[i] = src[i];
-      }
-    }
-  };
-
 
   /*
-    measure with data(pitch, dur) and property
+    measure with data(pitch, dur) and properties
    */
 
   this.Measure = (function() {
@@ -3683,14 +3782,14 @@ if (typeof module !== 'undefined' && require.main === module) {
         measure = new Measure(MG.clone(this.time_sig), this.tatum);
         measure.pitch = MG.clone(this.pitch);
         measure.dur = MG.clone(this.dur);
-        condCopy(this, measure, ['tie', 'incomplete_start']);
+        MG.condCopy(this, measure, ['tie', 'incomplete_start', 'harmony']);
         return measure;
       }
       this.time_sig = MG.clone(measure.time_sig);
       this.tatum = measure.tatum;
       this.pitch = MG.clone(measure.pitch);
       this.dur = MG.clone(measure.dur);
-      return condCopy(measure, this, ['tie', 'incomplete_start']);
+      return MG.condCopy(measure, this, ['tie', 'incomplete_start', 'harmony']);
     };
 
     Measure.prototype.add = function(pitch, dur) {
@@ -3756,12 +3855,13 @@ if (typeof module !== 'undefined' && require.main === module) {
 
 
   /*
-    snippet of track, array of measures
+    snippet
+    data: array of measures
    */
 
   this.Snippet = (function() {
-    function Snippet(pitch, dur, options) {
-      var delta, m_i, measure, ref2, ref3, ref4, res, sec, tatum, time_sig;
+    function Snippet(pitch, dur, harmony, options) {
+      var delta, m_i, measure, ref1, ref2, ref3, res, sec, tatum, time_sig;
       if (arguments.length === 0) {
         this.data = [];
         return;
@@ -3770,12 +3870,13 @@ if (typeof module !== 'undefined' && require.main === module) {
         dur = _.flatten(dur, true);
         pitch = _.flatten(pitch, true);
       }
-      tatum = (ref2 = options.tatum) != null ? ref2 : 8;
-      time_sig = (ref3 = options.time_sig) != null ? ref3 : [4, 4];
+      tatum = (ref1 = options.tatum) != null ? ref1 : 8;
+      time_sig = (ref2 = options.time_sig) != null ? ref2 : [4, 4];
       sec = tatum * time_sig[0];
-      condCopy(options, this, ['incomplete_start', 'tie']);
-      delta = (ref4 = this.incomplete_start) != null ? ref4 : sec;
+      MG.condCopy(options, this, ['incomplete_start', 'tie']);
+      delta = (ref3 = this.incomplete_start) != null ? ref3 : sec;
       m_i = 0;
+      console.log(harmony.length, 'harmony length');
       measure = new Measure(time_sig, tatum);
       res = [];
       dur.forEach((function(_this) {
@@ -3786,7 +3887,9 @@ if (typeof module !== 'undefined' && require.main === module) {
             measure.dur.push(e);
             delta -= e;
             if (delta === 0) {
+              measure.harmony = harmony[m_i];
               res.push(measure);
+              m_i++;
               measure = new Measure(time_sig, tatum);
               return delta = sec;
             }
@@ -3796,6 +3899,7 @@ if (typeof module !== 'undefined' && require.main === module) {
               measure.dur.push(delta);
               measure.pitch.push(pitch[i]);
               measure.tie = true;
+              measure.harmony = harmony[m_i];
               res.push(measure);
               e -= delta;
               delta = sec;
@@ -3808,6 +3912,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       })(this));
       if (delta < sec) {
         this.incomplete_end = sec - delta;
+        measure.harmony = harmony[m_i];
         res.push(measure);
       }
       this.data = res;
@@ -3834,13 +3939,13 @@ if (typeof module !== 'undefined' && require.main === module) {
         s.data = this.data.map(function(e) {
           return e.copy();
         });
-        condCopy(this, s, ['incomplete_start', 'tie']);
+        MG.condCopy(this, s, ['incomplete_start', 'tie']);
         return s;
       }
       this.data = s.data.map(function(e) {
         return e.copy();
       });
-      return condCopy(s, this, ['incomplete_start', 'tie']);
+      return MG.condCopy(s, this, ['incomplete_start', 'tie']);
     };
 
     Snippet.prototype.join = function(s, modify) {
@@ -3874,8 +3979,15 @@ if (typeof module !== 'undefined' && require.main === module) {
         measure = null;
         if ((this.incomplete_end != null) && (s.incomplete_start != null)) {
           measure = new Measure();
+          measure.harmony = MG.clone(tmp.harmony);
+          if (measure.harmony == null) {
+            measure.harmony = [];
+          }
           measure.pitch = tmp.pitch.concat(s.data[0].pitch);
           measure.dur = tmp.dur.concat(s.data[0].dur);
+          if (s.data[0].harmony != null) {
+            measure.harmony = measure.harmony.concat(s.data[0].harmony);
+          }
           if ((s.data[0].tie != null) && s.data[0].tie === true) {
             measure.tie = s.data[0].tie;
           }
@@ -3886,7 +3998,7 @@ if (typeof module !== 'undefined' && require.main === module) {
         ret.data.push(measure);
       }
       ret.data = ret.data.concat(s.data);
-      condCopy(s, ret, ['incomplete_end']);
+      MG.condCopy(s, ret, ['incomplete_end']);
       return ret;
     };
 
@@ -3914,13 +4026,35 @@ if (typeof module !== 'undefined' && require.main === module) {
       return last_measure.setNote(last_measure.len() - 1, last_note);
     };
 
-    Snippet.prototype.toScore = function() {
+    Snippet.prototype.toScore = function(key_sig) {
+      var sharp;
+      if (key_sig == null) {
+        key_sig = 'C';
+      }
+      sharp = MG.key_sig[key_sig] >= 0;
       return this.data.map(function(measure) {
-        var ret;
+        var durs, gcd, ret;
         ret = _.zip(measure.dur, measure.pitch);
         if ((measure.tie != null) && (measure.tie = true)) {
           ret[ret.length - 1].push(true);
         }
+        durs = measure.harmony.map(function(e) {
+          return e[0];
+        });
+        gcd = MG.gcd.apply(null, durs);
+        if (gcd > 1) {
+          measure.harmony.forEach(function(e) {
+            return e[0] /= gcd;
+          });
+        }
+        ret.harmony = (measure.harmony.map(function(e) {
+          var tmp;
+          tmp = MG.pitchToKey(e[1], sharp, true) + e[2];
+          if (e[0] > 1) {
+            tmp += ',' + e[0];
+          }
+          return tmp;
+        })).join(' ');
         return ret;
       });
     };
@@ -3932,6 +4066,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   /*
     score object, with tracks and settings
+    one track is an array of measure, with property
    */
 
   this.ScoreObj = (function() {
@@ -3967,7 +4102,13 @@ if (typeof module !== 'undefined' && require.main === module) {
       this.harmony = [];
       this.harmony_text = [];
       if (contents != null) {
-        this.parse(contents);
+        if (contents.melody != null) {
+          this.setMelody(contents.melody, false);
+        }
+        if ((contents.harmony != null) && (contents.texture != null)) {
+          this.harmony_text = contents.harmony;
+          this.setTexture(contents.texture, contents.harmony);
+        }
       }
     }
 
@@ -3983,15 +4124,22 @@ if (typeof module !== 'undefined' && require.main === module) {
       };
     };
 
+    ScoreObj.prototype.setTrack = function(i, track) {
+      if (i > this.tracks.length) {
+        console.log('track number overflow');
+      }
+      return this.tracks[i] = track;
+    };
+
     ScoreObj.prototype.setMelody = function(melody, parsed) {
       var options;
       if ((parsed != null) && parsed === true) {
-        return this.tracks[0] = melody;
+        return this.setTrack(0, melody);
       } else {
         options = this.getSettings();
         options.scale = MG.scale_class[options.scale];
         options.init_ref = this.init_ref;
-        return this.tracks[0] = this.parseMelody(melody, options);
+        return this.setTrack(0, MG.parseMelody(melody, options));
       }
     };
 
@@ -3999,188 +4147,22 @@ if (typeof module !== 'undefined' && require.main === module) {
       var options;
       if ((parsed != null) && parsed === true) {
         this.harmony = harmony;
-        return this.tracks[1] = texture;
+        return this.setTrack(1, texture);
       } else {
         this.harmony = MG.parseHarmony(harmony, this.key_sig, this.ctrl_per_beat * this.time_sig[0]);
         options = this.getSettings();
         options.harmony = this.harmony;
-        return this.tracks[1] = this.parseMelody(texture, options);
+        return this.setTrack(1, MG.parseMelody(texture, options));
       }
     };
 
-    ScoreObj.prototype.parse = function(options) {
-      if (options.melody != null) {
-        this.setMelody(options.melody, false);
-      }
-      if ((options.harmony != null) && options.texture) {
-        this.harmony_text = options.harmony;
-        return this.setTexture(options.texture, options.harmony);
-      }
-    };
-
-    ScoreObj.prototype.parseMelody = function(m, options) {
-      var chorder, e, error, harmony, init_ref, key_sig_map, obj, ornamental, ref, refc, res, scale, tatum, tempo_map, time_sig_map;
-      try {
-        obj = parser.parse(m.join('\n') + '\n');
-      } catch (error) {
-        e = error;
-        $.notify('parsing error!', 'warning');
-        console.log(e.message);
-        return;
-      }
-      ornamental = function(pitch, ref, scale) {
-        var p;
-        p = typeof pitch === 'number' ? pitch : pitch.original;
-        if (p > scale.length) {
-          console.log('exceed scale length');
-          p = scale.length;
-        } else if (p === 0) {
-          return 0;
-        }
-        p = ref + scale[p - 1];
-        if (typeof pitch !== 'number') {
-          pitch.ornament.forEach(function(e) {
-            if (typeof e === 'number') {
-              return p += e;
-            }
-          });
-        }
-        return p;
-      };
-      switch (obj.mode) {
-        case 'melody':
-          scale = options.scale, init_ref = options.init_ref, harmony = options.harmony;
-          break;
-        case 'harmony':
-          harmony = options.harmony;
-      }
-      tatum = options.ctrl_per_beat * options.time_sig[0];
-      refc = null;
-      chorder = MG.harmony_progresser(harmony);
-      if (scale == null) {
-        scale = MG.scale_class['maj'];
-      }
-      tempo_map = {
-        0: options.tempo
-      };
-      key_sig_map = {
-        0: options.key_sig
-      };
-      time_sig_map = {
-        0: options.time_sig
-      };
-      if (init_ref == null) {
-        init_ref = 60;
-      }
-      ref = init_ref;
-      res = obj.data.map((function(_this) {
-        return function(m, i) {
-          var dur_tot, measure, r;
-          measure = [];
-          dur_tot = 0;
-          m.forEach(function(e) {
-            var bass, chord, k, pitches, results, v;
-            if (e.ctrl != null) {
-              switch (e.ctrl) {
-                case 'reset':
-                  return ref = init_ref;
-                case 'normal':
-                case 'repeat_start':
-                  results = [];
-                  for (k in e) {
-                    v = e[k];
-                    switch (k) {
-                      case 't':
-                        time_sig_map[i] = v;
-                        results.push(tatum = options.ctrl_per_beat * v[0]);
-                        break;
-                      case 's':
-                        results.push(scale = MG.scale_class[v]);
-                        break;
-                      case 'k':
-                        key_sig_map[i] = v;
-                        results.push(ref = init_ref = MG.keyToPitch(v + 4));
-                        break;
-                      case 'r':
-                        results.push(tempo_map[i] = v);
-                        break;
-                      case 'v':
-                        results.push(1);
-                        break;
-                      case 'o':
-                        results.push(1);
-                        break;
-                      case 'i':
-                        results.push(1);
-                        break;
-                      case 'p':
-                        results.push(ref += v);
-                        break;
-                      default:
-                        results.push(void 0);
-                    }
-                  }
-                  return results;
-                  break;
-                case 'chord':
-                  ref = MG.keyToPitch('C3');
-                  chorder.process();
-                  bass = chorder.bass(e.inv);
-                  chord = chorder.chord(e.inv);
-                  ref += e.transpose;
-                  bass += ref;
-                  return refc = e.pitch.map(function(p) {
-                    return ornamental(p, bass, chord);
-                  });
-              }
-            } else {
-              pitches = [];
-              e.pitch.forEach(function(p) {
-                if (typeof p === 'string') {
-
-                } else if (refc != null) {
-                  if (refc[p - 1] != null) {
-                    return pitches.push(refc[p - 1]);
-                  }
-                } else {
-                  return pitches.push(ornamental(p, ref, scale));
-                }
-              });
-              if (typeof e.dur === 'number') {
-                measure.push([e.dur, pitches]);
-                chorder.forward(e.dur);
-                return dur_tot += e.dur;
-              } else {
-                measure.push([e.dur.original, pitches, true]);
-                chorder.forward(e.dur.original);
-                return dur_tot += e.dur.original;
-              }
-            }
-          });
-          if (tatum != null) {
-            r = tatum / dur_tot;
-            dur_tot = 0;
-            measure.forEach(function(ee) {
-              dur_tot += (ee[0] = Math.floor(ee[0] * r));
-            });
-            measure[measure.length - 1][0] += tatum - dur_tot;
-          }
-          return measure;
-        };
-      })(this));
-      res.info = {
-        time_sigs: time_sig_map,
-        key_sigs: key_sig_map,
-        tempi: tempo_map
-      };
-      return res;
-    };
+    ScoreObj.prototype.setPercussion = function(percussion, parsed) {};
 
     ScoreObj.prototype.toText = function(m) {
       var ref_oct, res, toScale;
       console.log('to score text');
       if (m == null) {
-        m = this.tracks[0];
+        m = MG.clone(this.tracks[0]);
       }
       if (m == null) {
         console.log('null melody');
@@ -4189,8 +4171,17 @@ if (typeof module !== 'undefined' && require.main === module) {
       toScale = MG.pitchToScale(this.scale, this.key_sig);
       ref_oct = 4;
       res = m.map(function(e) {
-        var ret;
+        var durs, gcd, ret;
         ret = [];
+        durs = e.map(function(e1) {
+          return e1[0];
+        });
+        gcd = MG.gcd.apply(null, durs);
+        if (gcd > 1) {
+          e.forEach(function(e1) {
+            e1[0] /= gcd;
+          });
+        }
         e.forEach(function(e1) {
           var o;
           o = '';
@@ -4261,46 +4252,55 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreObj.prototype.toMidi = function() {
-      var ctrlTicks, delta, dur, e, i, l, m, q, t, vol;
-      console.log('to midi');
+      var ctrlTicks, delta, dur, e, i, j, m, nTrack, notes, ref1, ref2, t, t_i, vol;
       ctrlTicks = this.init_ctrlTicks;
-      q = _.flatten(this.tracks[0], true);
-      t = this.tracks[1] ? _.flatten(this.tracks[1], true) : null;
       m = new simpMidi();
-      delta = 0;
-      vol = this.volumes[0];
-      m.addEvent(1, 0, 'programChange', 0, this.instrs[0] - 1);
-      i = 0;
-      while (i < q.length) {
-        e = q[i];
-        if (typeof e[1] === 'number' && e[1] < 21 && e[1] > 108) {
-          delta += e[0];
-        } else {
-          dur = e[0];
-          while (q[i][2] === true && i + 1 < q.length) {
-            dur += q[++i][0];
-          }
-          m.addNotes(1, dur * ctrlTicks, q[i][1], vol, 0, delta * ctrlTicks);
-          delta = 0;
-        }
-        ++i;
-      }
       m.setTimeSignature.apply(m, this.time_sig);
       m.setKeySignature(MG.key_sig[this.key_sig], 'maj');
       m.setTempo(this.tempo);
       m.setDefaultTempo(this.tempo);
-      MIDI.programChange(0, this.instrs[0] - 1);
-      if (t === null) {
-        m.finish();
-        return m;
+      nTrack = this.tracks.length;
+      if (nTrack > 9) {
+        nTrack = 9;
       }
-      l = m.addTrack() - 1;
-      vol = this.volumes[l - 1];
-      m.addEvent(l, 0, 'programChange', l - 1, this.instrs[l - 1] - 1);
-      MIDI.programChange(l - 1, this.instrs[l - 1] - 1);
-      t.forEach(function(e) {
-        return m.addNotes(l, e[0] * ctrlTicks, e[1], vol);
-      });
+      for (t_i = j = 0, ref1 = nTrack; j < ref1; t_i = j += 1) {
+        if (t_i !== 0) {
+          m.addTrack();
+          console.log('add track', t_i);
+        }
+        delta = 0;
+        t = _.flatten(this.tracks[t_i], true);
+        vol = (ref2 = this.volumes[t_i]) != null ? ref2 : this.volumes[0];
+        MIDI.programChange(t_i, this.instrs[t_i] - 1);
+        m.addEvent(t_i + 1, 0, 'programChange', t_i, this.instrs[t_i] - 1);
+        i = 0;
+        while (i < t.length) {
+          e = t[i];
+          notes = [];
+          if (typeof e[1] === 'number') {
+            if (e[1] >= 21 && e[1] <= 108) {
+              notes.push = e[1];
+            }
+          } else {
+            e[1].forEach(function(pitch) {
+              if (pitch >= 21 && pitch <= 108) {
+                return notes.push(pitch);
+              }
+            });
+          }
+          if (notes.length === 0) {
+            delta += e[0];
+          } else {
+            dur = e[0];
+            while (t[i][2] === true && i + 1 < t.length) {
+              dur += t[++i][0];
+            }
+            m.addNotes(t_i + 1, dur * ctrlTicks, notes, vol, 0, delta * ctrlTicks);
+            delta = 0;
+          }
+          ++i;
+        }
+      }
       m.finish();
       return m;
     };
@@ -4508,7 +4508,6 @@ if (typeof module !== 'undefined' && require.main === module) {
       sharp = MG.key_sig[key_sig] >= 0;
       toScale = MG.pitchToScale(s.scale, key_sig);
       this.geo.reserved_width = 30 + 5 * Math.abs(MG.key_sig[key_sig]);
-      console.log('info', melody.info);
       for (i = k = 0, ref = melody.length; k < ref; i = k += 1) {
         stave = this.newStave(i);
         add_key_sig = false;
