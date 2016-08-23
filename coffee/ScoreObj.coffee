@@ -224,8 +224,16 @@ class @Snippet
       ret = _.zip(measure.dur, measure.pitch)
       if measure.tie? && measure.tie = true
         ret[ret.length - 1].push(true)
+      durs = measure.harmony.map (e)-> e[0]
+      gcd = MG.gcd.apply(null, durs)
+      if gcd > 1
+        measure.harmony.forEach (e)->
+          e[0] /= gcd
       ret.harmony = (measure.harmony.map (e)->
-        MG.pitchToKey(e[1],sharp,true) + e[2] + ',' + e[0]
+        tmp = MG.pitchToKey(e[1],sharp,true) + e[2]
+        if e[0] > 1
+          tmp += ',' + e[0]
+        tmp
       ).join(' ')
       ret
 
@@ -304,7 +312,7 @@ class @ScoreObj
 
   toText: (m)->
     console.log 'to score text'
-    m ?= @tracks[0] # melody
+    m ?= MG.clone(@tracks[0]) # melody
     if ! m?
       console.log 'null melody'
       return
@@ -312,6 +320,14 @@ class @ScoreObj
     ref_oct = 4
     res = m.map (e)->
       ret = []
+      # simplify
+      durs = e.map (e1)-> e1[0]
+      gcd = MG.gcd.apply(null, durs)
+      if gcd > 1
+        e.forEach (e1)->
+          e1[0] /= gcd
+          return
+
       e.forEach (e1)->
         o = ''
         if typeof e1[1] != 'object'
