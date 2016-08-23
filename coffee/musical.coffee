@@ -824,7 +824,7 @@ MG.parseMelody = (m, options)->
   key_sig_map = {0:options.key_sig}
   time_sig_map = {0:options.time_sig}
 
-  init_ref ?= 60 # C4
+  init_ref ?= MG.keyToPitch(options.key_sig + '4') ? 60 # C4
   ref = init_ref
   # 2 iterate obj.data
   res = obj.data.map (m,i)->

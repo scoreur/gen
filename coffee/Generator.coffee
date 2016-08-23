@@ -30,9 +30,6 @@ class @Generator
   produce: (variable, global)->
     if variable.mode? # terminal
       switch variable.mode
-        when 'chord'
-          console.log 'DEPRECATED!!'
-          return @gen_random(variable)
         when 'random'
           return @gen_random(variable)
         when 'distribution'
@@ -204,7 +201,30 @@ class @Generator
 
   gen_exact: (options)->
     # parse direct
-    res = MG.parseMelody(options.score, options)
+    options = MG.clone(options)
+    options.ctrl_per_beat ?= @settings.ctrl_per_beat
+    options.tempo ?= @settings.tempo
+    options.time_sig ?= @settings.time_sig
+    options.key_sig ?= @settings.key_sig
+    console.log 'exact', res = MG.parseMelody(options.score, options)
+    info = {
+      ctrl_per_beat: @settings.ctrl_per_beat,
+    }
+    info.key_sigs = {0:@settings.key_sig}
+    info.time_sigs = {0:@settings.time_sig}
+    harmony = MG.parseHarmony(options.chords, info)
+
+    data = res.map (m, i)->
+      ret = new Measure(options.time_sig, options.ctrl_per_beat)
+      m.forEach (e)->
+        ret.add(e[1][0], e[0]) # hard coding TODO:
+      harmony[i].forEach (e)->
+        e[2] = MG.chord_finder[e[2].toString()] || 'maj'
+      ret.harmony = harmony[i]
+      ret
+    res = new Snippet()
+    res.data = data
+    res
 
   gen_random: (options) ->
     dur = options.dur
@@ -258,7 +278,8 @@ class @Generator
     swarp = options.rhythm.swarp
     swarp ?= 1
 
-    n = dur // (seed.dur/swarp)
+    n = dur // (seed.dur//swarp)
+    #console.log 'gen rhythm num', n
     rc1 = rndPicker(seed.choices, seed.weights)
 
     pre = scale_len * 4
@@ -310,8 +331,8 @@ class @Generator
     # TODO: convert later
     harmony.forEach (e1)->
       e1.forEach (e)->
-
         e[2] = MG.chord_finder[e[2].toString()] || 'maj'
+
     res = new Snippet(res.pitch, res.dur, harmony, op)
     #res.data
 
