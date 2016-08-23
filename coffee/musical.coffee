@@ -107,6 +107,7 @@ MG.chord_class =
 
   "dim7":[0,3,6,9],
   "add9":[0,2,4,7], # add2
+  "minadd11": [0,3,5,7],
   "add11": [0,4,5,7] # add4
 
 
@@ -300,7 +301,7 @@ MG.transposer = (scale_name, key_sig) ->
 
 
 # chord alias
-alias = {'7':'dom7','':'maj','M':'maj','m':'min','mi':'min','m7':'min7'}
+alias = {'7':'dom7','':'maj','M':'maj','m':'min','mi':'min','m7':'min7', 'm7#':"min7#", 'm7b5': 'min7b5'}
 roman = (->
   arr = ['i','ii','iii','iv','v','vi','vii']
   res = {}
@@ -571,11 +572,12 @@ MG.circularClone = (obj) ->
   clone obj
 
 MG.top_sort = (dependency)->
+  #console.log 'top sort', dependency
   n = Object.keys(dependency).length
 
   remove_one = (o)->
     for k,v of dependency
-      if o in v
+      while o in v
         v.splice(v.indexOf(o),1)
     delete dependency[o]
   get_one = ->
@@ -649,11 +651,19 @@ MG.seededRandom = (max, min) ->
 ###
   parsers
 ###
-MG.parseHarmony = (measures, key_sig, tatum) ->
+
+# info must contain time_sigs, ctrl_per_beat
+MG.parseHarmony = (measures, info) ->
   if typeof measures == 'undefined'
     console.log 'empty harmony'
     return
-  measures.map (e) ->
+  key_sig = info.key_sigs[0] ? 'C'
+  tatum = info.ctrl_per_beat * (info.time_sigs[0][0] ? 4)
+  measures.map (e, i) ->
+    if info.time_sigs[i]?
+      tatum = info.ctrl_per_beat * info.time_sigs[i][0]
+    if info.key_sigs[i]?
+      key_sig = info.key_sigs[i]
     durs = []
     ret = e.trim().split(/\s+/).map (e2) ->
       terms = e2.split(',')
@@ -662,12 +672,14 @@ MG.parseHarmony = (measures, key_sig, tatum) ->
       durs.push dur
       [dur,chord_info[0],chord_info[1]]
     if tatum?
-      r = tatum / math.sum(durs)
+      r = tatum // math.sum(durs)
       durs = []
       ret.forEach (ee,ii)->
         durs.push(ret[ii][0] = Math.floor(ee[0] * r))
-      ret[ret.length - 1][0] += (tatum - math.sum(durs))
+      if tatum > math.sum(durs)
+        ret[ret.length - 1][0] += (tatum - math.sum(durs))
     ret
+
 MG.harmony_progresser = (harmony)->
   harmony ?= []
   m_i = 0
@@ -822,27 +834,28 @@ MG.parseMelody = (m, options)->
 
     durs = []
     m.forEach (e)->
-      if not e.ctrl?
+      if e.ctrl?
+        if e.t?
+          tatum = e.t[0] * options.ctrl_per_beat
+      else
         if typeof e.dur == 'number'
           dur_tot += e.dur
           durs.push e.dur
         else
           dur_tot += e.dur.original
           durs.push e.dur.original
-
     # renormalize
-    if tatum?
-      r = tatum // dur_tot
-      # TODO: check integer
-      dur_tot = 0
-      m.forEach (e)->
-        if not e.ctrl?
-          if typeof e.dur == 'number'
-            e.dur *= r
-            dur_tot += e.dur
-          else
-            e.dur.original *= r
-            dur_tot += e.dur.original
+    r = tatum // dur_tot
+    # TODO: check integer
+    dur_tot = 0
+    m.forEach (e)->
+      if not e.ctrl?
+        if typeof e.dur == 'number'
+          e.dur *= r
+          dur_tot += e.dur
+        else
+          e.dur.original *= r
+          dur_tot += e.dur.original
 
     m.forEach (e)->
 
@@ -856,8 +869,6 @@ MG.parseMelody = (m, options)->
               switch k
                 when 't' # set time_sig
                   time_sig_map[i] = v
-                  tatum = options.ctrl_per_beat * v[0]
-
                 when 's' then scale = MG.scale_class[v]
                 when 'k'  # set key_sig
                   key_sig_map[i] = v
@@ -898,7 +909,7 @@ MG.parseMelody = (m, options)->
         else
           measure.push([e.dur.original, pitches, true]);
           chorder.forward(e.dur.original)
-    if tatum? && dur_tot < tatum
+    if dur_tot < tatum
       console.log 'not enough'
       measure[measure.length - 1][0] += (tatum - dur_tot)
     return measure

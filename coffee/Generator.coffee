@@ -210,7 +210,12 @@ class @Generator
     dur = options.dur
     toPitch = @toPitch
     toScale = @toScale
-    harmony = MG.parseHarmony(options.chords, @settings.key_sig, @settings.time_sig[0] * @settings.ctrl_per_beat)
+    info = {
+      ctrl_per_beat: @settings.ctrl_per_beat,
+    }
+    info.key_sigs = {0:@settings.key_sig}
+    info.time_sigs = {0:@settings.time_sig}
+    harmony = MG.parseHarmony(options.chords, info)
     chorder = MG.harmony_progresser(harmony)
 
     scale_len = @scale.length

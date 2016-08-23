@@ -363,6 +363,11 @@ class @AppMG
       @settings = JSON.parse(@editor.settings.getValue())
     catch e
       $.notify('Bad score format!', 'warning')
+    try
+      @schema = MG.schema_parser.parse(@editor.schema.getValue());
+    catch e
+      console.log e.message
+      $.notify('Bad schema format!', 'warning')
     ['melody','harmony','texture'].forEach (e)=>
       @contents[e] = @editor[e].getValue().split(/[\n]+/)
     @obj = new ScoreObj(@settings, @contents)
@@ -371,7 +376,11 @@ class @AppMG
 
   generate: ->
     @settings = JSON.parse(@editor.settings.getValue())
-    @schema = MG.schema_parser.parse(@editor.schema.getValue());
+    try
+      @schema = MG.schema_parser.parse(@editor.schema.getValue());
+    catch e
+      console.log e.message
+      $.notify('Bad schema format!', 'warning')
     generator = new Generator(@settings, @schema);
     generator.generate();
     score = generator.toScoreObj()

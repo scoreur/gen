@@ -161,8 +161,8 @@ class @ScoreRenderer
 
     @measures = []
     melody = s.tracks[0]
-    time_sig = melody.info.time_sigs[0] = s.time_sig
-    key_sig = melody.info.key_sigs[0] = s.key_sig
+    time_sig = melody.info.time_sigs[0] ? s.time_sig
+    key_sig = melody.info.key_sigs[0] ? s.key_sig
     sharp = MG.key_sig[key_sig] >= 0
     toScale = MG.pitchToScale(s.scale, key_sig)
 

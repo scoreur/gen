@@ -224,6 +224,7 @@ class @Snippet
       ret = _.zip(measure.dur, measure.pitch)
       if measure.tie? && measure.tie = true
         ret[ret.length - 1].push(true)
+      measure.harmony ?= []
       durs = measure.harmony.map (e)-> e[0]
       gcd = MG.gcd.apply(null, durs)
       if gcd > 1
@@ -302,7 +303,12 @@ class @ScoreObj
       @harmony = harmony
       @setTrack 1, texture
     else
-      @harmony = MG.parseHarmony(harmony, @key_sig, @ctrl_per_beat * @time_sig[0])
+      info = null
+      # hard coding
+      if @tracks[0].info?
+        info = MG.clone(@tracks[0].info)
+      info.ctrl_per_beat = @ctrl_per_beat
+      @harmony = MG.parseHarmony(harmony, info)
       options = @getSettings()
       options.harmony = @harmony
       @setTrack 1, MG.parseMelody(texture, options)
@@ -379,7 +385,7 @@ class @ScoreObj
     #console.log('to midi')
     ctrlTicks = @init_ctrlTicks
     m = new simpMidi()
-    m.setTimeSignature @time_sig...
+    m.setTimeSignature @time_sig[0], @time_sig[1]
     m.setKeySignature MG.key_sig[@key_sig], 'maj'
     m.setTempo @tempo
     m.setDefaultTempo @tempo
@@ -388,34 +394,57 @@ class @ScoreObj
     if nTrack > 9
       nTrack = 9
 
+    time_sigs = @tracks[0].info.time_sigs
+    key_sigs = @tracks[0].info.key_sigs
+
+
     for t_i in [0...nTrack] by 1
+      dur_abs = 0
       if t_i != 0
         m.addTrack()
         console.log 'add track', t_i
-      delta = 0
-      t = _.flatten(@tracks[t_i], true)
+
+      console.log 'info', @tracks[t_i].info
       vol = @volumes[t_i] ? @volumes[0]
       MIDI.programChange(t_i, @instrs[t_i] - 1)
       m.addEvent t_i + 1, 0, 'programChange', t_i, @instrs[t_i]-1
-      i = 0
-      while i < t.length
-        e = t[i]
-        notes = []
-        if typeof e[1] == 'number'
-          if e[1] >= 21 && e[1] <= 108
-            notes.push = e[1]
-        else
-            e[1].forEach (pitch)->
-              if pitch >= 21 && pitch <= 108
-                notes.push pitch
-        if notes.length == 0
-          delta += e[0] # skip invalid note
-        else
-          dur = e[0]
-          while t[i][2] == true && i+1 < t.length # tied
-            dur += t[++i][0]
-          m.addNotes t_i + 1, dur * ctrlTicks, notes, vol, 0, delta * ctrlTicks
-          delta = 0
-        ++i
+      notes = []
+      dur = 0
+      delta = 0
+      @tracks[t_i].forEach (t,j)->
+        if t_i == 0
+          if time_sigs[j]?
+
+            m.addEvent 0, dur_abs * ctrlTicks, 'timeSignature', time_sigs[j][0], time_sigs[j][1]
+            dur_abs = 0
+          if key_sigs[j]?
+            m.addEvent 0, dur_abs * ctrlTicks, 'keySignature', MG.key_sig[key_sigs[j]], 'maj'
+            dur_abs = 0
+        i = 0
+        while i < t.length
+          e = t[i]
+          dur_abs += e[0]
+          if notes.length == 0
+            if typeof e[1] == 'number'
+              if e[1] >= 21 && e[1] <= 108
+                notes.push = e[1]
+            else
+                e[1].forEach (pitch)->
+                  if pitch >= 21 && pitch <= 108
+                    notes.push pitch
+
+          if notes.length == 0
+            delta += e[0] # skip invalid note
+          else
+            dur += t[i][0]
+            if t[i][2] != true
+              m.addNotes t_i + 1, dur * ctrlTicks, notes, vol, 0, delta * ctrlTicks
+              notes = []
+              dur = 0
+              delta = 0
+          ++i
+      if notes.length > 0
+        console.log 'remain', notes
+        m.addNotes t_i + 1, dur * ctrlTicks, notes, vol, 0, delta * ctrlTicks
     m.finish()
     return m
