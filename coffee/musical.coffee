@@ -110,6 +110,28 @@ MG.chord_class =
   "add11": [0,4,5,7] # add4
 
 
+MG.chord_class_label =
+  "maj": "Major triad",
+  "min": "Minor triad",
+  "aug": "Augmented triad",
+  "dim": "Diminished triad",
+  "dom7": "Dominant seventh chord",
+  "maj7": "Major seventh chord",
+  "min7": "Minor seventh chord",
+  "aug7": "Augmented seventh chord",
+  "dim7": "Diminished seventh chord",
+
+  "min7b5": "Half diminished chord",
+  "min7#": "Minor seventh shart fifth chord",
+
+
+  "sus2": "Suspended second chord",
+  "sus4": "Suspended fourth chord"
+  "add9": "Add ninth chord",
+  "add11": "Add eleventh chord"
+
+
+
 # return inverted chord
 MG.inverted = (arr,n) ->
   n ?= 1
@@ -378,18 +400,6 @@ MG.scale_keys = (()->
 )()
 
 
-MG.chord_class_label =
-  "maj": "Major triad",
-  "min": "Minor triad",
-  "aug": "Augmented triad",
-  "dim": "Diminished triad",
-  "dom7": "Dominant seventh chord",
-  "maj7": "Major seventh chord",
-  "min7": "Minor seventh chord",
-  "aug7": "Augmented seventh chord",
-  "dim7": "Diminished seventh chord",
-
-
 ###
     sample data
 ###
@@ -405,12 +415,11 @@ MG.chord_class_label =
   contents:
     melody: ':+ 0,2 3 1/3,1^/3,2 2 1 2 3 1,2/:- 6 3,1^/3,2 :+ 3 1/2 2,7^/2,2 1 6- 1 6- 1,2/:- 7,1^/7,4 0 :+ 3,2 1/3 3,2 3,1^ 3,4^/3,2 2 1 2 3 1,2/:- 6 3,1^/3,3 3/5,2 3 5 6,2 :+ 1,2/3 2,3 1,4/:- 6,1^/6,2 :+ 3 1'.split('/'),
     harmony: "E7/Amin/Bb7/Amin E7/Amin A7/Dmin/F7/F#min7 B7/E7/Am/Bb7/Am/D7/C Am/D7 E7/Am D7/Bm7 E7".split('/'),
-    texture: "@-123 0,32 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@iii-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-11-32+ 12,16 3,16 4,16 3,16/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32/@-123 123,32 @-123 123,32".split('/')
+    texture: "@-123 0 123/@-11-32+ 12 3 4 3/@iii-11-32+ 12 3 4 3/@-123 123 @-123 123/@-123 123 @-123 123/@-11-32+ 12 3 4 3/@-11-32+ 12 3 4 3/@-123 123 123/@-11-32+ 12 3 4 3/@-123 123 123/@-123 123 123/@-123 123 123/@-123 123 123/@-123 123 @-123 123/@-123 123 @-123 123/@-123 123 @-123 123/@-123 123 @-123 123".split('/')
 
 
+# TODO: change chord to random
 @gen_modes = ['random', 'transpose', 'chord', 'reverse', 'diminuation', 'augmentation']
-
-
 
 
 @schema_summer = MG.schema_summer =
@@ -418,28 +427,32 @@ MG.chord_class_label =
     structure: "c/A/B/Br/A/C/c".split('/'),
     node: {
       'c':{ # terminal
-        mode: 'chord'
+        mode: 'random'
         dur: 4 * 8
         incomplete_start: 32
+        chord_tone : 4
+        scale_tone : [2,1,1,0.5,2,1,0.5]
+
         chords : [
-          "E7,32"
+          "E7"
         ]
         rhythm:
           seed: 's1'
           swarp: 0.5
-
         interval:
           chromatic: false
           seed: 's2'
       },
       'A':{ # terminal
-        mode:'chord'
+        mode:'random'
         dur: 32 * 8
+        chord_tone : 4
+        chromatic_tone : 0.5
         chords: [
-          "Amin,64",
-          "Bb7,64",
-          "Amin,32 E7,32",
-          "Amin,32 A7,32"
+          "Amin",
+          "Bb7",
+          "Amin E7",
+          "Amin A7"
         ]
         rhythm:
           seed: 's1'
@@ -474,10 +487,11 @@ MG.chord_class_label =
 
       },
       'C':{ # terminal
-        mode: 'chord',
+        mode: 'random',
         dur: 28 * 8
         incomplete_end: 32
-        chords: "C,32 Am,32/D7,32 E7,32/Am,32 D7,32/Bm7,32".split('/'),
+        chord_tone : 4
+        chords: "C Am/D7 E7/Am D7/Bm7".split('/'),
         rhythm:
           seed: 's1'
           swarp: 0.5
@@ -507,7 +521,11 @@ MG.chord_class_label =
         i-6
     )()
 
+MG.score_dance =
+  key_sig: 'C'
 
+MG.schema_dance =
+  'S'
 
 ###
   utilities
@@ -616,7 +634,7 @@ MG.obj_sort = (data, decending, map)->
     kv.sort (a, b) ->
       map(a[1]) - map(b[1])
   kv
-  
+
 # reproducable random number generator
 _seed = 6
 MG.seededRandom = (max, min) ->
@@ -753,6 +771,7 @@ MG.schema_parser.produce = (obj)->
   produce(obj, indent)
 
 # @return: array of measures with info
+# TODO: to Snippet with settings
 MG.parseMelody = (m, options)->
   try
     obj = MG.score_parser.parse(m.join('\n')+'\n')
@@ -800,6 +819,30 @@ MG.parseMelody = (m, options)->
     #console.log 'parse measure', i
     measure = []
     dur_tot = 0
+
+    durs = []
+    m.forEach (e)->
+      if not e.ctrl?
+        if typeof e.dur == 'number'
+          dur_tot += e.dur
+          durs.push e.dur
+        else
+          dur_tot += e.dur.original
+          durs.push e.dur.original
+
+    # renormalize
+    if tatum?
+      r = tatum // dur_tot
+      # TODO: check integer
+      dur_tot = 0
+      m.forEach (e)->
+        if not e.ctrl?
+          if typeof e.dur == 'number'
+            e.dur *= r
+            dur_tot += e.dur
+          else
+            e.dur.original *= r
+            dur_tot += e.dur.original
 
     m.forEach (e)->
 
@@ -851,19 +894,12 @@ MG.parseMelody = (m, options)->
         if typeof e.dur == 'number'
           measure.push([e.dur, pitches])
           chorder.forward(e.dur)
-          dur_tot += e.dur
+
         else
           measure.push([e.dur.original, pitches, true]);
           chorder.forward(e.dur.original)
-          dur_tot += e.dur.original
-    # renormalize
-    if tatum?
-      r = tatum / dur_tot
-      dur_tot = 0
-
-      measure.forEach (ee)->
-        dur_tot += (ee[0] = Math.floor(ee[0] * r))
-        return
+    if tatum? && dur_tot < tatum
+      console.log 'not enough'
       measure[measure.length - 1][0] += (tatum - dur_tot)
     return measure
   # TODO: move info to tracks

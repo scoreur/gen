@@ -31,11 +31,14 @@ class @Generator
     if variable.mode? # terminal
       switch variable.mode
         when 'chord'
-          return @gen_chord(variable)
+          console.log 'DEPRECATED!!'
+          return @gen_random(variable)
         when 'random'
           return @gen_random(variable)
         when 'distribution'
           return variable
+        when 'exact'
+          return @gen_exact(variable)
     variable.node ?= {}
     variable.action ?= {}
     #console.log 'action', variable.action
@@ -72,6 +75,10 @@ class @Generator
               tmp = @act_transpose(options, tmp)
             when 'reverse'
               tmp = @act_reverse(options, tmp)
+            when 'dim'
+              tmp = @act_dim(options, tmp)
+            when 'aug'
+              tmp = @act_aug(options, tmp)
         ret = ret.join(tmp, {smooth:'true'})
         console.log 'concat', v, ret.data.length
       else
@@ -120,7 +127,6 @@ class @Generator
       console.log 'compare',info_dur, ref_beat_dur
 
     # compare with existing midi
-
 
     # optimize
 
@@ -197,76 +203,14 @@ class @Generator
 
 
   gen_exact: (options)->
-    res =
-      dur: options.dur
-      pitch: options.pitch
+    # parse direct
+    res = MG.parseMelody(options.score, options)
 
-  gen_random:  (options) ->
-    console.log 'deprecated!!'
-    dur = options.dur
-    toPitch = @toPitch
-    scale_len =@scale.length
-    toScale = @toScale
-    res =
-      dur: []
-      pitch: []
-
-    seed = {}
-    if options.rhythm.seed? && @seeds?
-      seed = @seeds[options.rhythm.seed]
-    else
-      seed.dur = options.rhythm[0]
-      seed.choices = options.rhythm[1]
-      seed.weights = options.rhythm[2]
-    swarp = options.rhythm.swarp
-    swarp ?= 1
-
-    seed2 = {}
-    if options.interval.seed? && @seeds?
-      seed2 = @seeds[options.interval.seed]
-    else
-      seed2 = options.interval
-
-    n = dur // (seed.dur/swarp)
-
-
-    rc1 = rndPicker(seed.choices, seed.weights)
-    pre = scale_len * 4
-
-    i = 0
-    while i < n
-      new_dur = rc1.gen().map (d)-> d//swarp
-      res.dur.push new_dur
-
-      tmp = []
-      j = 0
-      while j < res.dur[i].length
-        raw_choices = newChoices(pre, seed2.choices, seed2.weights)
-        choices = {}
-        for k,v of raw_choices
-          if k >= 0 && k <= scale_len * 8
-            k = toPitch(k)
-            if k < 48 || k > 84
-              v /= 2
-              console.log 'less'
-            choices[k] = v
-        rc2 = rndPicker(_.keys(choices), _.values(choices))
-        pre = parseInt(rc2.gen())
-        tmp.push pre
-        pre = toScale(pre)
-        pre = pre[0] + pre[1] * scale_len
-        ++j
-      console.log tmp
-      res.pitch.push tmp
-      ++i
-    res
-
-
-  gen_chord: (options) ->
+  gen_random: (options) ->
     dur = options.dur
     toPitch = @toPitch
     toScale = @toScale
-    harmony = MG.parseHarmony(options.chords, @settings.key_sig)
+    harmony = MG.parseHarmony(options.chords, @settings.key_sig, @settings.time_sig[0] * @settings.ctrl_per_beat)
     chorder = MG.harmony_progresser(harmony)
 
     scale_len = @scale.length
@@ -331,10 +275,15 @@ class @Generator
           if k >= 0 && k <= scale_len * 8
             k = toPitch(k)
             v *= range_dist(k)
-            cur_chord.forEach (ee,ii)->
-              if (k - bass) %% 12 == ee
-                console.log 'chord tone'
-                v *= 4
+            if options.chord_tone?
+              cur_chord.forEach (ee,ii)->
+                if (k - bass) %% 12 == ee
+                  #console.log 'chord tone'
+                  v *= options.chord_tone
+            if options.scale_tone?
+              # scale tone dist
+
+              console.log 'scale tone'
             choices[k] = v
         rc2 = rndPicker(_.keys(choices), _.values(choices))
         pre = parseInt(rc2.gen())
