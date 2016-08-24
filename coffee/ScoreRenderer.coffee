@@ -1,3 +1,5 @@
+MG = @MG || (module? && require? && require('./musical').MG ) || {}
+
 class @ScoreRenderer
   constructor: (c, p)->
     @c = document.getElementById c
@@ -57,9 +59,8 @@ class @ScoreRenderer
     else
       return new Vex.Flow.Stave(x, y, w)
 
-
-
-  toBit = (i)->
+  toBit = (i, base)->
+    base ?= 2
     res = [];
     j = 1
     while i>0

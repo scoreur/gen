@@ -196,6 +196,7 @@ MG.key_class = ( ->
 )()
 
 # scale array
+# TODO: consider the difference of tonic and key_sig
 MG.scale_class =
   'maj': [0,2,4,5,7,9,11],
   'min': [0,2,3,5,7,8,10],
@@ -523,7 +524,130 @@ MG.scale_keys = (()->
     )()
 
 MG.score_dance =
-  key_sig: 'C'
+  settings:
+    tempo: 188,
+    time_sig: [
+      6,
+      8
+    ],
+    key_sig: "C",
+    scale: "maj",
+    ctrl_per_beat: 4,
+    volumes: [
+      110,
+      80
+    ],
+    instrs: [
+      1,
+      1
+    ]
+  contents:
+    harmony: [
+      "Am7#,3 Am,4",
+      "G#dim7 Am",
+      "Am7#,3 Am,2 E7,2",
+      "Am7b5 G#dim",
+      "Am",
+      "F",
+      "C7",
+      "C7",
+      "F F7",
+      "Fm Fm7#",
+      "C7",
+      "Fm",
+      "C7",
+      "F",
+      "C7",
+      "C7",
+      "F F7",
+      "Fm Fm7#",
+      "C7",
+      "Fm",
+      "C7",
+      "Fm C7",
+      "C7 F7",
+      "F7 ",
+      "Am7#,3 Am,4",
+      "G#dim7 Am",
+      "Am7#,3 Am,2 E7,2",
+      "Am7b5 G#dim",
+      "Am",
+      "Am",
+      ""
+    ],
+  melody:[
+      "%% A",
+      ":+t7/8 3 4 3 2# 3 7- 1 2 1 0 :- 6 0 3 0",
+      ":t6/8 7,4 3 0 :+ 1 2 1 0 3- 0",
+      ":t7/8 3 4 3 2# 3 7- 1 2 1 0 :- 6 0 3 0",
+      ":t6/8 6,4 6 0 7,4 5# 0",
+      "6 0 :+ 1 0 3 0 6,2 0,2 1 0",
+      "%% B",
+      "1,3 2 1,2 4,4 3,2",
+      "3,3 2,2 1",
+      "1,3 2 1,2 5,4 4,2",
+      "4,3 1,2 1",
+      ":kAb 1,2 1 1 :- 7 6",
+      "7,2 5# 3,2 3",
+      "6,2 7 1+ 7 6",
+      "2+,3 7,2 3+",
+      ":kC+ 1,3 2 1,2 4,4 3,2",
+      "3,3 2,2 1",
+      "1,3 2 1,2 5,4 4,2",
+      "4,3 1,2 1",
+      ":kAb 1,2 1 1 :- 7 6",
+      "7,2 5# 3,2 3",
+      "6,2 7 1+ 7 6",
+      "2+,4 7,2 :+ 3 0 4# 5 5# 7",
+      "1+,2 1+ 7 6 1+ 7 0 5# 0 3 0",
+      "7,2 7 6 5# 7 6 0 3 0 1# 0",
+      ":kC :+ 3b,4 3,2 4 3 2# 3 4 0",
+      "%% A",
+      ":t7/8 3 4 3 2# 3 7- 1 2 1 0 :- 6 0 3 0",
+      ":t6/8 7,4 3 0 :+ 1 2 1 0 3- 0",
+      ":t7/8 3 4 3 2# 3 7- 1 2 1 0 :- 6 0 3 0",
+      ":t6/8 6,4 6 0 7,4 5# 0",
+      "6 :+ 1 3 1 6 5# 6,2 0,4",
+      "136 0,2",
+      ""]
+  texture:[
+      "%% A",
+      ":t7/8 @1-2341+ 1 235 234 @1-231+ 1 34 23 0",
+      ":t6/8 @1-234 1 234 0 @1234 1 234 0",
+      ":t7/8 @1-2341+ 1 235 234 @123 1 23 @341+ 123 0",
+      ":t6/8 @ii1234 14 23 0 @1231+ 14 23 0",
+      "@1231+ 1 3 2 234 0,2",
+      "%% B",
+      "% b1",
+      "@1231+ 1 23 34 1 34 23",
+      "@12341+ 1 245 23 1 245 23",
+      "@12341+ 2 345 345 1 345 345",
+      "@1231+ 1 34 23  @1234 1 3 24",
+      "@1233- 1 23 4  @124- 12 3 1",
+      "@12331+ 23 1 0 34 45 0",
+      "@1231- 1 23 4 1 23 4",
+      "@12341+2+ 1 235 46 2 35 1 ",
+      "% b2",
+      "@1231+ 1 23 34 1 34 23",
+      "@12341+ 1 245 23 1 245 23",
+      "@12341+ 2 345 345 1 345 345",
+      "@1231+ 1 34 23  @1234 1 3 24",
+      "@1233- 1 23 4  @124- 12 3 1",
+      "@12331+ 23 1 0 34 45 0",
+      "@1231- 1 23 4 1 23 4",
+      "@2341+2+ 1 245 0 134 0,2",
+      "% bridge",
+      "@1234 1 23 34 @i1234 1 24 23 ",
+      "1 234 234 @1234- 1 23 4",
+      "@12341+ 124 3 0 235 0,2",
+      "%% A",
+      ":t7/8 @1-2341+ 1 235 234 @1-231+ 1 34 23 0",
+      ":t6/8 @1-234 1 234 0 @1234 1 234 0",
+      ":t7/8 @1-2341+ 1 235 234 @123 1 23 @341+ 123 0",
+      ":t6/8 @ii1234 14 23 0 @1231+ 14 23 0",
+      "@1231+ 1 3 2 234 0,2",
+      "@13 13 0,2",
+      ""]
 
 MG.schema_dance =
   'S'
@@ -618,6 +742,23 @@ MG.lcm = ()->
   for i in [2...arguments.length] by 1
     ret = lcm(ret, arguments[i])
   ret
+
+MG.rndPicker = (choices, weights) ->
+  if arguments.length == 1
+    choices = _.keys(arguments[0])
+    weights = _.values(arguments[0])
+  s = math.sum weights
+  p = weights.map (e)-> e/s
+  s = 0
+  for i in [0...p.length] by 1
+    s = (p[i] += s)
+
+  return gen:  ->
+    r = MG.seededRandom() #Math.random()
+    for i in [0...p.length] by 1
+      if r < p[i]
+        return choices[i]
+    return choices[p.length-1]
 
 MG.condCopy = (src, dest, props)->
   for i in props
@@ -717,8 +858,8 @@ MG.harmony_progresser = (harmony)->
   forward: forward
   }
 
-MG.score_parser = @score_parser ? require('./js/score_parser')
-MG.schema_parser =  @schema_parser ? require('./js/schema_parser')
+MG.score_parser = @score_parser || (module? && require? && require('../js/score_parser')) || require('./js/score_parser')
+MG.schema_parser =  @schema_parser ||  (module? && require? && require('../js/schema_parser')) || require('./js/schema_parser')
 # produce text for parsed obj
 MG.schema_parser.produce = (obj)->
   produceVar = (o, indent)->
@@ -924,6 +1065,3 @@ MG.parseMelody = (m, options)->
 
 
 @MG = MG
-
-if module?
-  module.exports = MG

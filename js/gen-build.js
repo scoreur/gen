@@ -882,7 +882,7 @@ case 27:console.log('Unrecognized token: ', yy_.yytext);
 break;
 }
 },
-rules: [/^(?:((melody|harmony|percussion)))/,/^(?:(([0-9])))/,/^(?:((\r|\n|\r\n)))/,/^(?:\|:)/,/^(?:\|)/,/^(?::\|)/,/^(?::)/,/^(?:@)/,/^(?:(([A-GR][#b]{0,2})))/,/^(?:(([ |\t|\f|\v]))+)/,/^(?:\s+)/,/^(?:((%[^\r\n]*((\r|\n|\r\n)))))/,/^(?:((key_sig|time_sig|instrument|[k|t|i])))/,/^(?:((rate|volume|ctrls|[r|c|v])))/,/^(?:((out|scale|[o|s])))/,/^(?:(([0-9]))+)/,/^(?:\{[a-z_]+\})/,/^(?:[i])/,/^(?:(([0-9])))/,/^(?:\{(([0-9]))+\})/,/^(?:,)/,/^(?:[n])/,/^(?:[b])/,/^(?:~!)/,/^(?:~)/,/^(?:((,|;|\{|\}|\+|-|#|\/|\^)))/,/^(?:$)/,/^(?:.)/],
+rules: [/^(?:((melody|harmony|percussion)))/,/^(?:(([0-9])))/,/^(?:((\r|\n|\r\n)))/,/^(?:\|:)/,/^(?:\|)/,/^(?::\|)/,/^(?::)/,/^(?:@)/,/^(?:(([A-GR][#b]{0,2})))/,/^(?:(([ |\t|\f|\v]))+)/,/^(?:\s+)/,/^(?:((%[^\r\n]*((\r|\n|\r\n)))))/,/^(?:((key_sig|time_sig|instrument|[k|t|i])))/,/^(?:((rate|volume|ctrls|[r|c|v])))/,/^(?:((out|scale|[o|s])))/,/^(?:(([0-9]))+)/,/^(?:\{[a-zA-Z_][a-zA-Z_0-9]*\})/,/^(?:[i])/,/^(?:(([0-9])))/,/^(?:\{(([0-9]))+\})/,/^(?:,)/,/^(?:[n])/,/^(?:[b])/,/^(?:~!)/,/^(?:~)/,/^(?:((,|;|\{|\}|\+|-|#|\/|\^)))/,/^(?:$)/,/^(?:.)/],
 conditions: {"CTRL":{"rules":[2,3,4,5,6,7,8,9,12,13,14,15,16,25,26,27],"inclusive":true},"NOTE":{"rules":[2,3,4,5,6,7,8,9,18,19,20,21,22,23,24,25,26,27],"inclusive":true},"NOTE_DUR":{"rules":[2,3,4,5,6,7,8,9,15,25,26,27],"inclusive":true},"CHORD":{"rules":[3,4,5,6,7,8,9,17,18,25,26,27],"inclusive":true},"INITIAL":{"rules":[0,1,3,4,5,6,7,8,10,11,19,25,26,27],"inclusive":true}}
 });
 return lexer;
@@ -985,12 +985,12 @@ if (typeof module !== 'undefined' && require.main === module) {
   }
 */
 var schema_parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[2,3],$V1=[1,2],$V2=[1,5],$V3=[1,4,8,13],$V4=[7,8],$V5=[1,23],$V6=[1,26],$V7=[11,13],$V8=[1,33],$V9=[1,35],$Va=[1,39],$Vb=[1,37],$Vc=[1,38],$Vd=[1,34],$Ve=[1,36],$Vf=[11,13,28],$Vg=[11,28];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[2,3],$V1=[1,2],$V2=[1,5],$V3=[1,4,8,13],$V4=[7,8],$V5=[1,24],$V6=[1,26],$V7=[11,13],$V8=[1,33],$V9=[1,35],$Va=[1,39],$Vb=[1,37],$Vc=[1,38],$Vd=[1,34],$Ve=[1,36],$Vf=[11,13,28],$Vg=[11,28];
 var parser = {trace: function trace() { },
 yy: {},
 symbols_: {"error":2,"e":3,"EOF":4,"RULE":5,"R":6,";":7,"IDENT":8,"=":9,"{":10,",":11,"OPTIONS":12,"}":13,"->":14,"NODES":15,"ACTION":16,"OPTION":17,":":18,"VAR":19,"NUMBER":20,"DIGITS":21,"BOOL":22,"true":23,"false":24,"STRING":25,"[":26,"LIST":27,"]":28,"$accept":0,"$end":1},
 terminals_: {2:"error",4:"EOF",7:";",8:"IDENT",9:"=",10:"{",11:",",13:"}",14:"->",18:":",21:"DIGITS",23:"true",24:"false",25:"STRING",26:"[",28:"]"},
-productions_: [0,[3,2],[3,2],[3,0],[5,2],[5,8],[6,3],[6,3],[6,2],[15,3],[15,0],[16,5],[17,3],[12,1],[12,3],[20,1],[22,1],[22,1],[19,1],[19,1],[19,1],[19,1],[19,2],[19,3],[19,3],[27,0],[27,1],[27,3]],
+productions_: [0,[3,2],[3,2],[3,0],[5,2],[5,8],[6,3],[6,5],[6,2],[15,3],[15,0],[16,3],[17,3],[12,1],[12,3],[20,1],[22,1],[22,1],[19,1],[19,1],[19,1],[19,1],[19,2],[19,3],[19,3],[27,0],[27,1],[27,3]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -1031,8 +1031,11 @@ case 6:
 break;
 case 7:
 
-    $$[$0-2][1].action[ '_' + $$[$0-2][1].structure.length + "_" + $$[$0-1]] = $$[$0];
-    $$[$0-2][1].structure.push($$[$0-1]);
+    if($$[$0-1] != null){
+        $$[$0-4][1].action[ '_' + $$[$0-4][1].structure.length + "_" + $$[$0-3]] = $$[$0-1];
+    }
+
+    $$[$0-4][1].structure.push($$[$0-3]);
 
   
 break;
@@ -1049,8 +1052,8 @@ break;
 case 11:
 
     this.$ = {};
-    this.$.mode = $$[$0-3];
-    Object.assign(this.$, $$[$0-1]);
+    this.$.mode = $$[$0-2];
+    Object.assign(this.$, $$[$0]);
   
 break;
 case 12:
@@ -1106,7 +1109,7 @@ case 27:
 break;
 }
 },
-table: [o([1,4,8],$V0,{3:1}),{1:[3],4:$V1,5:3,6:4,8:$V2},o($V3,[2,1]),o($V3,[2,2]),{7:[1,6],8:[1,7]},{9:[1,8],14:[1,9]},o($V3,[2,4]),o($V4,[2,8],{16:10,10:[1,11]}),{10:[1,12]},o($V4,[2,10],{15:13,10:[1,14]}),o($V4,[2,7]),{8:[1,15]},{8:[1,16]},o($V4,[2,6]),o([4,8,13],$V0,{3:17}),{11:[1,18]},{11:[1,19]},{4:$V1,5:3,6:4,8:$V2,13:[1,20]},{8:$V5,12:21,17:22},{8:$V5,12:24,17:22},o($V4,[2,9]),{11:$V6,13:[1,25]},o($V7,[2,13]),{18:[1,27]},{11:$V6,13:[1,28]},o($V4,[2,11]),{8:$V5,17:29},{8:$V8,10:$V9,19:30,20:32,21:$Va,22:31,23:$Vb,24:$Vc,25:$Vd,26:$Ve},{7:[1,40]},o($V7,[2,14]),o($V7,[2,12]),o($Vf,[2,18]),o($Vf,[2,19]),o($Vf,[2,20]),o($Vf,[2,21]),{8:$V5,12:42,13:[1,41],17:22},o($Vg,[2,25],{22:31,20:32,27:43,19:44,8:$V8,10:$V9,21:$Va,23:$Vb,24:$Vc,25:$Vd,26:$Ve}),o($Vf,[2,16]),o($Vf,[2,17]),o($Vf,[2,15]),o($V3,[2,5]),o($Vf,[2,22]),{11:$V6,13:[1,45]},{11:[1,47],28:[1,46]},o($Vg,[2,26]),o($Vf,[2,24]),o($Vf,[2,23]),{8:$V8,10:$V9,19:48,20:32,21:$Va,22:31,23:$Vb,24:$Vc,25:$Vd,26:$Ve},o($Vg,[2,27])],
+table: [o([1,4,8],$V0,{3:1}),{1:[3],4:$V1,5:3,6:4,8:$V2},o($V3,[2,1]),o($V3,[2,2]),{7:[1,6],8:[1,7]},{9:[1,8],14:[1,9]},o($V3,[2,4]),o($V4,[2,8],{10:[1,10]}),{10:[1,11]},o($V4,[2,10],{15:12,10:[1,13]}),{8:[1,15],16:14},{8:[1,16]},o($V4,[2,6]),o([4,8,13],$V0,{3:17}),{13:[1,18]},{11:[1,19]},{11:[1,20]},{4:$V1,5:3,6:4,8:$V2,13:[1,21]},o($V4,[2,7]),{8:$V5,12:22,17:23},{8:$V5,12:25,17:23},o($V4,[2,9]),{11:$V6,13:[2,11]},o($V7,[2,13]),{18:[1,27]},{11:$V6,13:[1,28]},{8:$V5,17:29},{8:$V8,10:$V9,19:30,20:32,21:$Va,22:31,23:$Vb,24:$Vc,25:$Vd,26:$Ve},{7:[1,40]},o($V7,[2,14]),o($V7,[2,12]),o($Vf,[2,18]),o($Vf,[2,19]),o($Vf,[2,20]),o($Vf,[2,21]),{8:$V5,12:42,13:[1,41],17:23},o($Vg,[2,25],{22:31,20:32,27:43,19:44,8:$V8,10:$V9,21:$Va,23:$Vb,24:$Vc,25:$Vd,26:$Ve}),o($Vf,[2,16]),o($Vf,[2,17]),o($Vf,[2,15]),o($V3,[2,5]),o($Vf,[2,22]),{11:$V6,13:[1,45]},{11:[1,47],28:[1,46]},o($Vg,[2,26]),o($Vf,[2,24]),o($Vf,[2,23]),{8:$V8,10:$V9,19:48,20:32,21:$Va,22:31,23:$Vb,24:$Vc,25:$Vd,26:$Ve},o($Vg,[2,27])],
 defaultActions: {},
 parseError: function parseError(str, hash) {
     if (hash.recoverable) {
@@ -1608,7 +1611,7 @@ case 8:console.log('unrecognized token: ', yy_.yytext);
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:((%[^\r\n]*((\r|\n|\r\n)))))/,/^(?:(("[^\"]+")))/,/^(?:((;|\{|\}|\[|\]|:|,|=|->)))/,/^(?:((true|false)))/,/^(?:(([+-]?[\d.]+)))/,/^(?:(([a-zA-z]\w*)))/,/^(?:$)/,/^(?:.)/],
+rules: [/^(?:\s+)/,/^(?:((%[^\r\n]*((\r|\n|\r\n)))))/,/^(?:(("[^\"]+")))/,/^(?:((;|\{|\}|\[|\]|:|,|=|->|\(|\)|<|>)))/,/^(?:((true|false)))/,/^(?:(([+-]?[\d.]+)))/,/^(?:(([a-zA-z]\w*)))/,/^(?:$)/,/^(?:.)/],
 conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8],"inclusive":true}}
 });
 return lexer;
@@ -1639,7 +1642,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 }
 };// Generated by CoffeeScript 1.10.0
 (function() {
-  var MG, _seed, alias, gcd, lcm, ref1, ref2, ref3, roman,
+  var MG, _seed, alias, gcd, lcm, ref1, roman,
     modulo = function(a, b) { return (+a % (b = +b) + b) % b; },
     indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
@@ -1755,6 +1758,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     "aug7#": [0, 4, 8, 11],
     "dim7": [0, 3, 6, 9],
     "add9": [0, 2, 4, 7],
+    "minadd11": [0, 3, 5, 7],
     "add11": [0, 4, 5, 7]
   };
 
@@ -1997,7 +2001,9 @@ if (typeof module !== 'undefined' && require.main === module) {
     'M': 'maj',
     'm': 'min',
     'mi': 'min',
-    'm7': 'min7'
+    'm7': 'min7',
+    'm7#': "min7#",
+    'm7b5': 'min7b5'
   };
 
   roman = (function() {
@@ -2252,7 +2258,20 @@ if (typeof module !== 'undefined' && require.main === module) {
   };
 
   MG.score_dance = {
-    key_sig: 'C'
+    settings: {
+      tempo: 188,
+      time_sig: [6, 8],
+      key_sig: "C",
+      scale: "maj",
+      ctrl_per_beat: 4,
+      volumes: [110, 80],
+      instrs: [1, 1]
+    },
+    contents: {
+      harmony: ["Am7#,3 Am,4", "G#dim7 Am", "Am7#,3 Am,2 E7,2", "Am7b5 G#dim", "Am", "F", "C7", "C7", "F F7", "Fm Fm7#", "C7", "Fm", "C7", "F", "C7", "C7", "F F7", "Fm Fm7#", "C7", "Fm", "C7", "Fm C7", "C7 F7", "F7 ", "Am7#,3 Am,4", "G#dim7 Am", "Am7#,3 Am,2 E7,2", "Am7b5 G#dim", "Am", "Am", ""]
+    },
+    melody: ["%% A", ":+t7/8 3 4 3 2# 3 7- 1 2 1 0 :- 6 0 3 0", ":t6/8 7,4 3 0 :+ 1 2 1 0 3- 0", ":t7/8 3 4 3 2# 3 7- 1 2 1 0 :- 6 0 3 0", ":t6/8 6,4 6 0 7,4 5# 0", "6 0 :+ 1 0 3 0 6,2 0,2 1 0", "%% B", "1,3 2 1,2 4,4 3,2", "3,3 2,2 1", "1,3 2 1,2 5,4 4,2", "4,3 1,2 1", ":kAb 1,2 1 1 :- 7 6", "7,2 5# 3,2 3", "6,2 7 1+ 7 6", "2+,3 7,2 3+", ":kC+ 1,3 2 1,2 4,4 3,2", "3,3 2,2 1", "1,3 2 1,2 5,4 4,2", "4,3 1,2 1", ":kAb 1,2 1 1 :- 7 6", "7,2 5# 3,2 3", "6,2 7 1+ 7 6", "2+,4 7,2 :+ 3 0 4# 5 5# 7", "1+,2 1+ 7 6 1+ 7 0 5# 0 3 0", "7,2 7 6 5# 7 6 0 3 0 1# 0", ":kC :+ 3b,4 3,2 4 3 2# 3 4 0", "%% A", ":t7/8 3 4 3 2# 3 7- 1 2 1 0 :- 6 0 3 0", ":t6/8 7,4 3 0 :+ 1 2 1 0 3- 0", ":t7/8 3 4 3 2# 3 7- 1 2 1 0 :- 6 0 3 0", ":t6/8 6,4 6 0 7,4 5# 0", "6 :+ 1 3 1 6 5# 6,2 0,4", "136 0,2", ""],
+    texture: ["%% A", ":t7/8 @1-2341+ 1 235 234 @1-231+ 1 34 23 0", ":t6/8 @1-234 1 234 0 @1234 1 234 0", ":t7/8 @1-2341+ 1 235 234 @123 1 23 @341+ 123 0", ":t6/8 @ii1234 14 23 0 @1231+ 14 23 0", "@1231+ 1 3 2 234 0,2", "%% B", "% b1", "@1231+ 1 23 34 1 34 23", "@12341+ 1 245 23 1 245 23", "@12341+ 2 345 345 1 345 345", "@1231+ 1 34 23  @1234 1 3 24", "@1233- 1 23 4  @124- 12 3 1", "@12331+ 23 1 0 34 45 0", "@1231- 1 23 4 1 23 4", "@12341+2+ 1 235 46 2 35 1 ", "% b2", "@1231+ 1 23 34 1 34 23", "@12341+ 1 245 23 1 245 23", "@12341+ 2 345 345 1 345 345", "@1231+ 1 34 23  @1234 1 3 24", "@1233- 1 23 4  @124- 12 3 1", "@12331+ 23 1 0 34 45 0", "@1231- 1 23 4 1 23 4", "@2341+2+ 1 245 0 134 0,2", "% bridge", "@1234 1 23 34 @i1234 1 24 23 ", "1 234 234 @1234- 1 23 4", "@12341+ 124 3 0 235 0,2", "%% A", ":t7/8 @1-2341+ 1 235 234 @1-231+ 1 34 23 0", ":t6/8 @1-234 1 234 0 @1234 1 234 0", ":t7/8 @1-2341+ 1 235 234 @123 1 23 @341+ 123 0", ":t6/8 @ii1234 14 23 0 @1231+ 14 23 0", "@1231+ 1 3 2 234 0,2", "@13 13 0,2", ""]
   };
 
   MG.schema_dance = 'S';
@@ -2321,7 +2340,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       var k, v;
       for (k in dependency) {
         v = dependency[k];
-        if (indexOf.call(v, o) >= 0) {
+        while (indexOf.call(v, o) >= 0) {
           v.splice(v.indexOf(o), 1);
         }
       }
@@ -2383,6 +2402,34 @@ if (typeof module !== 'undefined' && require.main === module) {
     return ret;
   };
 
+  MG.rndPicker = function(choices, weights) {
+    var i, p, q, ref2, s;
+    if (arguments.length === 1) {
+      choices = _.keys(arguments[0]);
+      weights = _.values(arguments[0]);
+    }
+    s = math.sum(weights);
+    p = weights.map(function(e) {
+      return e / s;
+    });
+    s = 0;
+    for (i = q = 0, ref2 = p.length; q < ref2; i = q += 1) {
+      s = (p[i] += s);
+    }
+    return {
+      gen: function() {
+        var r, ref3, t;
+        r = MG.seededRandom();
+        for (i = t = 0, ref3 = p.length; t < ref3; i = t += 1) {
+          if (r < p[i]) {
+            return choices[i];
+          }
+        }
+        return choices[p.length - 1];
+      }
+    };
+  };
+
   MG.condCopy = function(src, dest, props) {
     var i, len, q;
     for (q = 0, len = props.length; q < len; q++) {
@@ -2432,13 +2479,22 @@ if (typeof module !== 'undefined' && require.main === module) {
     parsers
    */
 
-  MG.parseHarmony = function(measures, key_sig, tatum) {
+  MG.parseHarmony = function(measures, info) {
+    var key_sig, ref2, ref3, tatum;
     if (typeof measures === 'undefined') {
       console.log('empty harmony');
       return;
     }
-    return measures.map(function(e) {
+    key_sig = (ref2 = info.key_sigs[0]) != null ? ref2 : 'C';
+    tatum = info.ctrl_per_beat * ((ref3 = info.time_sigs[0][0]) != null ? ref3 : 4);
+    return measures.map(function(e, i) {
       var durs, r, ret;
+      if (info.time_sigs[i] != null) {
+        tatum = info.ctrl_per_beat * info.time_sigs[i][0];
+      }
+      if (info.key_sigs[i] != null) {
+        key_sig = info.key_sigs[i];
+      }
       durs = [];
       ret = e.trim().split(/\s+/).map(function(e2) {
         var chord_info, dur, terms;
@@ -2449,12 +2505,14 @@ if (typeof module !== 'undefined' && require.main === module) {
         return [dur, chord_info[0], chord_info[1]];
       });
       if (tatum != null) {
-        r = tatum / math.sum(durs);
+        r = Math.floor(tatum / math.sum(durs));
         durs = [];
         ret.forEach(function(ee, ii) {
           return durs.push(ret[ii][0] = Math.floor(ee[0] * r));
         });
-        ret[ret.length - 1][0] += tatum - math.sum(durs);
+        if (tatum > math.sum(durs)) {
+          ret[ret.length - 1][0] += tatum - math.sum(durs);
+        }
       }
       return ret;
     });
@@ -2513,9 +2571,9 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
   };
 
-  MG.score_parser = (ref2 = this.score_parser) != null ? ref2 : require('./js/score_parser');
+  MG.score_parser = this.score_parser || ((typeof module !== "undefined" && module !== null) && (typeof require !== "undefined" && require !== null) && require('../js/score_parser')) || require('./js/score_parser');
 
-  MG.schema_parser = (ref3 = this.schema_parser) != null ? ref3 : require('./js/schema_parser');
+  MG.schema_parser = this.schema_parser || ((typeof module !== "undefined" && module !== null) && (typeof require !== "undefined" && require !== null) && require('../js/schema_parser')) || require('./js/schema_parser');
 
   MG.schema_parser.produce = function(obj) {
     var indent, produce, produceVar;
@@ -2575,10 +2633,10 @@ if (typeof module !== 'undefined' && require.main === module) {
           }
           ret += '\n';
           v.structure.forEach(function(e, i) {
-            var ref4, tgt;
+            var ref2, tgt;
             ret += indent + e + ' ';
             if (v.action != null) {
-              tgt = (ref4 = v.action[e]) != null ? ref4 : v.action["_" + i + "_" + e];
+              tgt = (ref2 = v.action[e]) != null ? ref2 : v.action["_" + i + "_" + e];
               if (tgt != null) {
                 ret += produceVar(tgt, indent);
               }
@@ -2599,7 +2657,7 @@ if (typeof module !== 'undefined' && require.main === module) {
   };
 
   MG.parseMelody = function(m, options) {
-    var chorder, e, error, harmony, init_ref, key_sig_map, obj, ornamental, ref, refc, res, scale, tatum, tempo_map, time_sig_map;
+    var chorder, e, error, harmony, init_ref, key_sig_map, obj, ornamental, ref, ref2, refc, res, scale, tatum, tempo_map, time_sig_map;
     try {
       obj = MG.score_parser.parse(m.join('\n') + '\n');
     } catch (error) {
@@ -2650,7 +2708,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       0: options.time_sig
     };
     if (init_ref == null) {
-      init_ref = 60;
+      init_ref = (ref2 = MG.keyToPitch(options.key_sig + '4')) != null ? ref2 : 60;
     }
     ref = init_ref;
     res = obj.data.map(function(m, i) {
@@ -2659,7 +2717,11 @@ if (typeof module !== 'undefined' && require.main === module) {
       dur_tot = 0;
       durs = [];
       m.forEach(function(e) {
-        if (e.ctrl == null) {
+        if (e.ctrl != null) {
+          if (e.t != null) {
+            return tatum = e.t[0] * options.ctrl_per_beat;
+          }
+        } else {
           if (typeof e.dur === 'number') {
             dur_tot += e.dur;
             return durs.push(e.dur);
@@ -2669,21 +2731,19 @@ if (typeof module !== 'undefined' && require.main === module) {
           }
         }
       });
-      if (tatum != null) {
-        r = Math.floor(tatum / dur_tot);
-        dur_tot = 0;
-        m.forEach(function(e) {
-          if (e.ctrl == null) {
-            if (typeof e.dur === 'number') {
-              e.dur *= r;
-              return dur_tot += e.dur;
-            } else {
-              e.dur.original *= r;
-              return dur_tot += e.dur.original;
-            }
+      r = Math.floor(tatum / dur_tot);
+      dur_tot = 0;
+      m.forEach(function(e) {
+        if (e.ctrl == null) {
+          if (typeof e.dur === 'number') {
+            e.dur *= r;
+            return dur_tot += e.dur;
+          } else {
+            e.dur.original *= r;
+            return dur_tot += e.dur.original;
           }
-        });
-      }
+        }
+      });
       m.forEach(function(e) {
         var bass, chord, k, pitches, results, v;
         if (e.ctrl != null) {
@@ -2697,8 +2757,7 @@ if (typeof module !== 'undefined' && require.main === module) {
                 v = e[k];
                 switch (k) {
                   case 't':
-                    time_sig_map[i] = v;
-                    results.push(tatum = options.ctrl_per_beat * v[0]);
+                    results.push(time_sig_map[i] = v);
                     break;
                   case 's':
                     results.push(scale = MG.scale_class[v]);
@@ -2761,7 +2820,7 @@ if (typeof module !== 'undefined' && require.main === module) {
           }
         }
       });
-      if ((tatum != null) && dur_tot < tatum) {
+      if (dur_tot < tatum) {
         console.log('not enough');
         measure[measure.length - 1][0] += tatum - dur_tot;
       }
@@ -2777,10 +2836,6 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   this.MG = MG;
 
-  if (typeof module !== "undefined" && module !== null) {
-    module.exports = MG;
-  }
-
 }).call(this);
 
 //# sourceMappingURL=musical.js.map
@@ -2788,7 +2843,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 (function() {
   var Analyzer, MG, midi_statistics, obj_sort, seqPlayer;
 
-  MG = this.MG || ((typeof module !== "undefined" && module !== null) && (typeof require !== "undefined" && require !== null) && require('./musical')) || {};
+  MG = this.MG || ((typeof module !== "undefined" && module !== null) && (typeof require !== "undefined" && require !== null) && require('./musical').MG) || {};
 
 
   /*
@@ -3204,12 +3259,19 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     AppMG.prototype.parse = function() {
-      var e, error;
+      var e, error, error1;
       try {
         this.settings = JSON.parse(this.editor.settings.getValue());
       } catch (error) {
         e = error;
         $.notify('Bad score format!', 'warning');
+      }
+      try {
+        this.schema = MG.schema_parser.parse(this.editor.schema.getValue());
+      } catch (error1) {
+        e = error1;
+        console.log(e.message);
+        $.notify('Bad schema format!', 'warning');
       }
       ['melody', 'harmony', 'texture'].forEach((function(_this) {
         return function(e) {
@@ -3222,9 +3284,15 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     AppMG.prototype.generate = function() {
-      var generator, score;
+      var e, error, generator, score;
       this.settings = JSON.parse(this.editor.settings.getValue());
-      this.schema = MG.schema_parser.parse(this.editor.schema.getValue());
+      try {
+        this.schema = MG.schema_parser.parse(this.editor.schema.getValue());
+      } catch (error) {
+        e = error;
+        console.log(e.message);
+        $.notify('Bad schema format!', 'warning');
+      }
       generator = new Generator(this.settings, this.schema);
       generator.generate();
       score = generator.toScoreObj();
@@ -3302,11 +3370,11 @@ if (typeof module !== 'undefined' && require.main === module) {
 //# sourceMappingURL=appMG.js.map
 ;// Generated by CoffeeScript 1.10.0
 (function() {
-  var MG, parser, ref,
+  var MG, parser,
     indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     modulo = function(a, b) { return (+a % (b = +b) + b) % b; };
 
-  MG = (ref = this.MG) != null ? ref : {};
+  MG = this.MG || ((typeof module !== "undefined" && module !== null) && (typeof require !== "undefined" && require !== null) && require('./musical').MG) || {};
 
   MG.ref_midi_info = null;
 
@@ -3321,7 +3389,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     var newChoices, rndPicker, seededRandom;
 
     function Generator(settings, schema) {
-      var base, base1, base2, k, ref1, v;
+      var base, base1, base2, k, ref, v;
       this.settings = settings;
       this.schema = schema;
       if ((base = this.settings).key_sig == null) {
@@ -3336,9 +3404,9 @@ if (typeof module !== 'undefined' && require.main === module) {
       this.keyref = MG.keyToPitch[this.settings.key_sig + '4'];
       this.scale = MG.scale_class[this.settings.scale];
       this.seeds = {};
-      ref1 = this.schema;
-      for (k in ref1) {
-        v = ref1[k];
+      ref = this.schema;
+      for (k in ref) {
+        v = ref[k];
         if ((v.mode != null) && v.mode === 'distribution') {
           this.seeds[k] = v;
         }
@@ -3346,23 +3414,35 @@ if (typeof module !== 'undefined' && require.main === module) {
       this.res = {};
       this.toPitch = MG.scaleToPitch(this.settings.scale, this.settings.key_sig);
       this.toScale = MG.pitchToScale(this.settings.scale, this.settings.key_sig);
+      this.map_gen = {
+        'random': this.gen_random,
+        'exact': this.gen_exact,
+        'skeleton': this.gen_skeleton,
+        'distribution': function(v) {
+          return v;
+        }
+      };
+      this.map_act = {
+        'transpose': this.act_transpose,
+        'reverse': this.act_reverse,
+        'diminution': this.act_dim,
+        'augmentation': this.act_aug,
+        'double': this.act_double,
+        'acciaccatura': this.act_acciaccatura
+      };
     }
 
     seededRandom = MG.seededRandom;
 
+    rndPicker = MG.rndPicker;
+
     Generator.prototype.produce = function(variable, global) {
-      var dependency, i, k, l, len, len1, local, m, next_global, ref1, ref2, ret, v;
+      var dependency, i, k, l, len, len1, local, modify, next_global, o, ref, ref1, ret, v;
       if (variable.mode != null) {
-        switch (variable.mode) {
-          case 'chord':
-            console.log('DEPRECATED!!');
-            return this.gen_random(variable);
-          case 'random':
-            return this.gen_random(variable);
-          case 'distribution':
-            return variable;
-          case 'exact':
-            return this.gen_exact(variable);
+        if (this.map_gen[variable.mode] != null) {
+          return this.map_gen[variable.mode].call(this, variable);
+        } else {
+          console.log('unrecognized generating mode');
         }
       }
       if (variable.node == null) {
@@ -3376,9 +3456,9 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
       local = _.keys(variable.node);
       dependency = {};
-      ref1 = variable.node;
-      for (k in ref1) {
-        v = ref1[k];
+      ref = variable.node;
+      for (k in ref) {
+        v = ref[k];
         dependency[k] = [];
         if (v.mode != null) {
           continue;
@@ -3386,9 +3466,9 @@ if (typeof module !== 'undefined' && require.main === module) {
         if (v.node == null) {
           v.node = {};
         }
-        ref2 = v.structure;
-        for (l = 0, len = ref2.length; l < len; l++) {
-          i = ref2[l];
+        ref1 = v.structure;
+        for (l = 0, len = ref1.length; l < len; l++) {
+          i = ref1[l];
           if (!(i in v.node) && indexOf.call(local, i) >= 0) {
             dependency[k].push(i);
           }
@@ -3396,56 +3476,52 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
       local = MG.top_sort(dependency);
       next_global = Object.assign({}, global);
-      for (m = 0, len1 = local.length; m < len1; m++) {
-        k = local[m];
+      for (o = 0, len1 = local.length; o < len1; o++) {
+        k = local[o];
         next_global[k] = this.produce(variable.node[k], next_global);
       }
       ret = new Snippet();
+      modify = {};
       variable.structure.forEach((function(_this) {
         return function(v, i) {
-          var options, tmp;
+          var next_modify, options, tmp;
           if (v in next_global) {
             tmp = next_global[v];
+            next_modify = null;
             if (("_" + i + "_" + v) in variable.action) {
               options = variable.action["_" + i + "_" + v];
-              console.log('ACT', options.mode);
-              switch (options.mode) {
-                case 'transpose':
-                  tmp = _this.act_transpose(options, tmp);
-                  break;
-                case 'reverse':
-                  tmp = _this.act_reverse(options, tmp);
-                  break;
-                case 'dim':
-                  tmp = _this.act_dim(options, tmp);
-                  break;
-                case 'aug':
-                  tmp = _this.act_aug(options, tmp);
+              if (options.modify != null) {
+                next_modify = options.modify;
+              }
+              if (_this.map_act[options.mode] != null) {
+                tmp = _this.map_act[options.mode].call(_this, options, tmp);
+              } else {
+                console.log('unsupported action', options.mode);
               }
             }
-            ret = ret.join(tmp, {
-              smooth: 'true'
-            });
-            return console.log('concat', v, ret.data.length);
+            ret = ret.join(tmp, modify);
+            if (next_modify !== null) {
+              return modify = MG.clone(next_modify);
+            } else {
+              return modify = {};
+            }
           } else {
             return console.log('miss', v);
           }
         };
       })(this));
+      if (modify.cadence != null) {
+        ret.cadence(modify.cadence);
+      }
       return ret;
     };
 
     Generator.prototype.generate = function() {
-      var res, res_eval, sec;
-      sec = this.settings.ctrl_per_beat * this.settings.time_sig[0];
-      res_eval = [];
       this.snippet = this.produce(this.schema.S);
-      this.snippet.cadence(this.settings.key_sig);
       console.log(this.snippet);
       this.res2 = this.snippet.toScore(this.settings.key_sig);
-      console.log(this.res2);
-      res = this.res2;
-      return res;
+      console.log('score', this.res2);
+      return this.res2;
     };
 
     Generator.prototype.evaluate = function(data) {
@@ -3481,11 +3557,15 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     Generator.prototype.act_transpose = function(options, acted) {
-      var cur_i, dur, interval, refd, res, src, tmp, transpose;
+      var cur_i, dur, interval, key_sig, ref, refd, res, src, tmp, transpose;
       dur = options.dur;
       res = new Snippet();
       src = acted.data;
-      transpose = MG.transposer(options.scale, this.settings.key_sig);
+      key_sig = (ref = options.key_sig) != null ? ref : this.settings.key_sig;
+      if (options.scale == null) {
+        options.scale = 'chromatic';
+      }
+      transpose = MG.transposer(options.scale, key_sig);
       interval = options.interval;
       if (typeof interval === 'number') {
         interval = [interval];
@@ -3539,21 +3619,205 @@ if (typeof module !== 'undefined' && require.main === module) {
       return res;
     };
 
+    Generator.prototype.act_double = function(options, acted) {
+      var data, div, ref, res;
+      res = new Snippet();
+      data = [];
+      div = (ref = options.div) != null ? ref : 3;
+      acted.data.forEach(function(m) {
+        var gcd, ret;
+        ret = m.copy();
+        ret.pitch = [];
+        ret.dur = [];
+        gcd = MG.gcd.apply(null, m.dur);
+        m.dur.forEach(function(e, i) {
+          var dur;
+          if (options.force != null) {
+            if (e > options.force) {
+              dur = Math.floor(e / options.force);
+              ret.add(m.pitch[i], e - dur);
+              if (dur > 0) {
+                return ret.add(m.pitch[i], dur);
+              }
+            } else {
+              return ret.add(m.pitch[i], e);
+            }
+          } else if (!((options.num != null) && i > options.num)) {
+            dur = Math.ceil(e / div);
+            ret.add(m.pitch[i], e - dur);
+            return ret.add(m.pitch[i], dur);
+          } else {
+            return ret.add(m.pitch[i], e);
+          }
+        });
+        data.push(ret);
+      });
+      res.data = data;
+      console.log(acted, 'double->', res);
+      return res;
+    };
+
+    Generator.prototype.act_acciaccatura = function(options, acted) {
+      var ctrl_per_beat, data, delay, key_sig, num, ref, ref1, ref2, ref3, ref4, res, scale, transpose;
+      res = new Snippet();
+      data = [];
+      ctrl_per_beat = (ref = options.ctrl_per_beat) != null ? ref : this.settings.ctrl_per_beat;
+      delay = (ref1 = options.delay) != null ? ref1 : Math.ceil(ctrl_per_beat / 3);
+      key_sig = (ref2 = options.key_sig) != null ? ref2 : this.settings.key_sig;
+      scale = (ref3 = options.scale) != null ? ref3 : 'maj';
+      num = (ref4 = options.num) != null ? ref4 : 3;
+      transpose = MG.transposer(scale, key_sig);
+      acted.data.forEach(function(m, j) {
+        var i, l, new_pitch, pre_delay, ref5, ret;
+        ret = m.copy();
+        ret.pitch = [];
+        ret.dur = [];
+        for (i = l = 0, ref5 = m.dur.length - 1; l < ref5; i = l += 1) {
+          if (m.dur[i] > delay && i < num) {
+            ret.add(m.pitch[i], m.dur[i] - delay);
+            if (MG.seededRandom() > 0.4) {
+              ret.add(m.pitch[i + 1] - 1, delay);
+            } else {
+              new_pitch = transpose(m.pitch[i + 1], 1);
+              ret.add(new_pitch, delay);
+            }
+          } else {
+            ret.add(m.pitch[i], m.dur[i]);
+          }
+        }
+        if (j < acted.data.length - 1 && (options.tailbite != null)) {
+          pre_delay = Math.ceil(m.dur[m.dur.length - 1] / 3);
+          ret.add(m.pitch[m.pitch.length - 1], m.dur[m.dur.length - 1] - pre_delay);
+          if (pre_delay > 0) {
+            ret.add(acted.data[j + 1].pitch[0], pre_delay);
+          }
+        } else {
+          ret.add(m.pitch[m.pitch.length - 1], m.dur[m.dur.length - 1]);
+        }
+        data.push(ret);
+      });
+      res.data = data;
+      console.log(acted, 'acciaccatura->', res);
+      return res;
+    };
+
     Generator.prototype.act_aug = function(options, acted) {};
 
     Generator.prototype.act_dim = function(options, acted) {};
 
+    Generator.prototype.gen_skeleton = function(options) {
+      var ctrl_per_beat, durs, harmony, info, key_sig, pitch, pre, ref, ref1, ref2, ret, time_sig;
+      ctrl_per_beat = (ref = options.ctrl_per_beat) != null ? ref : this.settings.ctrl_per_beat;
+      info = {
+        ctrl_per_beat: ctrl_per_beat
+      };
+      key_sig = (ref1 = options.key_sig) != null ? ref1 : this.settings.key_sig;
+      time_sig = (ref2 = options.time_sig) != null ? ref2 : this.settings.time_sig;
+      info.key_sigs = {
+        0: key_sig
+      };
+      info.time_sigs = {
+        0: time_sig
+      };
+      harmony = MG.parseHarmony(options.chords, info);
+      pre = MG.keyToPitch(key_sig + '4');
+      durs = [];
+      pitch = [];
+      if ((options.eachbeat != null) && options.eachbeat === true) {
+        harmony.forEach(function(m) {
+          return m.forEach(function(h) {
+            var dur;
+            dur = h[0];
+            while (dur >= ctrl_per_beat) {
+              durs.push(ctrl_per_beat);
+              pitch.push(h[1] + h[2][Math.floor(MG.seededRandom() * h[2].length)]);
+              dur -= ctrl_per_beat;
+            }
+            if (dur > 0) {
+              durs.push(dur);
+              pitch.push(h[1] + h[2][Math.floor(MG.seededRandom() * h[2].length)]);
+            }
+            return h[2] = MG.chord_finder[h[2].toString()] || 'maj';
+          });
+        });
+      } else {
+        harmony.forEach(function(m) {
+          return m.forEach(function(h) {
+            durs.push(h[0]);
+            pitch.push(h[1] + h[2][Math.floor(MG.seededRandom() * h[2].length)]);
+            return h[2] = MG.chord_finder[h[2].toString()] || 'maj';
+          });
+        });
+      }
+      ret = new Snippet(pitch, durs, harmony, {
+        time_sig: time_sig,
+        tatum: ctrl_per_beat
+      });
+      console.log('gen skeleton', info, ret);
+      return ret;
+    };
+
     Generator.prototype.gen_exact = function(options) {
-      var res;
-      return res = MG.parseMelody(options.score, options);
+      var data, harmony, info, res;
+      options = MG.clone(options);
+      if (options.ctrl_per_beat == null) {
+        options.ctrl_per_beat = this.settings.ctrl_per_beat;
+      }
+      if (options.tempo == null) {
+        options.tempo = this.settings.tempo;
+      }
+      if (options.time_sig == null) {
+        options.time_sig = this.settings.time_sig;
+      }
+      if (options.key_sig == null) {
+        options.key_sig = this.settings.key_sig;
+      }
+      console.log('gen exact', res = MG.parseMelody(options.score, options));
+      info = {
+        ctrl_per_beat: this.settings.ctrl_per_beat
+      };
+      info.key_sigs = {
+        0: this.settings.key_sig
+      };
+      info.time_sigs = {
+        0: this.settings.time_sig
+      };
+      harmony = MG.parseHarmony(options.chords, info);
+      data = res.map(function(m, i) {
+        var ret;
+        ret = new Measure(options.time_sig, options.ctrl_per_beat);
+        m.forEach(function(e) {
+          return ret.add(e[1][0], e[0]);
+        });
+        harmony[i].forEach(function(e) {
+          return e[2] = MG.chord_finder[e[2].toString()] || 'maj';
+        });
+        ret.harmony = harmony[i];
+        return ret;
+      });
+      res = new Snippet();
+      res.data = data;
+      return res;
     };
 
     Generator.prototype.gen_random = function(options) {
-      var bass, choices, chorder, cur_chord, dur, harmony, i, j, k, n, new_dur, op, pre, pre2, range, range_dist, raw_choices, rc1, rc2, res, scale_len, seed, seed2, swarp, tmp, toPitch, toScale, v;
+      var bass, choices, chorder, ctrl_per_beat, cur_chord, dur, harmony, i, info, j, k, key_sig, n, new_dur, op, pre, pre2, range, range_dist, raw_choices, rc1, rc2, ref, ref1, ref2, res, scale_len, seed, seed2, swarp, time_sig, tmp, toPitch, toScale, v;
       dur = options.dur;
       toPitch = this.toPitch;
       toScale = this.toScale;
-      harmony = MG.parseHarmony(options.chords, this.settings.key_sig, this.settings.time_sig[0] * this.settings.ctrl_per_beat);
+      ctrl_per_beat = (ref = options.ctrl_per_beat) != null ? ref : this.settings.ctrl_per_beat;
+      info = {
+        ctrl_per_beat: ctrl_per_beat
+      };
+      key_sig = (ref1 = options.key_sig) != null ? ref1 : this.settings.key_sig;
+      time_sig = (ref2 = options.time_sig) != null ? ref2 : this.settings.time_sig;
+      info.key_sigs = {
+        0: key_sig
+      };
+      info.time_sigs = {
+        0: time_sig
+      };
+      harmony = MG.parseHarmony(options.chords, info);
       chorder = MG.harmony_progresser(harmony);
       scale_len = this.scale.length;
       res = {
@@ -3598,7 +3862,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       if (swarp == null) {
         swarp = 1;
       }
-      n = Math.floor(dur / (seed.dur / swarp));
+      n = Math.floor(dur / (Math.floor(seed.dur / swarp)));
       rc1 = rndPicker(seed.choices, seed.weights);
       pre = scale_len * 4;
       pre2 = pre;
@@ -3716,32 +3980,6 @@ if (typeof module !== 'undefined' && require.main === module) {
       return obj;
     };
 
-    rndPicker = function(choices, weights) {
-      var i, l, p, ref1, s;
-      s = weights.reduce((function(a, b) {
-        return a + b;
-      }), 0);
-      p = weights.map(function(e) {
-        return e / s;
-      });
-      s = 0;
-      for (i = l = 0, ref1 = p.length; l < ref1; i = l += 1) {
-        s = (p[i] += s);
-      }
-      return {
-        gen: function() {
-          var m, r, ref2;
-          r = seededRandom();
-          for (i = m = 0, ref2 = p.length; m < ref2; i = m += 1) {
-            if (r < p[i]) {
-              return choices[i];
-            }
-          }
-          return choices[p.length - 1];
-        }
-      };
-    };
-
     return Generator;
 
   })();
@@ -3751,10 +3989,10 @@ if (typeof module !== 'undefined' && require.main === module) {
 //# sourceMappingURL=Generator.js.map
 ;// Generated by CoffeeScript 1.10.0
 (function() {
-  var MG, parser, ref,
+  var MG, ScoreObj, parser,
     modulo = function(a, b) { return (+a % (b = +b) + b) % b; };
 
-  MG = (ref = this.MG) != null ? ref : {};
+  MG = this.MG || ((typeof module !== "undefined" && module !== null) && (typeof require !== "undefined" && require !== null) && require('./musical').MG) || {};
 
   parser = MG.score_parser;
 
@@ -3861,7 +4099,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   this.Snippet = (function() {
     function Snippet(pitch, dur, harmony, options) {
-      var delta, m_i, measure, ref1, ref2, ref3, res, sec, tatum, time_sig;
+      var delta, m_i, measure, ref, ref1, ref2, res, sec, tatum, time_sig;
       if (arguments.length === 0) {
         this.data = [];
         return;
@@ -3870,13 +4108,12 @@ if (typeof module !== 'undefined' && require.main === module) {
         dur = _.flatten(dur, true);
         pitch = _.flatten(pitch, true);
       }
-      tatum = (ref1 = options.tatum) != null ? ref1 : 8;
-      time_sig = (ref2 = options.time_sig) != null ? ref2 : [4, 4];
+      tatum = (ref = options.tatum) != null ? ref : 8;
+      time_sig = (ref1 = options.time_sig) != null ? ref1 : [4, 4];
       sec = tatum * time_sig[0];
       MG.condCopy(options, this, ['incomplete_start', 'tie']);
-      delta = (ref3 = this.incomplete_start) != null ? ref3 : sec;
+      delta = (ref2 = this.incomplete_start) != null ? ref2 : sec;
       m_i = 0;
-      console.log(harmony.length, 'harmony length');
       measure = new Measure(time_sig, tatum);
       res = [];
       dur.forEach((function(_this) {
@@ -3999,6 +4236,7 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
       ret.data = ret.data.concat(s.data);
       MG.condCopy(s, ret, ['incomplete_end']);
+      console.log('join snippet', ret.data, modify);
       return ret;
     };
 
@@ -4038,6 +4276,9 @@ if (typeof module !== 'undefined' && require.main === module) {
         if ((measure.tie != null) && (measure.tie = true)) {
           ret[ret.length - 1].push(true);
         }
+        if (measure.harmony == null) {
+          measure.harmony = [];
+        }
         durs = measure.harmony.map(function(e) {
           return e[0];
         });
@@ -4069,7 +4310,7 @@ if (typeof module !== 'undefined' && require.main === module) {
     one track is an array of measure, with property
    */
 
-  this.ScoreObj = (function() {
+  ScoreObj = this.ScoreObj = (function() {
     function ScoreObj(options, contents) {
       if (options == null) {
         options = {};
@@ -4144,12 +4385,17 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreObj.prototype.setTexture = function(texture, harmony, parsed) {
-      var options;
+      var info, options;
       if ((parsed != null) && parsed === true) {
         this.harmony = harmony;
         return this.setTrack(1, texture);
       } else {
-        this.harmony = MG.parseHarmony(harmony, this.key_sig, this.ctrl_per_beat * this.time_sig[0]);
+        info = null;
+        if (this.tracks[0].info != null) {
+          info = MG.clone(this.tracks[0].info);
+        }
+        info.ctrl_per_beat = this.ctrl_per_beat;
+        this.harmony = MG.parseHarmony(harmony, info);
         options = this.getSettings();
         options.harmony = this.harmony;
         return this.setTrack(1, MG.parseMelody(texture, options));
@@ -4252,10 +4498,10 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreObj.prototype.toMidi = function() {
-      var ctrlTicks, delta, dur, e, i, j, m, nTrack, notes, ref1, ref2, t, t_i, vol;
+      var ctrlTicks, delta, dur, dur_abs, k, key_sigs, m, nTrack, notes, ref, ref1, t_i, time_sigs, vol;
       ctrlTicks = this.init_ctrlTicks;
       m = new simpMidi();
-      m.setTimeSignature.apply(m, this.time_sig);
+      m.setTimeSignature(this.time_sig[0], this.time_sig[1]);
       m.setKeySignature(MG.key_sig[this.key_sig], 'maj');
       m.setTempo(this.tempo);
       m.setDefaultTempo(this.tempo);
@@ -4263,42 +4509,69 @@ if (typeof module !== 'undefined' && require.main === module) {
       if (nTrack > 9) {
         nTrack = 9;
       }
-      for (t_i = j = 0, ref1 = nTrack; j < ref1; t_i = j += 1) {
+      time_sigs = this.tracks[0].info.time_sigs;
+      key_sigs = this.tracks[0].info.key_sigs;
+      for (t_i = k = 0, ref = nTrack; k < ref; t_i = k += 1) {
+        dur_abs = 0;
         if (t_i !== 0) {
           m.addTrack();
           console.log('add track', t_i);
         }
-        delta = 0;
-        t = _.flatten(this.tracks[t_i], true);
-        vol = (ref2 = this.volumes[t_i]) != null ? ref2 : this.volumes[0];
+        console.log('info', this.tracks[t_i].info);
+        vol = (ref1 = this.volumes[t_i]) != null ? ref1 : this.volumes[0];
         MIDI.programChange(t_i, this.instrs[t_i] - 1);
         m.addEvent(t_i + 1, 0, 'programChange', t_i, this.instrs[t_i] - 1);
-        i = 0;
-        while (i < t.length) {
-          e = t[i];
-          notes = [];
-          if (typeof e[1] === 'number') {
-            if (e[1] >= 21 && e[1] <= 108) {
-              notes.push = e[1];
+        notes = [];
+        dur = 0;
+        delta = 0;
+        this.tracks[t_i].forEach(function(t, j) {
+          var e, i, results;
+          if (t_i === 0) {
+            if (time_sigs[j] != null) {
+              m.addEvent(0, dur_abs * ctrlTicks, 'timeSignature', time_sigs[j][0], time_sigs[j][1]);
+              dur_abs = 0;
             }
-          } else {
-            e[1].forEach(function(pitch) {
-              if (pitch >= 21 && pitch <= 108) {
-                return notes.push(pitch);
+            if (key_sigs[j] != null) {
+              m.addEvent(0, dur_abs * ctrlTicks, 'keySignature', MG.key_sig[key_sigs[j]], 'maj');
+              dur_abs = 0;
+            }
+          }
+          i = 0;
+          results = [];
+          while (i < t.length) {
+            e = t[i];
+            dur_abs += e[0];
+            if (notes.length === 0) {
+              if (typeof e[1] === 'number') {
+                if (e[1] >= 21 && e[1] <= 108) {
+                  notes.push = e[1];
+                }
+              } else {
+                e[1].forEach(function(pitch) {
+                  if (pitch >= 21 && pitch <= 108) {
+                    return notes.push(pitch);
+                  }
+                });
               }
-            });
-          }
-          if (notes.length === 0) {
-            delta += e[0];
-          } else {
-            dur = e[0];
-            while (t[i][2] === true && i + 1 < t.length) {
-              dur += t[++i][0];
             }
-            m.addNotes(t_i + 1, dur * ctrlTicks, notes, vol, 0, delta * ctrlTicks);
-            delta = 0;
+            if (notes.length === 0) {
+              delta += e[0];
+            } else {
+              dur += t[i][0];
+              if (t[i][2] !== true) {
+                m.addNotes(t_i + 1, dur * ctrlTicks, notes, vol, 0, delta * ctrlTicks);
+                notes = [];
+                dur = 0;
+                delta = 0;
+              }
+            }
+            results.push(++i);
           }
-          ++i;
+          return results;
+        });
+        if (notes.length > 0) {
+          console.log('remain', notes);
+          m.addNotes(t_i + 1, dur * ctrlTicks, notes, vol, 0, delta * ctrlTicks);
         }
       }
       m.finish();
@@ -4314,6 +4587,10 @@ if (typeof module !== 'undefined' && require.main === module) {
 //# sourceMappingURL=ScoreObj.js.map
 ;// Generated by CoffeeScript 1.10.0
 (function() {
+  var MG;
+
+  MG = this.MG || ((typeof module !== "undefined" && module !== null) && (typeof require !== "undefined" && require !== null) && require('./musical').MG) || {};
+
   this.ScoreRenderer = (function() {
     var dur_obj, toBit;
 
@@ -4391,8 +4668,11 @@ if (typeof module !== 'undefined' && require.main === module) {
       }
     };
 
-    toBit = function(i) {
+    toBit = function(i, base) {
       var j, res;
+      if (base == null) {
+        base = 2;
+      }
       res = [];
       j = 1;
       while (i > 0) {
@@ -4498,17 +4778,17 @@ if (typeof module !== 'undefined' && require.main === module) {
     };
 
     ScoreRenderer.prototype.render = function(s) {
-      var add_key_sig, beams, err, error, i, k, key_sig, later_tie, melody, notes, num_beats, ref, sharp, stave, sum, ties, time_sig, toScale, voice, w;
+      var add_key_sig, beams, err, error, i, k, key_sig, later_tie, melody, notes, num_beats, ref, ref1, ref2, sharp, stave, sum, ties, time_sig, toScale, voice, w;
       this.s = s;
       this.layout.measure_per_system = s.ctrl_per_beat > 16 ? 2 : 3;
       this.measures = [];
       melody = s.tracks[0];
-      time_sig = melody.info.time_sigs[0] = s.time_sig;
-      key_sig = melody.info.key_sigs[0] = s.key_sig;
+      time_sig = (ref = melody.info.time_sigs[0]) != null ? ref : s.time_sig;
+      key_sig = (ref1 = melody.info.key_sigs[0]) != null ? ref1 : s.key_sig;
       sharp = MG.key_sig[key_sig] >= 0;
       toScale = MG.pitchToScale(s.scale, key_sig);
       this.geo.reserved_width = 30 + 5 * Math.abs(MG.key_sig[key_sig]);
-      for (i = k = 0, ref = melody.length; k < ref; i = k += 1) {
+      for (i = k = 0, ref2 = melody.length; k < ref2; i = k += 1) {
         stave = this.newStave(i);
         add_key_sig = false;
         w = Math.floor(this.geo.system_width / this.layout.measure_per_system);
@@ -4534,8 +4814,8 @@ if (typeof module !== 'undefined' && require.main === module) {
         later_tie = [];
         sum = 0;
         melody[i].forEach(function(e) {
-          var dur, durs, ii, indices, keys, l, pd, ref1, ref2, rest, start, tie;
-          ref1 = dur_obj(sum, 16 * e[0] / s.ctrl_per_beat), sum = ref1.sum, dur = ref1.dur;
+          var dur, durs, ii, indices, keys, l, pd, ref3, ref4, rest, start, tie;
+          ref3 = dur_obj(sum, 16 * e[0] / s.ctrl_per_beat), sum = ref3.sum, dur = ref3.dur;
           durs = [];
           pd = 0;
           dur.forEach(function(d) {
@@ -4577,7 +4857,7 @@ if (typeof module !== 'undefined' && require.main === module) {
             });
           }
           durs.forEach(function(d) {
-            var iii, l, r, ref2, res;
+            var iii, l, r, ref4, res;
             res = new Vex.Flow.StaveNote({
               keys: keys,
               duration: d,
@@ -4585,7 +4865,7 @@ if (typeof module !== 'undefined' && require.main === module) {
             });
             r = /d+/.exec(d);
             if (r != null) {
-              for (iii = l = 0, ref2 = r[0].length; l < ref2; iii = l += 1) {
+              for (iii = l = 0, ref4 = r[0].length; l < ref4; iii = l += 1) {
                 res.addDotToAll();
               }
             }
@@ -4596,7 +4876,7 @@ if (typeof module !== 'undefined' && require.main === module) {
             indices = Array(keys.length).fill(0).map(function(ee, index) {
               return index;
             });
-            for (ii = l = 1, ref2 = durs.length; l < ref2; ii = l += 1) {
+            for (ii = l = 1, ref4 = durs.length; l < ref4; ii = l += 1) {
               tie = new Vex.Flow.StaveTie({
                 first_note: notes[start + ii - 1],
                 last_note: notes[start + ii],

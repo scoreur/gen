@@ -40,7 +40,7 @@ MODE            =	("melody"|"harmony"|"percussion")
 <CTRL>{Op_unary}                        {return 'Op_unary';}
 <CTRL>{Op_string}                       {return 'Op_string';}
 <CTRL,NOTE_DUR>{DIGIT}+		        	{return 'DIGIT';}
-<CTRL>"{"[a-z_]+"}"			        	{return 'STRING';}
+<CTRL>"{"[a-zA-Z_][a-zA-Z_0-9]*"}"			        	{return 'STRING';}
 
 <CHORD>[i]                              {return 'i';}
 

@@ -1,4 +1,4 @@
-MG = @MG || (module? && require? && require('./musical')) || {}
+MG = @MG || (module? && require? && require('./musical').MG) || {}
 
 ###
   player for note sequence

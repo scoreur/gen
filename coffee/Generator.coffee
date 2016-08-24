@@ -1,4 +1,4 @@
-MG = @MG ? {}
+MG = @MG || (module? && require? && require('./musical').MG) || {}
 
 MG.ref_midi_info = null
 
@@ -23,19 +23,33 @@ class @Generator
 
     @toPitch = MG.scaleToPitch(@settings.scale, @settings.key_sig)
     @toScale = MG.pitchToScale(@settings.scale, @settings.key_sig)
+    @map_gen = {
+      'random': @gen_random,
+      'exact': @gen_exact,
+      'skeleton': @gen_skeleton,
+      'distribution': (v)-> v
+    }
+    @map_act = {
+      'transpose': @act_transpose,
+      'reverse': @act_reverse,
+      'diminution': @act_dim,
+      'augmentation': @act_aug,
+      'double': @act_double,
+      'acciaccatura': @act_acciaccatura
+    }
 
   seededRandom = MG.seededRandom
+  rndPicker = MG.rndPicker
 
   # traverse the parsed tree
   produce: (variable, global)->
+
     if variable.mode? # terminal
-      switch variable.mode
-        when 'random'
-          return @gen_random(variable)
-        when 'distribution'
-          return variable
-        when 'exact'
-          return @gen_exact(variable)
+      if @map_gen[variable.mode]?
+        return @map_gen[variable.mode].call(@,variable)
+      else
+        console.log 'unrecognized generating mode'
+
     variable.node ?= {}
     variable.action ?= {}
     #console.log 'action', variable.action
@@ -59,48 +73,46 @@ class @Generator
       next_global[k] = @produce(variable.node[k], next_global)
 
     ret = new Snippet()
+    modify = {}
 
     variable.structure.forEach (v,i) =>
       if v of next_global
         tmp = next_global[v]
+        next_modify = null
         if "_#{i}_#{v}" of variable.action
           options = variable.action["_#{i}_#{v}"]
-          console.log 'ACT', options.mode
-
-          switch options.mode
-            when 'transpose'
-              tmp = @act_transpose(options, tmp)
-            when 'reverse'
-              tmp = @act_reverse(options, tmp)
-            when 'dim'
-              tmp = @act_dim(options, tmp)
-            when 'aug'
-              tmp = @act_aug(options, tmp)
-        ret = ret.join(tmp, {smooth:'true'})
-        console.log 'concat', v, ret.data.length
+          if options.modify?
+            next_modify = options.modify
+          if @map_act[options.mode]?
+            tmp = @map_act[options.mode].call(@, options, tmp)
+          else
+            console.log 'unsupported action', options.mode
+        ret = ret.join(tmp, modify)
+        if next_modify != null
+          modify = MG.clone(next_modify)
+        else
+          modify = {}
       else
         console.log 'miss', v
+    # last modify, maybe cadence
+    if modify.cadence?
+      ret.cadence(modify.cadence)
+
     return ret
 
 
   # low_level / high_level
   generate: ->
-
-    sec = @settings.ctrl_per_beat * @settings.time_sig[0] # separate bar
-    res_eval = []
-
     @snippet =  @produce(@schema.S)
-    @snippet.cadence(@settings.key_sig)
     console.log @snippet
     @res2 = @snippet.toScore(@settings.key_sig)
-    console.log @res2
+    console.log 'score', @res2
 
     # evaluation
 
-    res = @res2
-
     # ornamentation
-    return res
+
+    return @res2
 
   evaluate: (data)->
     info = MG.midi_statistics(data)
@@ -145,7 +157,10 @@ class @Generator
     res = new Snippet()
     src = acted.data
 
-    transpose = MG.transposer(options.scale, @settings.key_sig)
+    key_sig = options.key_sig ? @settings.key_sig
+    options.scale ?= 'chromatic'
+
+    transpose = MG.transposer(options.scale, key_sig)
     interval = options.interval
     if typeof interval == 'number'
       interval = [interval]
@@ -179,7 +194,7 @@ class @Generator
     console.log acted, 'transpose-> ', res
     res
   act_reverse: (options, acted) ->
-    res = acted.copy();
+    res = acted.copy()
     # shallow version options.deep = false
     if options.deep? && options.deep == true
       res.data.reverse().forEach (arr)->
@@ -192,12 +207,132 @@ class @Generator
     console.log acted, 'reverse-> ', res
     res
 
+  act_double: (options, acted) ->
+
+    res = new Snippet()
+    data = []
+    div = options.div ? 3
+
+    # options up/down
+
+    acted.data.forEach (m)->
+      ret = m.copy()
+      ret.pitch = []
+      ret.dur = []
+      gcd = MG.gcd.apply(null, m.dur)
+      m.dur.forEach (e, i)->
+        if options.force?
+          if e > options.force
+            dur = e // options.force
+            ret.add(m.pitch[i], e - dur)
+            if dur > 0
+              ret.add(m.pitch[i], dur)
+          else
+            ret.add m.pitch[i], e
+        else if not (options.num? && i > options.num)
+          dur = Math.ceil(e / div)
+          ret.add(m.pitch[i], e - dur)
+          ret.add(m.pitch[i], dur)
+        else
+          ret.add(m.pitch[i], e)
+      data.push ret
+      return
+    res.data = data
+    console.log acted, 'double->', res
+
+    res
+
+  act_acciaccatura: (options, acted)->
+    res = new Snippet()
+    data = []
+    ctrl_per_beat = options.ctrl_per_beat ? @settings.ctrl_per_beat
+    delay = options.delay ? Math.ceil(ctrl_per_beat / 3)
+    key_sig = options.key_sig ? @settings.key_sig
+    scale = options.scale ? 'maj'
+    num = options.num ? 3 # add three acciaccatura
+    transpose = MG.transposer(scale, key_sig)
+
+    acted.data.forEach (m, j)->
+      ret = m.copy()
+      ret.pitch = []
+      ret.dur = []
+      for i in [0...m.dur.length - 1] by 1
+        if m.dur[i] > delay && i < num
+          ret.add m.pitch[i], m.dur[i] - delay
+          # TODO: check balance
+          if MG.seededRandom() > 0.4
+
+            ret.add m.pitch[i+1] - 1, delay
+          else
+            new_pitch = transpose(m.pitch[i+1], 1)
+            #if new_pitch == m.pitch[i]
+            ret.add new_pitch, delay
+        else
+          ret.add m.pitch[i], m.dur[i]
+      if j < acted.data.length - 1 && options.tailbite?
+        pre_delay = Math.ceil(m.dur[m.dur.length - 1] / 3)
+        ret.add m.pitch[m.pitch.length - 1], m.dur[m.dur.length - 1] - pre_delay
+        if pre_delay > 0
+          ret.add acted.data[j+1].pitch[0], pre_delay
+      else
+        ret.add m.pitch[m.pitch.length - 1], m.dur[m.dur.length - 1]
+      data.push ret
+      return
+    res.data = data
+    console.log acted, 'acciaccatura->', res
+    res
+
+
+
+
+
+
+
+
   act_aug: (options, acted)->
 
 
   act_dim: (options, acted)->
 
+  # one chord tone for one beat or one chord
+  # balance
+  gen_skeleton: (options)->
 
+    ctrl_per_beat = options.ctrl_per_beat ? @settings.ctrl_per_beat
+    info = {
+      ctrl_per_beat: ctrl_per_beat
+    }
+    key_sig = options.key_sig ? @settings.key_sig
+    time_sig = options.time_sig ? @settings.time_sig
+    info.key_sigs = {0:key_sig}
+    info.time_sigs = {0:time_sig}
+    harmony = MG.parseHarmony(options.chords, info)
+
+    pre = MG.keyToPitch(key_sig + '4') # within half octave
+    durs = []
+    pitch = []
+    if options.eachbeat? && options.eachbeat == true
+      harmony.forEach (m)->
+        m.forEach (h)->
+          dur = h[0]
+          while dur >= ctrl_per_beat
+            durs.push ctrl_per_beat
+            # TODO: consider pre
+            pitch.push h[1] + h[2][ Math.floor(MG.seededRandom()*h[2].length) ]
+            dur -= ctrl_per_beat
+          if dur > 0
+            durs.push dur
+            pitch.push h[1] + h[2][ Math.floor(MG.seededRandom()*h[2].length) ]
+          h[2] = MG.chord_finder[h[2].toString()] || 'maj'
+    else
+      harmony.forEach (m)->
+        m.forEach (h)->
+          durs.push h[0]
+          pitch.push h[1] + h[2][ Math.floor(MG.seededRandom()*h[2].length) ]
+          h[2] = MG.chord_finder[h[2].toString()] || 'maj'
+    ret = new Snippet(pitch, durs, harmony, {time_sig: time_sig, tatum:ctrl_per_beat})
+    console.log 'gen skeleton', info, ret
+    return ret
 
   gen_exact: (options)->
     # parse direct
@@ -206,7 +341,7 @@ class @Generator
     options.tempo ?= @settings.tempo
     options.time_sig ?= @settings.time_sig
     options.key_sig ?= @settings.key_sig
-    console.log 'exact', res = MG.parseMelody(options.score, options)
+    console.log 'gen exact', res = MG.parseMelody(options.score, options)
     info = {
       ctrl_per_beat: @settings.ctrl_per_beat,
     }
@@ -230,11 +365,14 @@ class @Generator
     dur = options.dur
     toPitch = @toPitch
     toScale = @toScale
+    ctrl_per_beat = options.ctrl_per_beat ? @settings.ctrl_per_beat
     info = {
-      ctrl_per_beat: @settings.ctrl_per_beat,
+      ctrl_per_beat: ctrl_per_beat
     }
-    info.key_sigs = {0:@settings.key_sig}
-    info.time_sigs = {0:@settings.time_sig}
+    key_sig = options.key_sig ? @settings.key_sig
+    time_sig = options.time_sig ? @settings.time_sig
+    info.key_sigs = {0:key_sig}
+    info.time_sigs = {0:time_sig}
     harmony = MG.parseHarmony(options.chords, info)
     chorder = MG.harmony_progresser(harmony)
 
@@ -258,7 +396,6 @@ class @Generator
 
     range = options.range
     range ?= [48, 90]
-
 
     # quadratic distribution
     range_dist = (k)->
@@ -384,22 +521,6 @@ class @Generator
     obj.harmony_text = harmony
     #console.log harmony.join('\n')
     return obj
-
-  rndPicker = (choices, weights) ->
-    s = weights.reduce ((a,b)-> a+b), 0
-    p = weights.map (e)-> e/s
-    s = 0
-    for i in [0...p.length] by 1
-      s = (p[i] += s)
-
-    # TODO: add random seed
-    # seed = Date.now();
-    return gen:  ->
-      r = seededRandom() #Math.random()
-      for i in [0...p.length] by 1
-        if r < p[i]
-          return choices[i]
-      return choices[p.length-1]
 
 
 

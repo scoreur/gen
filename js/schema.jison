@@ -10,7 +10,7 @@ SPACE           =	([ |\t|\f|\v])
 COMMENT         =	("%"[^\r\n]*{NEWLINE})
 STRING          =   (\"[^\"]+\")
 IDENT           =   ([a-zA-z]\w*)
-SIMP_OP         =   (";"|"{"|"}"|"["|"]"|":"|","|"="|"->")
+SIMP_OP         =   (";"|"{"|"}"|"["|"]"|":"|","|"="|"->"|"("|")"|"<"|">")
 BOOL            =   ("true"|"false")
 
 DIGITS          =   ([+-]?[\d.]+)
@@ -71,9 +71,12 @@ R :
   {
     $$ = [$1, {structure: [], node: $3, action:{}}];
   }
-  | R IDENT ACTION
+  | R IDENT "{" ACTION "}"
   {
-    $1[1].action[ '_' + $1[1].structure.length + "_" + $2] = $3;
+    if($4 != null){
+        $1[1].action[ '_' + $1[1].structure.length + "_" + $2] = $4;
+    }
+
     $1[1].structure.push($2);
 
   }
@@ -82,6 +85,7 @@ R :
     $1[1].structure.push($2);
   }
   ;
+
 
 NODES :
   "{" e "}"
@@ -95,13 +99,14 @@ NODES :
   ;
 
 ACTION :
-  "{" IDENT "," OPTIONS "}"
+  IDENT "," OPTIONS
   {
     $$ = {};
-    $$.mode = $2;
-    Object.assign($$, $4);
+    $$.mode = $1;
+    Object.assign($$, $3);
   }
   ;
+
 
 OPTION :
   IDENT ":" VAR

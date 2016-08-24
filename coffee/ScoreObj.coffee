@@ -1,4 +1,4 @@
-MG = @MG ? {}
+MG = @MG || (module? && require? && require('./musical').MG) || {}
 parser = MG.score_parser
 
 
@@ -90,7 +90,6 @@ class @Snippet
     delta = @incomplete_start ? sec
 
     m_i = 0
-    console.log harmony.length, 'harmony length'
     measure = new Measure(time_sig, tatum)
     res = []
     dur.forEach (e,i)=>
@@ -192,6 +191,7 @@ class @Snippet
 
     ret.data = ret.data.concat(s.data)
     MG.condCopy(s, ret, ['incomplete_end'])
+    console.log 'join snippet', ret.data, modify
 
     return ret
 
@@ -245,7 +245,7 @@ class @Snippet
   score object, with tracks and settings
   one track is an array of measure, with property
 ###
-class @ScoreObj
+ScoreObj = class @ScoreObj
   constructor: (options, contents) ->
     options ?= {}
     {@tempo, @time_sig, @key_sig, @ctrl_per_beat, @scale, @volumes, @instrs} = options
@@ -448,3 +448,4 @@ class @ScoreObj
         m.addNotes t_i + 1, dur * ctrlTicks, notes, vol, 0, delta * ctrlTicks
     m.finish()
     return m
+
