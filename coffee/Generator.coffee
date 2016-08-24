@@ -373,6 +373,11 @@ class @Generator
     time_sig = options.time_sig ? @settings.time_sig
     info.key_sigs = {0:key_sig}
     info.time_sigs = {0:time_sig}
+    if not options.chords?
+      nm = Math.ceil dur/ctrl_per_beat/time_sig[0]
+      h = MG.chord_hmm(key_sig)
+      options.chords = h.gen(nm)
+      console.log 'GENERATE CHORDS', options.chords
     harmony = MG.parseHarmony(options.chords, info)
     chorder = MG.harmony_progresser(harmony)
 

@@ -421,7 +421,46 @@ MG.scale_keys = (()->
 
 
 # TODO: change chord to random
-@gen_modes = ['random', 'transpose', 'chord', 'reverse', 'diminuation', 'augmentation']
+MG.gen_modes = ['random', 'transpose', 'chord', 'reverse', 'diminuation', 'augmentation']
+
+MG.sample_seeds =
+  "s3":
+    "mode": "distribution",
+    "dur": 12,
+    "choices": [[4,4,4]],
+    "weights": [1]
+  "s0":
+    "mode": "distribution",
+    "dur": 12,
+    "choices": [
+      [
+        4,
+        4,
+        4
+      ],
+      [
+        12
+      ]
+    ],
+    "weights": [
+      5,
+      2
+    ]
+  's1':
+    mode: "distribution",
+    dur: 16,
+    choices: ('4 4 4 4/8 4 4/4 4 8/4 8 4/4 12/12 4/8 8/16'.split('/').map (e)->
+      e.split(/\s+/).map (e2)-> parseInt(e2)
+    )
+    weights:
+      [1,3,3,5,1,5,8,8]
+  's2':
+    mode: "distribution",
+    weights: [1,2,5,12,6,30,  8,30,12,8,3,1,1],
+    choices: (->
+      Array(13).fill().map (e,i)->
+        i-6
+    )()
 
 
 @schema_summer = MG.schema_summer =
@@ -506,22 +545,23 @@ MG.scale_keys = (()->
 
     },
 
-  's1':
-    mode: "distribution",
-    dur: 16,
-    choices:
-      ('4 4 4 4/8 4 4/4 4 8/4 8 4/4 12/12 4/8 8/16'.split('/').map (e)->
-        e.split(/\s+/).map (e2)-> parseInt(e2)
-      )
-    weights:
-      [1,3,3,5,1,5,8,8]
-  's2':
-    mode: "distribution",
-    weights: [1,2,5,12,6,30,  8,30,12,8,3,1,1],
-    choices: (->
-      Array(13).fill().map (e,i)->
-        i-6
-    )()
+  's1': MG.sample_seeds['s1']
+
+  's2': MG.sample_seeds['s2']
+
+MG.schemaAdd = (schema, ident, node, action)->
+  if node?
+    schema.node[ident] = node
+  if action?
+    schema.action['_'+schema.structure.length+'_'+ident] = action
+  schema.structure.push ident
+  return
+
+MG.schemaBuilder = (dur)->
+  schema = {structure:[], node:{}, action:{}}
+  # TODO: randomize
+  MG.schemaAdd schema, 'A', {mode:'random', dur:dur, rhythm:{seed:'s1'}, interval:{seed:'s2'}}
+  schema
 
 MG.score_dance =
   settings:
@@ -745,8 +785,9 @@ MG.lcm = ()->
 
 MG.rndPicker = (choices, weights) ->
   if arguments.length == 1
-    choices = _.keys(arguments[0])
+    # order can not be reverted
     weights = _.values(arguments[0])
+    choices = _.keys(arguments[0])
   s = math.sum weights
   p = weights.map (e)-> e/s
   s = 0
@@ -786,6 +827,47 @@ MG.seededRandom = (max, min) ->
   _seed = (_seed * 9301 + 49297) % 233280;
   rnd = _seed / 233280
   return min + rnd * (max - min)
+
+# currently just for major scale
+funcchords =
+  'I': [[0,'maj'],[5,'min']]
+  'IV': [[3, 'maj'], [1, 'min']]
+  'V': [[4, 'maj'], [2, 'min'], [6, 'min7b5']]
+funcmap = ['I', 'IV', 'V', 'IV', 'V', 'I', 'V']
+hmm_transit =
+  'I': {'I':1, 'IV':3, 'V':3}
+  'IV': {'I':2, 'V':5, 'IV':1}
+  'V': {'I':5, 'IV':3, 'V':1}
+MG.chord_hmm = (key_sig, hmm)->
+  hmm ?= hmm_transit
+  states = ['I']
+  scale = MG.scale_keys[key_sig]
+  transit = ()->
+    picker = MG.rndPicker(hmm[states.join(',')])
+    states[0] = picker.gen()
+    ret = funcchords[states[0]]
+    return ret[Math.floor(MG.seededRandom() * ret.length)]
+
+  gen = (n)->
+    n ?= 1
+    ret = []
+    for i in [0...n]
+      tmp = transit()
+      tmp[0] = scale[tmp[0]]
+      ret.push tmp.join('')
+    ret
+
+  return {
+    start: (state)->
+      state ?= 'I'
+      if typeof hmm[state] == 'undefined'
+        state = 'I'
+        console.log 'invalid chord func', state
+      states[0] = state
+      return gen()
+    gen: gen
+  }
+
 
 
 

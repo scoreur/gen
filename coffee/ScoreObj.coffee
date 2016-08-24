@@ -319,13 +319,22 @@ ScoreObj = class @ScoreObj
   toText: (m)->
     console.log 'to score text'
     m ?= MG.clone(@tracks[0]) # melody
+    time_sigs = m.info.time_sigs
+    key_sigs = m.info.key_sigs
     if ! m?
       console.log 'null melody'
       return
     toScale = MG.pitchToScale(@scale,@key_sig)
     ref_oct = 4
-    res = m.map (e)->
+    res = m.map (e, e_i)->
+      # e is measure
       ret = []
+      if time_sigs[e_i]?
+        ret.push ':t' + time_sigs[e_i].join('/')
+
+      if key_sigs[e_i]?
+        ret.push ':k' + key_sigs[e_i]
+
       # simplify
       durs = e.map (e1)-> e1[0]
       gcd = MG.gcd.apply(null, durs)
