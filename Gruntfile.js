@@ -46,14 +46,24 @@ module.exports = function(grunt){
                 }),
                 dest: 'js/midijs_plus/midijs_plus.js'
             }
+        },
+        uglify: {
+            web:{
+                files: {
+                    'js/midijs_plus/midijs_plus.js': 'stream,midifile,replayer,audioDetect,gm,plugin,loader,player'.split(',').map(function(e){
+                        return 'js/midijs_plus/' + e + '.js';
+                    }),
+                    'js/gen-build.js': ['js/score_parser.js', 'js/schema_parser.js', 'coffee/musical.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js']
+                }
+            }
         }
     });
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-jade');
     grunt.loadNpmTasks('grunt-jison');
-    //grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.registerTask('default', ['jison:score', 'jison:schema']);
-    grunt.registerTask('web', ['jade:web', 'concat:gen', 'concat:midijs_plus']);
+    grunt.registerTask('web', ['jade:web', 'uglify:web']);
     grunt.registerTask('app', ['jade:app']);
 
 }

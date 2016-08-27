@@ -97,12 +97,17 @@
               "action": {
                 "_1_a": {
                   "mode": "double",
-                  "num": 2
+                  "num": 2,
+                  "modify":{
+                    "cadence": "A"
+                  }
                 }
               }
             }
           },
-          "action": {}
+          "action": {
+
+          }
         },
         "B": {
           "structure": [

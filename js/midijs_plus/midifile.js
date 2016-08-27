@@ -534,7 +534,7 @@ simpMidi.prototype.setTempo = function(t){
 
 simpMidi.prototype.addEvent = function(){
 	var arg = Array.prototype.slice.call(arguments);
-	this.tracks[arg.shift()].push(simpEvent(...arg));
+	this.tracks[arg.shift()].push(simpEvent.apply(null, arg));
 }
 
 simpMidi.prototype.finish = function(){
