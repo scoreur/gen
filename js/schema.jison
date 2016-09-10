@@ -10,10 +10,9 @@ SPACE           =	([ |\t|\f|\v])
 COMMENT         =	("%"[^\r\n]*{NEWLINE})
 STRING          =   (\"[^\"]+\")
 IDENT           =   ([a-zA-z]\w*)
-SIMP_OP         =   (";"|"{"|"}"|"["|"]"|":"|","|"="|"->"|"("|")"|"<"|">")
 BOOL            =   ("true"|"false")
-
 DIGITS          =   ([+-]?[\d.]+)
+SIMP_OP         =   (";"|"{"|"}"|"["|"]"|":"|","|"="|"->"|"("|")"|"<"|">"|"--")
 
 %%
 
@@ -44,7 +43,14 @@ e :
   }
   | e RULE
   {
-    $1[$2[0]] = $2[1];
+    if($2.length > 2){
+      if($1[$2[0]] != null){
+        $1[$2[0]] = [1, $1[$2[0]]];
+      }
+      $1[$2[0]].push([$2[1], $2[2]]);
+    }else{
+      $1[$2[0]] = $2[1];
+    }
     $$ = $1;
   }
   |
@@ -54,9 +60,13 @@ e :
   ;
 
 RULE :
-  R ";"
+  IDENT R ";"
   {
-    $$ = $1;
+    $$ = [$1, $2];
+  }
+  | IDENT "--" NUMBER R ";"
+  {
+    $$ = [$1, $3, $4];
   }
   | IDENT "=" "{" IDENT ',' OPTIONS "}" ";"
   {
@@ -67,22 +77,22 @@ RULE :
 
 
 R :
-  IDENT "->" NODES
+  "->" NODES
   {
-    $$ = [$1, {structure: [], node: $3, action:{}}];
+    $$ = {structure: [], node: $2, action:{}};
   }
   | R IDENT "{" ACTION "}"
   {
     if($4 != null){
-        $1[1].action[ '_' + $1[1].structure.length + "_" + $2] = $4;
+        $1.action[ '_' + $1.structure.length + "_" + $2] = $4;
     }
 
-    $1[1].structure.push($2);
+    $1.structure.push($2);
 
   }
   | R IDENT
   {
-    $1[1].structure.push($2);
+    $1.structure.push($2);
   }
   ;
 
