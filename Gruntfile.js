@@ -39,20 +39,11 @@ module.exports = function(grunt){
             gen: {
                 src: ['js/score_parser.js', 'js/schema_parser.js', 'coffee/musical.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js'],
                 dest: 'js/gen-build.js'
-            },
-            midijs_plus: {
-                src: 'stream,midifile,replayer,audioDetect,gm,plugin,loader,player'.split(',').map(function(e){
-                    return 'js/midijs_plus/' + e + '.js';
-                }),
-                dest: 'js/midijs_plus/midijs_plus.js'
             }
         },
         uglify: {
             web:{
                 files: {
-                    'js/midijs_plus/midijs_plus.js': 'stream,midifile,replayer,audioDetect,gm,plugin,loader,player'.split(',').map(function(e){
-                        return 'js/midijs_plus/' + e + '.js';
-                    }),
                     'js/gen-build.js': ['js/score_parser.js', 'js/schema_parser.js', 'coffee/musical.js', 'coffee/*.js', 'js/gen.js', 'js/viewer.js', 'js/keyboard.js']
                 }
             }
