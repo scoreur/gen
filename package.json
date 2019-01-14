@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apwan06/gen.git"
+    "url": "git+https://github.com/apwan/gen.git"
   },
   "keywords": [
     "Electron",
@@ -17,16 +17,16 @@
     "score",
     "generate"
   ],
-  "author": "apwan06",
+  "author": "apwan",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/apwan06/gen/issues"
+    "url": "https://github.com/apwan/gen/issues"
   },
   "devDependencies": {
-    "electron-prebuilt": "^1.2.0",
-    "grunt": "1.0.1",
+    "electron": "^4.0.1",
+    "grunt": "^1.0.3",
     "grunt-contrib-concat": "1.0.1",
-    "grunt-contrib-jade": "1.0.0",
+    "grunt-contrib-pug": "^2.0.0",
     "grunt-contrib-uglify": "1.0.1",
     "grunt-jison": "1.3.3"
   },

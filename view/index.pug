@@ -7,7 +7,7 @@ html
       window.module = module;
       module = undefined;
       }
-    include scripts.jade
+    include scripts.pug
     style(type='text/css', media='screen').
       body {
         /* Margin bottom by footer height */
@@ -22,8 +22,8 @@ html
       }
   body
     // Menu
-    include topmenu.jade
-    include bottommenu.jade
+    include topmenu.pug
+    include bottommenu.pug
     // Modal
     #readme.modal.fade(tabindex='-3', role=dialog, aria-hidden='true')
       .modal-dialog.modal-lg(role='document')

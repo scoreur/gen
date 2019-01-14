@@ -1,20 +1,20 @@
 
 module.exports = function(grunt){
     grunt.initConfig({
-        jade: {
+        pug: {
             options: {
                 client: false,
                 pretty: true
             },
             app: {
-                src: 'view/index.jade',
+                src: 'view/index.pug',
                 dest: './app.html',
                 options:{
                     data: grunt.file.readJSON('view/scripts_app.json')
                 }
             },
             web: {
-                src: 'view/index.jade',
+                src: 'view/index.pug',
                 dest: './index.html',
                 options:{
                     data: grunt.file.readJSON('view/scripts_web.json')
@@ -50,11 +50,11 @@ module.exports = function(grunt){
         }
     });
     grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-jade');
+    grunt.loadNpmTasks('grunt-contrib-pug');
     grunt.loadNpmTasks('grunt-jison');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.registerTask('default', ['jison:score', 'jison:schema']);
-    grunt.registerTask('web', ['jade:web', 'uglify:web']);
-    grunt.registerTask('app', ['jade:app']);
+    grunt.registerTask('web', ['pug:web', 'uglify:web']);
+    grunt.registerTask('app', ['pug:app']);
 
 }
