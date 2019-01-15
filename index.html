@@ -39,7 +39,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min.js" type="text/javascript"></script>
     <!-- ace editor-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.3/ace.js" type="text/javascript"></script>
-    <script src="./js/util/mode-score.js" type="text/javascript"></script>
+    <script src="#{pre}/util/mode-score.js" type="text/javascript"></script>
     <!-- pdf js-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/1.5.314/pdf.js" type="text/javascript"></script>
     <!-- fabric canvas-->
@@ -60,16 +60,16 @@
   </head>
   <body>
     <!-- Menu-->
-    <nav id="top-menu" class="navbar navbar-default navbar-fixed-top">
+    <nav class="navbar navbar-default navbar-fixed-top" id="top-menu">
       <div class="container-fluid">
         <div class="navbar-header">
-          <button type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false" class="navbar-toggle collapsed"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="#" class="navbar-brand">Music Generator<img src="img/logo.png" style="width:50px;height:50px" class="img-circle img-responsive"></a>
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="#">Music Generator<img class="img-circle img-responsive" src="img/logo.png" style="width:50px;height:50px"></a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling-->
-        <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse">
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
             <!-- Menu File-->
-            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">File<span class="caret"></span></a>
+            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File<span class="caret"></span></a>
               <ul class="dropdown-menu nav nav-tabs nav-stacked">
                 <li><a id="open_midi">Open MIDI</a></li>
                 <li><a id="save_midi">Save MIDI</a></li>
@@ -77,14 +77,14 @@
                 <li><a id="save_wav">Save WAV</a></li>
                 <li><a id="open_json">Import JSON</a></li>
                 <li><a id="export">Export JSON</a></li>
-                <li role="separator" class="divider"></li>
+                <li class="divider" role="separator"></li>
                 <li><a id="open_img">Open Score Image</a></li>
                 <li><a id="open_pdf">Open Score PDF</a></li>
                 <li><a id="save_score">Save Rendered Score</a></li>
               </ul>
             </li>
             <!-- Menu Edit-->
-            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Edit<span class="caret"></span></a>
+            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit<span class="caret"></span></a>
               <ul class="dropdown-menu nav nav-tabs nav-stacked">
                 <li><a id="analyze_midi">Analyze MIDI</a></li>
                 <li><a data-toggle="modal" data-target="#ctrl2" href="#ctrl2">Set Seed From MIDI</a></li>
@@ -95,7 +95,7 @@
               </ul>
             </li>
             <!-- Menu View-->
-            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">View<span class="caret"></span></a>
+            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">View<span class="caret"></span></a>
               <ul class="dropdown-menu nav nav-tabs nav-stacked">
                 <li data-toggle="tab" data-target="#img_viewer"><a href="#img_viewer">View Image</a></li>
                 <li data-toggle="tab" data-target="#pdf_viewer"><a href="#pdf_viewer">View PDF</a></li>
@@ -103,7 +103,7 @@
               </ul>
             </li>
             <!-- Menu Example-->
-            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Example<span class="caret"></span></a>
+            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Example<span class="caret"></span></a>
               <ul class="dropdown-menu nav nav-tabs nav-stacked">
                 <li><a id="eg_load_json">Load sample json</a></li>
                 <li><a id="eg_load_midi">Load sample midi</a></li>
@@ -118,10 +118,10 @@
               button.btn.btn-default(type="submit") Submit
           -->
           <ul class="nav navbar-nav navbar-right navbar-inverse">
-            <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Help<span class="caret"></span></a>
+            <li class="dropdown"><a class="dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help<span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="https://github.com/apwan06/gen">Source Code</a></li>
-                <li role="separator" class="divider"></li>
+                <li><a href="https://github.com/apwan/gen">Source Code</a></li>
+                <li class="divider" role="separator"></li>
                 <li><a data-toggle="modal" data-target="#tutorial" href="#tutorial">Tutorial</a></li>
               </ul>
             </li>
@@ -131,51 +131,51 @@
         <!-- /.navbar-collapse-->
       </div>
     </nav>
-    <nav id="bottom-menu" class="navbar navbar-default navbar-fixed-bottom">
+    <nav class="navbar navbar-default navbar-fixed-bottom" id="bottom-menu">
       <div class="container-fluid">
         <div class="navbar-header">
-          <button type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-2" aria-expanded="false" class="navbar-toggle collapsed"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-2" aria-expanded="false"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span></button>
         </div>
-        <div id="bs-example-navbar-collapse-2" class="collapse navbar-collapse">
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
           <ul class="nav navbar-nav">
-            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Keyboard<span class="caret"></span></a>
-              <ul style="width:950px" class="dropdown-menu">
+            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Keyboard<span class="caret"></span></a>
+              <ul class="dropdown-menu" style="width:950px">
                 <li>
                   <form id="keyboard_panel" style="height:150px">
                     <svg id="keyboard" xmlns="http://www.w3.org/2000/svg" version="1.1" style="background-color:#FFF; border:groove; alignment-adjust:central;"></svg>
                   </form>
                 </li>
-                <li role="separator" class="divider"></li>
+                <li class="divider" role="separator"></li>
                 <li><a id="keyboard_controls">
                     <label for="amplitude">amplitude (0 - 127):</label>
-                    <input id="amplitude" type="range" min="0" max="127" value="100" style="width:200px;" class="form-control progress"></a></li>
+                    <input class="form-control progress" id="amplitude" type="range" min="0" max="127" value="100" style="width:200px;"></a></li>
               </ul>
             </li>
-            <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Chords<span class="caret"></span></a>
-              <ul style="width:240px" class="dropdown-menu">
+            <li class="dropdown"><a class="dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Chords<span class="caret"></span></a>
+              <ul class="dropdown-menu" style="width:240px">
                 <li><a id="mode_panel"></a></li>
               </ul>
             </li>
-            <li class="dropdown"><a href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Drums<span class="caret"></span></a>
-              <ul style="width:200px" class="dropdown-menu">
+            <li class="dropdown"><a class="dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Drums<span class="caret"></span></a>
+              <ul class="dropdown-menu" style="width:200px">
                 <li>
                   <form id="drum_panel"></form>
                 </li>
-                <li role="separator" class="divider"></li>
+                <li class="divider" role="separator"></li>
                 <li><a id="drum_controls">
                     <lable for="drum_amplitude">amplitude (0 - 127):</lable>
-                    <input id="drum_amplitude" type="range" min="0" max="127" value="88" style="width:120px;" class="form-control progress"></a></li>
+                    <input class="form-control progress" id="drum_amplitude" type="range" min="0" max="127" value="88" style="width:120px;"></a></li>
               </ul>
             </li>
-            <li class="dropdown"><a data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Console<span class="caret"></span></a>
-              <ul style="width:320px" class="list-group dropdown-menu">
+            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Console<span class="caret"></span></a>
+              <ul class="list-group dropdown-menu" style="width:320px">
                 <li class="list-group-item">
                   <label class="label label-default">Result:</label><a id="console_result"></a>
                 </li>
                 <li class="list-group-item">
-                  <input id="console_panel" type="text" style="width:280px; height:50px" class="form-control">
+                  <input class="form-control" id="console_panel" type="text" style="width:280px; height:50px">
                 </li>
-                <li id="console_eval" class="list-group-item">Run</li>
+                <li class="list-group-item" id="console_eval">Run</li>
               </ul>
             </li>
           </ul>
@@ -189,13 +189,13 @@
       </div>
     </nav>
     <!-- Modal-->
-    <div id="readme" tabindex="-3" aria-hidden="true" class="modal fade">
-      <div role="document" class="modal-dialog modal-lg">
+    <div class="modal fade" id="readme" tabindex="-3" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Read Me</h4>
           </div>
-          <div class="modal-body"><h1 id="-music-generator-https-scoreur-github-io-gen-"><a href="https://scoreur.github.io/gen">Music Generator</a> </h1>
+          <div class="modal-body"><h1 id="music-generator-"><a href="https://scoreur.github.io/gen">Music Generator</a> </h1>
 <h2 id="introduction">Introduction</h2>
 <p>The app is targeted at both web and desktop.</p>
 <h3 id="goal">Goal</h3>
@@ -253,8 +253,8 @@ The score renderer uses <a href="https://github.com/0xfe/vexflow">vexflow</a> as
         </div>
       </div>
     </div>
-    <div id="tutorial" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" class="modal fade">
-      <div role="document" class="modal-dialog modal-lg">
+    <div class="modal fade" id="tutorial" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Syntax</h4>
@@ -324,25 +324,26 @@ You need to specify the following entry:</p>
         &quot;interval&quot;: 3
       }
     }
+
 </code></pre>
           </div>
           <div class="modal-footer"></div>
         </div>
       </div>
     </div>
-    <div id="instr" tabindex="-2" role="dialog" aira-hidden="true" class="modal fade">
-      <div role="document" class="modal-dialog modl-lg">
+    <div class="modal fade" id="instr" tabindex="-2" role="dialog" aira-hidden="true">
+      <div class="modal-dialog modl-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Instrument Code</h4>
           </div>
-          <div id="instr_code" class="modal-body">
-            <div id="accordion" class="panel-group">
+          <div class="modal-body" id="instr_code">
+            <div class="panel-group" id="accordion">
               <div class="panel panel-default">
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Piano">Piano</a></h5>
                 </div>
-                <panel-collapse id="collapse_Piano" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Piano">
                   <div class="panel-body">
                     <ul>
                       <li>1 Acoustic Grand Piano</li>
@@ -361,7 +362,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Chromatic-Percussion">Chromatic Percussion</a></h5>
                 </div>
-                <panel-collapse id="collapse_Chromatic-Percussion" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Chromatic-Percussion">
                   <div class="panel-body">
                     <ul>
                       <li>9 Celesta</li>
@@ -380,7 +381,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Organ">Organ</a></h5>
                 </div>
-                <panel-collapse id="collapse_Organ" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Organ">
                   <div class="panel-body">
                     <ul>
                       <li>17 Drawbar Organ</li>
@@ -399,7 +400,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Guitar">Guitar</a></h5>
                 </div>
-                <panel-collapse id="collapse_Guitar" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Guitar">
                   <div class="panel-body">
                     <ul>
                       <li>25 Acoustic Guitar (nylon)</li>
@@ -418,7 +419,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Bass">Bass</a></h5>
                 </div>
-                <panel-collapse id="collapse_Bass" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Bass">
                   <div class="panel-body">
                     <ul>
                       <li>33 Acoustic Bass</li>
@@ -437,7 +438,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Strings">Strings</a></h5>
                 </div>
-                <panel-collapse id="collapse_Strings" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Strings">
                   <div class="panel-body">
                     <ul>
                       <li>41 Violin</li>
@@ -456,7 +457,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Ensemble">Ensemble</a></h5>
                 </div>
-                <panel-collapse id="collapse_Ensemble" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Ensemble">
                   <div class="panel-body">
                     <ul>
                       <li>49 String Ensemble 1</li>
@@ -475,7 +476,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Brass">Brass</a></h5>
                 </div>
-                <panel-collapse id="collapse_Brass" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Brass">
                   <div class="panel-body">
                     <ul>
                       <li>57 Trumpet</li>
@@ -494,7 +495,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Reed">Reed</a></h5>
                 </div>
-                <panel-collapse id="collapse_Reed" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Reed">
                   <div class="panel-body">
                     <ul>
                       <li>65 Soprano Sax</li>
@@ -513,7 +514,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Pipe">Pipe</a></h5>
                 </div>
-                <panel-collapse id="collapse_Pipe" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Pipe">
                   <div class="panel-body">
                     <ul>
                       <li>73 Piccolo</li>
@@ -532,7 +533,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Synth-Lead">Synth Lead</a></h5>
                 </div>
-                <panel-collapse id="collapse_Synth-Lead" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Synth-Lead">
                   <div class="panel-body">
                     <ul>
                       <li>81 Lead 1 (square)</li>
@@ -551,7 +552,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Synth-Pad">Synth Pad</a></h5>
                 </div>
-                <panel-collapse id="collapse_Synth-Pad" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Synth-Pad">
                   <div class="panel-body">
                     <ul>
                       <li>89 Pad 1 (new age)</li>
@@ -570,7 +571,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Synth-Effects">Synth Effects</a></h5>
                 </div>
-                <panel-collapse id="collapse_Synth-Effects" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Synth-Effects">
                   <div class="panel-body">
                     <ul>
                       <li>97 FX 1 (rain)</li>
@@ -589,7 +590,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Ethnic">Ethnic</a></h5>
                 </div>
-                <panel-collapse id="collapse_Ethnic" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Ethnic">
                   <div class="panel-body">
                     <ul>
                       <li>105 Sitar</li>
@@ -608,7 +609,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Percussive">Percussive</a></h5>
                 </div>
-                <panel-collapse id="collapse_Percussive" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Percussive">
                   <div class="panel-body">
                     <ul>
                       <li>113 Tinkle Bell</li>
@@ -626,7 +627,7 @@ You need to specify the following entry:</p>
                 <div class="panel-heading">
                   <h5 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse_Sound-effects">Sound effects</a></h5>
                 </div>
-                <panel-collapse id="collapse_Sound-effects" class="collapse">
+                <panel-collapse class="collapse" id="collapse_Sound-effects">
                   <div class="panel-body">
                     <ul>
                       <li>120 Reverse Cymbal</li>
@@ -649,52 +650,52 @@ You need to specify the following entry:</p>
       </div>
     </div>
     <!-- Ctrl-->
-    <div id="ctrl1" tabindex="-2" role="dialog" aria-hidden="true" class="modal fade">
-      <div role="" class="modal-dialog modal-sm">
+    <div class="modal fade" id="ctrl1" tabindex="-2" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-sm" role="">
         <div class="modal-body">
-          <input id="ctrl_mul" type="text" placeholder="2" class="form-control">
-          <button id="inc_ctrl" data-dismiss="modal" class="btn-default">Multiply</button>
+          <input class="form-control" id="ctrl_mul" type="text" placeholder="2">
+          <button class="btn-default" id="inc_ctrl" data-dismiss="modal">Multiply</button>
         </div>
       </div>
     </div>
-    <div id="ctrl2" tabindex="-3" role="dialog" aria-hidden="true" class="modal fade">
-      <div role="" class="modal-dialog modal-sm">
+    <div class="modal fade" id="ctrl2" tabindex="-3" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-sm" role="">
         <div class="modal-body">
-          <input id="ctrl_seed" type="text" placeholder="s1" class="form-contral">
-          <button id="set_seed" data-dismiss="modal" class="btn-default">Set</button>
+          <input class="form-contral" id="ctrl_seed" type="text" placeholder="s1">
+          <button class="btn-default" id="set_seed" data-dismiss="modal">Set</button>
         </div>
       </div>
     </div>
     <!-- Contents-->
     <div class="container-fluid">
       <!-- Viewer-->
-      <div id="score_viewer" class="row">
+      <div class="row" id="score_viewer">
         <!-- score display-->
         <div class="tab-content col-sr-11 col-xs-12">
-          <div id="img_viewer" class="tab-pane">
-            <div style="height: 450px; overflow: scroll" class="img-wrapper"><img id="score_img" src="" class="img-responsive"></div>
+          <div class="tab-pane" id="img_viewer">
+            <div class="img-wrapper" style="height: 450px; overflow: scroll"><img class="img-responsive" id="score_img" src=""></div>
           </div>
-          <div id="pdf_viewer" class="tab-pane">
+          <div class="tab-pane" id="pdf_viewer">
             <div id="canvas-wrapper" style="height:400px; overflow: scroll;">
               <canvas id="the-canvas" style="border:1px solid black"></canvas>
             </div>
-            <ul id="pdf_pager" class="pager">
+            <ul class="pager" id="pdf_pager">
               <li><a class="prev glyphicon glyphicon-arrow-left"></a></li>
               <li>Page:<a class="page_num">1</a> /<a class="page_count">1</a></li>
               <li><a class="next glyphicon glyphicon-arrow-right"></a></li>
             </ul>
           </div>
-          <div id="midi_viewer" class="tab-pane in active">
-            <div style="height: 400px; overflow: scroll; border:1px solid black;" class="canvas-wrapper">
+          <div class="tab-pane in active" id="midi_viewer">
+            <div class="canvas-wrapper" style="height: 400px; overflow: scroll; border:1px solid black;">
               <!-- canvas#midi_pointer(style='width: 100%; height:100%;left: 0; top: 0; z-index:0;')-->
               <canvas id="midi_score" style="width: 100%;left: 0; top: 0; z-index: 1;"></canvas>
             </div>
-            <ul id="midi_pager" class="pager">
+            <ul class="pager" id="midi_pager">
               <li>
-                <div id="gen" class="btn btn-info">Generate</div>
+                <div class="btn btn-info" id="gen">Generate</div>
               </li>
               <li>
-                <div id="parse" class="btn btn-primary">Parse</div> &nbsp; &nbsp;
+                <div class="btn btn-primary" id="parse">Parse</div> &nbsp; &nbsp;
               </li>
               <li><a class="prev glyphicon glyphicon-arrow-left"></a></li>
               <li>Page:<a class="page_num">1</a> /<a class="page_count">1</a></li>
@@ -707,24 +708,24 @@ You need to specify the following entry:</p>
       <!-- Player-->
       <div class="row">
         <div class="col-sr-1 col-xs-1">
-          <div id="play_MIDI" class="btn btn-info btn-block"><span class="glyphicon glyphicon-play"></span></div>
+          <div class="btn btn-info btn-block" id="play_MIDI"><span class="glyphicon glyphicon-play"></span></div>
         </div>
         <div class="col-sr-6 col-xs-8">
-          <progress id="midi_progress" max="100" value="0" style="width: 100%;" class="progress hidden progress-info"> </progress>
-          <input id="play_slider" type="range" min="0" max="100" value="0" class="progress">
+          <progress class="progress hidden progress-info" id="midi_progress" max="100" value="0" style="width: 100%;"> </progress>
+          <input class="progress" id="play_slider" type="range" min="0" max="100" value="0">
         </div>
         <div class="col-sr-3 col-xs-2"><a class="pager"><span id="currentTime">0</span>/<span id="endTime">0</span></a></div>
       </div>
       <!-- Editor 1-->
       <div class="row">
-        <div id="tracks_container" class="col-sr-6 col-xs-10 col-md-6">
+        <div class="col-sr-6 col-xs-10 col-md-6" id="tracks_container">
           <ul class="nav nav-tabs nav-justified nav-pills">
             <li class="xs-only tab_plus"><a><span class="glyphicon glyphicon-plus"></span></a></li>
           </ul>
           <div class="tab-content"></div>
         </div>
         <div class="xs-only col-xs-2"></div>
-        <div id="options_container" class="col-sr-6 col-xs-10 col-md-6">
+        <div class="col-sr-6 col-xs-10 col-md-6" id="options_container">
           <ul class="nav nav-tabs nav-justified nav-pills">
             <li class="xs-only tab_plus"><a><span class="glyphicon glyphicon-plus"></span></a></li>
           </ul>
